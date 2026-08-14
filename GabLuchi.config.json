@@ -1,0 +1,9 @@
+{
+  "ManifestBackendBase": "http://167.235.229.108",
+  "ManifestBackendUserAgent": "secretgoonpoon",
+  "ApiBaseUrl": "https://lua.tools",
+  "AuthBackendBase": "https://gabluchi-auth.onrender.com",
+  "KeyCheckerBase": "https://gabluchi-backend.onrender.com",
+  "DiscordInviteUrl": "https://discord.gg/JVVDptutvf",
+  "FixRepositoryPath": ""
+}

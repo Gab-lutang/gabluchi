@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="GabLuchi.Views.SettingsView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:res="clr-namespace:GabLuchi.Resources" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" xmlns:vm="clr-namespace:GabLuchi.ViewModels" TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}" xmlns:views="clr-namespace:GabLuchi.Views">
+  <FrameworkElement.Resources>
+    <ResourceDictionary>
+      <Style x:Key="SettingsCard" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="#08FFFFFF" />
+        <Setter Property="BorderBrush" Value="#12FFFFFF" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Border.CornerRadius" Value="8" />
+      </Style>
+      <Style x:Key="SectionHeader" TargetType="{x:Type TextBlock}">
+        <Setter Property="Margin" Value="0,24,0,8" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="#9ca3af" />
+      </Style>
+      <Style x:Key="RowDivider" TargetType="{x:Type Border}">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Background" Value="#10FFFFFF" />
+        <Setter Property="Margin" Value="14,0" />
+      </Style>
+    </ResourceDictionary>
+  </FrameworkElement.Resources>
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel MaxWidth="640" Margin="8,16,8,24">
+      <TextBlock FontSize="22" FontWeight="Bold" Text="{x:Static res:Strings.Settings_Title}" />
+      <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_Account}" />
+      <Border Style="{StaticResource SettingsCard}">
+        <StackPanel Margin="14,12">
+          <StackPanel Visibility="{Binding IsGuest, Converter={StaticResource BoolToVis}}">
+            <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_BrowsingAsGuest}" />
+            <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_GuestHint}" TextWrapping="Wrap" />
+            <ui:Button Margin="0,10,0,0" HorizontalAlignment="Left" Appearance="Primary" Content="{x:Static res:Strings.Settings_SignInDiscord}" Command="{Binding SignInCommand}" Icon="{ui:SymbolIcon Person24}" />
+          </StackPanel>
+          <StackPanel Visibility="{Binding IsGuest, Converter={StaticResource InverseBoolToVis}}">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <Border Width="44" Height="44" VerticalAlignment="Center" Background="#14FFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="22">
+                <Image Width="40" Height="40" Source="{Binding AvatarUrl}" />
+              </Border>
+              <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                <TextBlock FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Text="{Binding DisplayName}" />
+                <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Home_SignedIn}" />
+              </StackPanel>
+              <ui:Button Grid.Column="2" VerticalAlignment="Center" Content="{x:Static res:Strings.Settings_SignOut}" Command="{Binding SignOutCommand}" />
+            </Grid>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+      <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_License}" />
+      <Border Style="{StaticResource SettingsCard}">
+        <StackPanel Margin="14,12">
+          <StackPanel Visibility="{Binding HubcapIsKeyConfigured, Converter={StaticResource BoolToVis}}">
+            <Grid Margin="0,0,0,10">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBlock VerticalAlignment="Center" FontSize="13" TextWrapping="Wrap" Text="{Binding HubcapStatsText}" />
+              <ui:Button Grid.Column="1" Margin="8,0,0,0" Content="{x:Static res:Strings.Settings_LicenseClear}" Command="{Binding ClearHubcapKeyCommand}" Icon="{ui:SymbolIcon Dismiss24}" />
+            </Grid>
+          </StackPanel>
+          <StackPanel Visibility="{Binding HubcapIsKeyConfigured, Converter={StaticResource InverseBoolToVis}}">
+            <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_LicenseKey}" />
+            <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_LicenseKey_Hint}" TextWrapping="Wrap" />
+            <Grid Margin="0,8,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <ui:TextBox FontFamily="Consolas" PlaceholderText="{x:Static res:Strings.Settings_LicenseKeyPlaceholder}" Text="{Binding HubcapKeyInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+              <ui:Button Grid.Column="1" Margin="8,0,0,0" Appearance="Primary" Content="{x:Static res:Strings.Settings_LicenseValidate}" Command="{Binding ValidateAndSaveHubcapKeyCommand}" IsEnabled="{Binding CanEditHubcapKey}" />
+            </Grid>
+            <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{Binding HubcapKeyStatusColor}" Text="{Binding HubcapKeyStatus}" Visibility="{Binding HubcapKeyStatus, Converter={StaticResource NullToCollapsed}}" />
+            <TextBlock Margin="0,8,0,0" FontSize="12" Foreground="#6b7280">
+              <Run Text="{x:Static res:Strings.Settings_LicenseGetKey}" /> <Hyperlink Foreground="#a78bfa" Command="{Binding OpenHubcapCommand}"><Run Text="{x:Static res:Strings.Settings_LicenseDiscord}" /></Hyperlink></TextBlock>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+      <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_Install}" />
+      <Border Style="{StaticResource SettingsCard}">
+        <StackPanel>
+          <Grid Margin="14,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_AutoUpdateApps}" />
+              <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_AutoUpdateApps_Hint}" TextWrapping="Wrap" />
+            </StackPanel>
+            <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding AutoUpdateApps, Mode=TwoWay}" />
+          </Grid>
+          <Border Style="{StaticResource RowDivider}" />
+          <Grid Margin="14,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Add_FastFetch}" />
+              <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Add_FastFetch_Hint}" TextWrapping="Wrap" />
+            </StackPanel>
+            <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding FastFetch, Mode=TwoWay}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+      <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_General}" />
+      <Border Style="{StaticResource SettingsCard}">
+        <StackPanel Margin="14,12">
+          <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_Language}" />
+          <ComboBox Margin="0,8,0,0" MinWidth="220" HorizontalAlignment="Left" DisplayMemberPath="Display" ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding SelectedLanguage}" />
+          <TextBlock Margin="0,8,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_Language_Hint}" TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+      <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_Steam}" />
+      <Border Style="{StaticResource SettingsCard}">
+        <StackPanel Margin="14,12">
+          <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_SteamLocation}" />
+          <Grid Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ui:TextBox IsReadOnly="True" Text="{Binding SteamPath, Mode=OneWay}" />
+            <ui:Button Grid.Column="1" Margin="8,0,0,0" Content="{x:Static res:Strings.Settings_Change}" Command="{Binding OverrideSteamFolderCommand}" />
+            <ui:Button Grid.Column="2" Margin="8,0,0,0" Content="{x:Static res:Strings.Settings_Open}" Command="{Binding OpenSteamFolderCommand}" Icon="{ui:SymbolIcon FolderOpen24}" />
+            <ui:Button Grid.Column="3" Margin="8,0,0,0" Content="{x:Static res:Strings.Settings_ResetToAuto}" Command="{Binding ClearSteamOverrideCommand}" Visibility="{Binding IsSteamOverridden, Converter={StaticResource BoolToVis}}" />
+          </Grid>
+          <TextBlock Margin="0,8,0,0" FontSize="12" Foreground="#6b7280" Text="{Binding SteamSource}" />
+          <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#f87171" TextWrapping="Wrap" Text="{Binding SteamWarning}" Visibility="{Binding SteamWarning, Converter={StaticResource NullToCollapsed}}" />
+        </StackPanel>
+      </Border>
+      <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_Startup}" />
+      <Border Style="{StaticResource SettingsCard}">
+        <StackPanel>
+          <Grid Margin="14,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_StartWithWindows}" />
+              <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_StartWithWindows_Hint}" TextWrapping="Wrap" />
+            </StackPanel>
+            <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding StartWithWindows, Mode=TwoWay}" />
+          </Grid>
+          <Border Style="{StaticResource RowDivider}" />
+          <Grid Margin="14,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_MinimizeToTray}" />
+              <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_MinimizeToTray_Hint}" TextWrapping="Wrap" />
+            </StackPanel>
+            <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding MinimizeToTray, Mode=TwoWay}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+      <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_Community}" />
+      <Border Style="{StaticResource SettingsCard}">
+        <Grid Margin="14,12">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_DonateKeys}" />
+            <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_DonateKeys_Hint}" TextWrapping="Wrap" />
+          </StackPanel>
+          <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding DonateKeys, Mode=TwoWay}" />
+        </Grid>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

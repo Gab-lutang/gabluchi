@@ -1,0 +1,8 @@
+# Build output
+**/bin/
+**/obj/
+
+# Local runtime state
+*.user
+*.suo
+.vs/

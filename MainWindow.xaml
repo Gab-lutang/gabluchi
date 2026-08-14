@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:FluentWindow x:Class="GabLuchi.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:res="clr-namespace:GabLuchi.Resources" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" xmlns:vm="clr-namespace:GabLuchi.ViewModels" xmlns:views="clr-namespace:GabLuchi.Views" Title="GabLuchi" Icon="icon.ico" Width="1080" Height="720" MinWidth="760" MinHeight="560" ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica" WindowCornerPreference="Round" WindowStartupLocation="CenterScreen" xmlns:gabluchi="clr-namespace:GabLuchi">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <ui:TitleBar Grid.Row="0" Title="GabLuchi">
+      <ui:TitleBar.Icon>
+        <ui:ImageIcon Source="pack://application:,,,/icon.ico" />
+      </ui:TitleBar.Icon>
+    </ui:TitleBar>
+    <Grid Row="1">
+      <Grid Name="AppContent">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Grid}">
+            <Style.Triggers>
+              <DataTrigger Value="True" Binding="{Binding Onboarding.IsOpen}">
+                <Setter Property="UIElement.Effect">
+                  <Setter.Value>
+                    <BlurEffect KernelType="Gaussian" Radius="28" RenderingBias="Performance" />
+                  </Setter.Value>
+                </Setter>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+        <ui:NavigationView Name="RootNavigation" IsBackButtonVisible="Collapsed" IsPaneToggleVisible="False" OpenPaneLength="190" PaneDisplayMode="Left">
+          <ui:NavigationView.MenuItems>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Home}" TargetPageType="{x:Type views:HomeView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="Home24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Add}" TargetPageType="{x:Type views:DownloadView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="Add24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Manage}" TargetPageType="{x:Type views:ManageView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="Games24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Mode}" TargetPageType="{x:Type views:ModeView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="Options24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Fixes}" TargetPageType="{x:Type views:FixesView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="ShieldTask24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="Plugin" TargetPageType="{x:Type views:PluginView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="PuzzlePiece24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+          </ui:NavigationView.MenuItems>
+          <ui:NavigationView.FooterMenuItems>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_RestartSteam}" Click="RestartSteam_Click">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="ArrowClockwise24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Settings}" TargetPageType="{x:Type views:SettingsView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="Settings24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+          </ui:NavigationView.FooterMenuItems>
+          <ui:NavigationView.PaneFooter>
+            <StackPanel>
+              <TextBlock Margin="12,0,10,8" FontSize="11" Foreground="#6b7280" TextTrimming="CharacterEllipsis" Text="{Binding FooterStatus}" ToolTip="{Binding FooterStatus}" />
+            </StackPanel>
+          </ui:NavigationView.PaneFooter>
+        </ui:NavigationView>
+        <ui:SnackbarPresenter Name="RootSnackbar" Margin="0,0,24,18" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+      </Grid>
+      <views:OnboardingView DataContext="{Binding Onboarding}" Visibility="{Binding IsOpen, Converter={StaticResource BoolToVis}}" />
+    </Grid>
+  </Grid>
+</ui:FluentWindow>

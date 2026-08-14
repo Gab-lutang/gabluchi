@@ -1,0 +1,83 @@
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <AssemblyName>GabLuchi</AssemblyName>
+    <StartupObject>GabLuchi.Program</StartupObject>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>True</UseWPF>
+    <UseWindowsForms>True</UseWindowsForms>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Version>1.0.7</Version>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
+    <FileVersion>1.0.7.0</FileVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <RootNamespace />
+    <GabLuchiRuntimeDir>$(LOCALAPPDATA)\GabLuchi\current</GabLuchiRuntimeDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="icon.ico" />
+    <Resource Include="icon.ico" />
+    <None Remove="Assets\gabluchi_logo.png" />
+    <Resource Include="Assets\gabluchi_logo.png" />
+    <None Update="GabLuchi.config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="api.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+      <HintPath>$(GabLuchiRuntimeDir)\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+      <HintPath>$(GabLuchiRuntimeDir)\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Wpf.Ui">
+      <HintPath>$(GabLuchiRuntimeDir)\Wpf.Ui.dll</HintPath>
+    </Reference>
+    <Reference Include="VirtualizingWrapPanel">
+      <HintPath>$(GabLuchiRuntimeDir)\VirtualizingWrapPanel.dll</HintPath>
+    </Reference>
+    <Reference Include="CommunityToolkit.Mvvm">
+      <HintPath>$(GabLuchiRuntimeDir)\CommunityToolkit.Mvvm.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions">
+      <HintPath>$(GabLuchiRuntimeDir)\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Velopack">
+      <HintPath>$(GabLuchiRuntimeDir)\Velopack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Hosting">
+      <HintPath>$(GabLuchiRuntimeDir)\Microsoft.Extensions.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Markdig.Wpf">
+      <HintPath>$(GabLuchiRuntimeDir)\Markdig.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Debug">
+      <HintPath>$(GabLuchiRuntimeDir)\Microsoft.Extensions.Logging.Debug.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Diagnostics.DiagnosticSource">
+      <HintPath>$(GabLuchiRuntimeDir)\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Diagnostics.EventLog">
+      <HintPath>$(GabLuchiRuntimeDir)\System.Diagnostics.EventLog.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.ProtectedData">
+      <HintPath>$(GabLuchiRuntimeDir)\System.Security.Cryptography.ProtectedData.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web">
+      <HintPath>$(GabLuchiRuntimeDir)\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json">
+      <HintPath>$(GabLuchiRuntimeDir)\System.Text.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,22 @@
+{
+  "api_list": [
+    {
+      "name": "Ryuu",
+      "url": "http://167.235.229.108/<appid>",
+      "success_code": 200,
+      "enabled": true
+    },
+    {
+      "name": "Sushi",
+      "url": "https://raw.githubusercontent.com/sushi-dev55-alt/sushitools-games-repo-alt/refs/heads/main/<appid>.zip",
+      "success_code": 200,
+      "enabled": true
+    },
+    {
+      "name": "Luie",
+      "url": "http://167.235.229.108/<appid>",
+      "success_code": 200,
+      "enabled": true
+    }
+  ]
+}
