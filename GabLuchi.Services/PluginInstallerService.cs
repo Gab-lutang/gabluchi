@@ -280,7 +280,7 @@ public class PluginInstallerService(SteamService steam, GithubProxy gh, CefInjec
 		{
 			return _cachedLatest;
 		}
-		string url = "https://api.github.com/repos/Gab-lutang/gabluchi-plugin/releases/latest";
+		string url = "https://raw.githubusercontent.com/Gab-lutang/gabluchi-plugin/main/release-info.json";
 		try
 		{
 			using HttpResponseMessage res = await gh.SendAsync(url, ct);
