@@ -18,19 +18,13 @@ public static class AppConfig
 
 	public static string ManifestBackendUserAgent => Config.ManifestBackendUserAgent;
 
-	public const string UmamiHost = "https://analytics.lua.tools";
-
-	public const string UmamiWebsiteId = "820d782c-a434-424f-9f90-dee83dc6032e";
-
-	public const string UmamiHostname = "desktop.lua.tools";
-
 	public static readonly string[] GithubReleasesRepos = new string[1] { "https://github.com/Gab-lutang/gabluchi" };
 
 	public const string PluginReleasesOwner = "Gab-lutang";
 
 	public const string PluginReleasesRepo = "gabluchi-plugin";
 
-	public static readonly string[] GithubApiMirrors = new string[1] { "https://lua.tools/api/gh/" };
+	public static readonly string[] GithubApiMirrors = new string[0];
 
 	public static readonly string[] GithubDownloadMirrors = new string[3] { "https://ghproxy.net/", "https://ghfast.top/", "https://gh.ddlc.top/" };
 

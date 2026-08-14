@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -24,6 +25,12 @@ public class CefInjectorService : IHostedService
 	private string _gabluchiJs = "";
 
 	private string _polyfillJs = "";
+
+	private bool _forceReload;
+
+	private string _loadedFingerprint = "";
+
+	private string _persistedFingerprint = "";
 
 	private readonly HttpClient _http = new HttpClient
 	{
@@ -56,6 +63,18 @@ public class CefInjectorService : IHostedService
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
 		_cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+		try
+		{
+			string path = GetFingerprintStorePath();
+			if (File.Exists(path))
+			{
+				_persistedFingerprint = (await File.ReadAllTextAsync(path, cancellationToken)).Trim();
+			}
+		}
+		catch (Exception ex)
+		{
+			_log.LogDebug("CEF: failed to read persisted fingerprint: {Message}", ex.Message);
+		}
 		await ReloadPluginFilesAsync();
 		Task.Run(() => InjectionLoop(_cts.Token), _cts.Token);
 		_log.LogInformation("CEF injector started");
@@ -83,6 +102,26 @@ public class CefInjectorService : IHostedService
 		else
 		{
 			_polyfillJs = BuildInlinePolyfill();
+		}
+		string newFingerprint = ComputeFingerprint(_polyfillJs + "\n" + _gabluchiJs);
+		if (newFingerprint == "")
+		{
+			return;
+		}
+		bool changed = (_persistedFingerprint != "" && _persistedFingerprint != newFingerprint) || (_loadedFingerprint != "" && _loadedFingerprint != newFingerprint);
+		_loadedFingerprint = newFingerprint;
+		try
+		{
+			File.WriteAllText(GetFingerprintStorePath(), newFingerprint);
+		}
+		catch (Exception ex)
+		{
+			_log.LogDebug("CEF: failed to persist frontend fingerprint: {Message}", ex.Message);
+		}
+		if (changed)
+		{
+			_forceReload = true;
+			_log.LogInformation("CEF: frontend content changed ({Old} -> {New}); store tabs will reload once", _persistedFingerprint != "" ? _persistedFingerprint : _loadedFingerprint, newFingerprint);
 		}
 	}
 
@@ -117,21 +156,29 @@ public class CefInjectorService : IHostedService
 					if (!string.IsNullOrWhiteSpace(text))
 					{
 						List<CefTabInfo> list = JsonSerializer.Deserialize<List<CefTabInfo>>(text, JsonOpts) ?? new List<CefTabInfo>();
-						string script = _polyfillJs + "\n" + _gabluchiJs;
-						List<(string, string)> live = new List<(string, string)>();
-						HashSet<string> seen = new HashSet<string>();
-						foreach (CefTabInfo tab in list)
+					string script = _polyfillJs + "\n" + _gabluchiJs;
+					List<(string, string)> live = new List<(string, string)>();
+					HashSet<string> seen = new HashSet<string>();
+					bool needReload = _forceReload;
+					_forceReload = false;
+					foreach (CefTabInfo tab in list)
+					{
+						if ((tab.Url?.Contains("store.steampowered.com", StringComparison.OrdinalIgnoreCase) ?? false) && !string.IsNullOrEmpty(tab.WebSocketDebuggerUrl) && !string.IsNullOrEmpty(tab.Id))
 						{
-							if ((tab.Url?.Contains("store.steampowered.com", StringComparison.OrdinalIgnoreCase) ?? false) && !string.IsNullOrEmpty(tab.WebSocketDebuggerUrl) && !string.IsNullOrEmpty(tab.Id))
+							seen.Add(tab.Id);
+							bool ready = await EvaluateReturnAsync(tab.Id, tab.WebSocketDebuggerUrl, "String(window.__GabLuchiReady === true)", ct) == "true";
+							if (ready && needReload)
 							{
-								seen.Add(tab.Id);
-								if (await EvaluateReturnAsync(tab.Id, tab.WebSocketDebuggerUrl, "String(window.__GabLuchiReady === true)", ct) != "true")
-								{
-									await EvaluateAsync(tab.Id, tab.WebSocketDebuggerUrl, script, ct);
-								}
-								live.Add((tab.Id, tab.WebSocketDebuggerUrl));
+								await EvaluateAsync(tab.Id, tab.WebSocketDebuggerUrl, "location.reload(); void 0", ct);
+								_log.LogInformation("CEF: reloaded store tab {TabId} for updated frontend", tab.Id);
 							}
+							else if (!ready)
+							{
+								await EvaluateAsync(tab.Id, tab.WebSocketDebuggerUrl, script, ct);
+							}
+							live.Add((tab.Id, tab.WebSocketDebuggerUrl));
 						}
+					}
 						storeTabs = live;
 						foreach (string item in _sockets.Keys.Where((string k) => !seen.Contains(k)).ToList())
 						{
@@ -394,6 +441,25 @@ public class CefInjectorService : IHostedService
 			}
 		}
 		return null;
+	}
+
+	private static string GetFingerprintStorePath()
+	{
+		return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GabLuchi", "plugin", ".frontend-fingerprint");
+	}
+
+	private static string ComputeFingerprint(string text)
+	{
+		try
+		{
+			using SHA256 sha = SHA256.Create();
+			byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(text ?? ""));
+			return Convert.ToHexString(hash).Substring(0, 16);
+		}
+		catch
+		{
+			return "";
+		}
 	}
 
 	private string BuildInlinePolyfill()
