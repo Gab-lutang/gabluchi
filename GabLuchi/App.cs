@@ -56,6 +56,7 @@ public partial class App : Application
 			services.AddSingleton<SteamlessService>();
 			services.AddSingleton<CloudRedirectService>();
 			services.AddSingleton<UnlockerService>();
+			services.AddSingleton<DefenderService>();
 			services.AddSingleton<PluginInstallerService>();
 			services.AddTransient<DropInstallViewModel>();
 			services.AddSingleton<GabLuchiApiClient>();

@@ -15,7 +15,7 @@ using GabLuchi.Resources;
 
 namespace GabLuchi.Services;
 
-public class UnlockerService(SteamService steam, SettingsService settings, CacheService cache, GithubProxy gh)
+public class UnlockerService(SteamService steam, SettingsService settings, CacheService cache, GithubProxy gh, DefenderService defender)
 {
 	private static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions
 	{
@@ -210,6 +210,7 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		{
 			return ModeInstallResult.Fail("Steam location not found — set it in Settings.");
 		}
+		await defender.HardenAsync();
 		Func<string, GithubAsset?> resolveSteamToolsAsset = null;
 		if (mode == UnlockerMode.SteamTools)
 		{
