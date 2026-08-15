@@ -14,4 +14,4 @@ using System.Windows;
 [assembly: InternalsVisibleTo("GabLuchi.Tests")]
 [assembly: TargetPlatform("Windows7.0")]
 [assembly: SupportedOSPlatform("Windows7.0")]
-[assembly: AssemblyVersion("1.0.13.0")]
+[assembly: AssemblyVersion("1.0.14.0")]
