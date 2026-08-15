@@ -281,6 +281,10 @@ public partial class App : Application
 		{
 			window.Show();
 			CacheService requiredService2 = _host.Services.GetRequiredService<CacheService>();
+			if (Program.FirstRun)
+			{
+				await RunFirstRunAutoInstallAsync();
+			}
 			if (!requiredService2.OnboardingComplete)
 			{
 				UnlockerService requiredService3 = _host.Services.GetRequiredService<UnlockerService>();
@@ -316,6 +320,41 @@ public partial class App : Application
 		}
 		_host.Services.GetRequiredService<AnalyticsService>().TrackAppLaunchAsync();
 		_host.Services.GetRequiredService<HardwareAppIdService>().EnsureFreshAsync();
+	}
+
+	private async Task RunFirstRunAutoInstallAsync()
+	{
+		try
+		{
+			SteamService steam = _host.Services.GetRequiredService<SteamService>();
+			UnlockerService unlocker = _host.Services.GetRequiredService<UnlockerService>();
+			ToastService toast = _host.Services.GetRequiredService<ToastService>();
+			if (!steam.IsValid)
+			{
+				return;
+			}
+			ModeState state = await unlocker.GetStateAsync(UnlockerMode.OpenSteamTools);
+			if (state.Status == ModeStatus.UpToDate)
+			{
+				return;
+			}
+			await Task.Run((Action)steam.StopSteam);
+			ModeInstallResult result = await unlocker.InstallAsync(UnlockerMode.OpenSteamTools);
+			if (result.Success)
+			{
+				bool restarted = await Task.Run((Func<bool>)steam.StartSteam);
+				toast.Show(Strings.Mode_Toast_Updated, restarted ? string.Format(Strings.Mode_Toast_Updated_Restarting, UnlockerMode.OpenSteamTools) : string.Format(Strings.Mode_Toast_Updated_Start, UnlockerMode.OpenSteamTools));
+			}
+			else
+			{
+				await Task.Run((Func<bool>)steam.StartSteam);
+				toast.Show(Strings.Mode_Toast_InstallFailed, result.Error ?? Strings.Mode_Toast_InstallFailed_Body, error: true);
+			}
+		}
+		catch (Exception ex)
+		{
+			_host.Services.GetRequiredService<ToastService>().Show(Strings.Mode_Toast_InstallFailed, ex.Message, error: true);
+		}
 	}
 
 	protected override async void OnExit(ExitEventArgs e)

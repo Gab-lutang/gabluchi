@@ -7,9 +7,9 @@
     <UseWPF>True</UseWPF>
     <UseWindowsForms>True</UseWindowsForms>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Version>1.0.12</Version>
-    <AssemblyVersion>1.0.12.0</AssemblyVersion>
-    <FileVersion>1.0.12.0</FileVersion>
+    <Version>1.0.13</Version>
+    <AssemblyVersion>1.0.13.0</AssemblyVersion>
+    <FileVersion>1.0.13.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -18,6 +18,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>app.ico</ApplicationIcon>
+    <ApplicationManifest>GabLuchi\app.manifest</ApplicationManifest>
     <RootNamespace />
     <GabLuchiRuntimeDir>$(LOCALAPPDATA)\GabLuchi\current</GabLuchiRuntimeDir>
   </PropertyGroup>

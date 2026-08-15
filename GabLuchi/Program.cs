@@ -31,6 +31,8 @@ public static class Program
 
 	internal static bool SessionTrayLock;
 
+	internal static bool FirstRun;
+
 	private static readonly string[] SupportedLanguages = new string[30]
 	{
 		"en", "zh-Hans", "zh-Hant", "ja", "ko", "es", "es-419", "pt-BR", "pt-PT", "fr",
@@ -41,7 +43,10 @@ public static class Program
 	[STAThread]
 	public static void Main(string[] args)
 	{
-		VelopackApp.Build().Run();
+		VelopackApp.Build().OnFirstRun(delegate
+		{
+			FirstRun = true;
+		}).Run();
 		ApplyUiCulture();
 		ProtocolService.Register();
 		string text = null;
