@@ -39,8 +39,8 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 	public IReadOnlyList<ModeDefinition> Modes { get; } = new _003C_003Ez__ReadOnlyArray<ModeDefinition>(new ModeDefinition[4]
 	{
 		new ModeDefinition(UnlockerMode.SteamTools, "SteamTools", Strings.Mode_Desc_SteamTools, ModeKind.Loose, "mendy-tools", "verynotsusdllsthataredefnotstrelated", null, new string[2] { "dwmapi.dll", "xinput1_4.dll" }, null, null, null, null),
-		new ModeDefinition(UnlockerMode.OpenSteamTools, "GabLuchi Unlocker", Strings.Mode_Desc_OpenSteamTools, ModeKind.Zip, "Gab-lutang", "gabluchi-unlocker", null, new string[3] { "dwmapi.dll", "xinput1_4.dll", "gabluchi.dll" }, "gabluchi-{version}-Release.zip", null, null, null),
-		new ModeDefinition(UnlockerMode.OpenSteamToolsNightly, "GabLuchi Unlocker Nightly", Strings.Mode_Desc_OpenSteamToolsNightly, ModeKind.Zip, "Gab-lutang", "gabluchi-nightly", null, new string[3] { "dwmapi.dll", "xinput1_4.dll", "gabluchi.dll" }, "gabluchi-{version}-Release.zip", null, null, null),
+		new ModeDefinition(UnlockerMode.OpenSteamTools, "GabLuchi Unlocker", Strings.Mode_Desc_OpenSteamTools, ModeKind.Zip, "Gab-lutang", "gabluchi-unlocker", null, new string[4] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll", "opensteamtool.toml" }, "gabluchi-{version}-Release.zip", null, null, null),
+		new ModeDefinition(UnlockerMode.OpenSteamToolsNightly, "GabLuchi Unlocker Nightly", Strings.Mode_Desc_OpenSteamToolsNightly, ModeKind.Zip, "Gab-lutang", "gabluchi-nightly", null, new string[4] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll", "opensteamtool.toml" }, "gabluchi-{version}-Release.zip", null, null, null),
 		new ModeDefinition(UnlockerMode.CloudRedirect, "CloudRedirect (SteamTools Fix)", Strings.Mode_Desc_CloudRedirect, ModeKind.Cli, "Selectively11", "CloudRedirect", null, new string[1] { "cloud_redirect.dll" }, null, "CloudRedirectCLI.exe", "/stfixer", "cloud_redirect.dll")
 	});
 
@@ -420,14 +420,14 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		string dwmapi = Path.Combine(root, "dwmapi.dll");
 		string xinput = Path.Combine(root, "xinput1_4.dll");
 		UnlockerMode? detected = null;
-		string ostDll = Path.Combine(root, "gabluchi.dll");
+		string ostDll = Path.Combine(root, "OpenSteamTool.dll");
 		if (File.Exists(ostDll))
 		{
 			List<GithubRelease> list = await FetchAllReleasesAsync("Gab-lutang", "gabluchi-nightly", null, ct);
 			if (list != null)
 			{
 				string ostHash = Sha256OfFile(ostDll);
-				if (list.Any((GithubRelease r) => AssetDigest(r, "gabluchi.dll") == ostHash))
+				if (list.Any((GithubRelease r) => AssetDigest(r, "OpenSteamTool.dll") == ostHash))
 				{
 					detected = UnlockerMode.OpenSteamToolsNightly;
 				}
@@ -530,10 +530,10 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 
 	private static void EnsureGabLuchiLuaPath(string steamRoot)
 	{
-		string path = Path.Combine(steamRoot, "gabluchi.toml");
+		string path = Path.Combine(steamRoot, "opensteamtool.toml");
 		if (!File.Exists(path))
 		{
-			File.WriteAllText(path, "[lua]\npaths = [\"config/stplug-in\"]\n");
+			File.WriteAllText(path, "[lua]\r\npaths = [\"config\\\\stplug-in\"]");
 			return;
 		}
 		List<string> list = File.ReadAllLines(path).ToList();
@@ -548,7 +548,7 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 				}
 			}
 			list.Add("[lua]");
-			list.Add("paths = [\"config/stplug-in\"]");
+			list.Add("paths = [\"config\\\\stplug-in\"]");
 			File.WriteAllLines(path, list);
 			return;
 		}
@@ -569,7 +569,7 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		}
 		if (num3 < 0)
 		{
-			list.Insert(num + 1, "paths = [\"config/stplug-in\"]");
+			list.Insert(num + 1, "paths = [\"config\\\\stplug-in\"]");
 			File.WriteAllLines(path, list);
 			return;
 		}
@@ -587,7 +587,7 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 			string text2 = list[index];
 			int num6 = text2.LastIndexOf(']');
 			string text3 = text2.Substring(0, num6).TrimEnd();
-			string text4 = (Regex.IsMatch(text3, "\\[\\s*$") ? (text3 + " \"config/stplug-in\"") : (text3 + ", \"config/stplug-in\""));
+			string text4 = (Regex.IsMatch(text3, "\\[\\s*$") ? (text3 + " \"config\\\\stplug-in\"") : (text3 + ", \"config\\\\stplug-in\""));
 			list[index] = text4 + text2.Substring(num6);
 			File.WriteAllLines(path, list);
 		}
