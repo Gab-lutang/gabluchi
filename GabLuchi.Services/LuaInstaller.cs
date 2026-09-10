@@ -67,7 +67,7 @@ public class LuaInstaller(SteamService steam, SettingsService settings, CacheSer
 
 	public string? ReadInstalledLua(long appId)
 	{
-		string stPlugInDir = steam.StPlugInDir;
+		string stPlugInDir = steam.LuaDir;
 		if (stPlugInDir == null)
 		{
 			return null;
@@ -82,7 +82,7 @@ public class LuaInstaller(SteamService steam, SettingsService settings, CacheSer
 
 	public InstallResult InstallLua(string luaPath, long appId, bool forceLocked = false)
 	{
-		string stPlugInDir = steam.StPlugInDir;
+		string stPlugInDir = steam.LuaDir;
 		if (stPlugInDir == null)
 		{
 			return InstallResult.Fail("Steam location not found — set it in Settings.");
@@ -189,7 +189,7 @@ public class LuaInstaller(SteamService steam, SettingsService settings, CacheSer
 
 	public InstallResult InstallZip(string zipPath, long appId, bool forceLocked = false)
 	{
-		string stPlugInDir = steam.StPlugInDir;
+		string stPlugInDir = steam.LuaDir;
 		string depotCacheDir = steam.DepotCacheDir;
 		if (stPlugInDir == null || depotCacheDir == null)
 		{

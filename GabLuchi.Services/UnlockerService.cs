@@ -30,17 +30,17 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 
 	private const string MirrorRepo = "verynotsusdllsthataredefnotstrelated";
 
-	private const string OstLuaPath = "config/stplug-in";
+	private const string OstLuaPath = "config/lua";
 
 	private const string CloudRedirectDll = "cloud_redirect.dll";
 
 	private (GithubRelease release, DateTime fetchedAt)? _crReleaseCache;
 
-	public IReadOnlyList<ModeDefinition> Modes { get; } = new _003C_003Ez__ReadOnlyArray<ModeDefinition>(new ModeDefinition[4]
+	public IReadOnlyList<ModeDefinition> Modes { get; } = new _003C_003Ez__ReadOnlyArray<ModeDefinition>(new ModeDefinition[3]
 	{
 		new ModeDefinition(UnlockerMode.SteamTools, "SteamTools", Strings.Mode_Desc_SteamTools, ModeKind.Loose, "mendy-tools", "verynotsusdllsthataredefnotstrelated", null, new string[2] { "dwmapi.dll", "xinput1_4.dll" }, null, null, null, null),
-		new ModeDefinition(UnlockerMode.OpenSteamTools, "GabLuchi Unlocker", Strings.Mode_Desc_OpenSteamTools, ModeKind.Zip, "Gab-lutang", "gabluchi-unlocker", null, new string[4] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll", "opensteamtool.toml" }, "gabluchi-{version}-Release.zip", null, null, null),
-		new ModeDefinition(UnlockerMode.OpenSteamToolsNightly, "GabLuchi Unlocker Nightly", Strings.Mode_Desc_OpenSteamToolsNightly, ModeKind.Zip, "Gab-lutang", "gabluchi-nightly", null, new string[4] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll", "opensteamtool.toml" }, "gabluchi-{version}-Release.zip", null, null, null),
+		new ModeDefinition(UnlockerMode.OpenSteamTools, "GabLuchi Unlocker", Strings.Mode_Desc_OpenSteamTools, ModeKind.Zip, "OpenSteam001", "OpenSteamTool", null, new string[3] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll" }, "OpenSteamTool-{version}-Release.zip", null, null, null),
+		// new ModeDefinition(UnlockerMode.OpenSteamToolsNightly, "GabLuchi Unlocker Nightly", Strings.Mode_Desc_OpenSteamToolsNightly, ModeKind.Zip, "Gab-lutang", "gabluchi-nightly", null, new string[4] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll", "opensteamtool.toml" }, "gabluchi-{version}-Release.zip", null, null, null),
 		new ModeDefinition(UnlockerMode.CloudRedirect, "CloudRedirect (SteamTools Fix)", Strings.Mode_Desc_CloudRedirect, ModeKind.Cli, "Selectively11", "CloudRedirect", null, new string[1] { "cloud_redirect.dll" }, null, "CloudRedirectCLI.exe", "/stfixer", "cloud_redirect.dll")
 	});
 
@@ -86,9 +86,6 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		}
 		switch (mode)
 		{
-		case UnlockerMode.OpenSteamTools:
-			var (status2, latestVersion2) = await NightlyStatusAsync(root, ct);
-			return new ModeState(mode, status2, active, latestVersion2);
 		case UnlockerMode.SteamTools:
 		{
 			List<GithubRelease> list = await FetchAllReleasesAsync(def.Owner, def.Repo, null, ct);
@@ -173,34 +170,34 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		return (status: flag2 ? ModeStatus.UpdateAvailable : ModeStatus.UpToDate, latestTag: item);
 	}
 
-	private async Task<(ModeStatus status, string? latestTag)> NightlyStatusAsync(string root, CancellationToken ct)
-	{
-		string dwmapi = Path.Combine(root, "dwmapi.dll");
-		if (!File.Exists(dwmapi))
-		{
-			return (status: ModeStatus.NotInstalled, latestTag: null);
-		}
-		List<GithubRelease> list = await FetchAllReleasesAsync("mendy-tools", "verynotsusdllsthataredefnotstrelated", null, ct);
-		if (list == null)
-		{
-			return (status: ModeStatus.Unknown, latestTag: null);
-		}
-		List<GithubRelease> list2 = (from r in list
-			where r.TagName.StartsWith("ost-", StringComparison.OrdinalIgnoreCase)
-			orderby r.PublishedAt ?? DateTimeOffset.MinValue descending
-			select r).ToList();
-		if (list2.Count == 0)
-		{
-			return (status: ModeStatus.Unknown, latestTag: null);
-		}
-		GithubRelease githubRelease = list2[0];
-		string text = Sha256OfFile(dwmapi);
-		if (AssetDigest(githubRelease, "dwmapi.dll") == text)
-		{
-			return (status: ModeStatus.UpToDate, latestTag: githubRelease.TagName);
-		}
-		return (status: ModeStatus.UpdateAvailable, latestTag: githubRelease.TagName);
-	}
+	// private async Task<(ModeStatus status, string? latestTag)> NightlyStatusAsync(string root, CancellationToken ct)
+	// {
+	// 	string dwmapi = Path.Combine(root, "dwmapi.dll");
+	// 	if (!File.Exists(dwmapi))
+	// 	{
+	// 		return (status: ModeStatus.NotInstalled, latestTag: null);
+	// 	}
+	// 	List<GithubRelease> list = await FetchAllReleasesAsync("mendy-tools", "verynotsusdllsthataredefnotstrelated", null, ct);
+	// 	if (list == null)
+	// 	{
+	// 		return (status: ModeStatus.Unknown, latestTag: null);
+	// 	}
+	// 	List<GithubRelease> list2 = (from r in list
+	// 		where r.TagName.StartsWith("ost-", StringComparison.OrdinalIgnoreCase)
+	// 		orderby r.PublishedAt ?? DateTimeOffset.MinValue descending
+	// 		select r).ToList();
+	// 	if (list2.Count == 0)
+	// 	{
+	// 		return (status: ModeStatus.Unknown, latestTag: null);
+	// 	}
+	// 	GithubRelease githubRelease = list2[0];
+	// 	string text = Sha256OfFile(dwmapi);
+	// 	if (AssetDigest(githubRelease, "dwmapi.dll") == text)
+	// 	{
+	// 		return (status: ModeStatus.UpToDate, latestTag: githubRelease.TagName);
+	// 	}
+	// 	return (status: ModeStatus.UpdateAvailable, latestTag: githubRelease.TagName);
+	// }
 
 	public async Task<ModeInstallResult> InstallAsync(UnlockerMode mode, IProgress<double?>? progress = null, CancellationToken ct = default(CancellationToken))
 	{
@@ -313,7 +310,21 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 			{
 				try
 				{
-					EnsureGabLuchiLuaPath(root);
+					EnsureOstDefaults(root);
+				}
+				catch
+				{
+				}
+				try
+				{
+					MigrateStPlugInToLua(root);
+				}
+				catch
+				{
+				}
+				try
+				{
+					CleanupLegacyFiles(root);
 				}
 				catch
 				{
@@ -421,19 +432,19 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		string dwmapi = Path.Combine(root, "dwmapi.dll");
 		string xinput = Path.Combine(root, "xinput1_4.dll");
 		UnlockerMode? detected = null;
-		string ostDll = Path.Combine(root, "OpenSteamTool.dll");
-		if (File.Exists(ostDll))
-		{
-			List<GithubRelease> list = await FetchAllReleasesAsync("Gab-lutang", "gabluchi-nightly", null, ct);
-			if (list != null)
-			{
-				string ostHash = Sha256OfFile(ostDll);
-				if (list.Any((GithubRelease r) => AssetDigest(r, "OpenSteamTool.dll") == ostHash))
-				{
-					detected = UnlockerMode.OpenSteamToolsNightly;
-				}
-			}
-		}
+		// string ostDll = Path.Combine(root, "OpenSteamTool.dll");
+		// if (File.Exists(ostDll))
+		// {
+		// 	List<GithubRelease> list = await FetchAllReleasesAsync("Gab-lutang", "gabluchi-nightly", null, ct);
+		// 	if (list != null)
+		// 	{
+		// 		string ostHash = Sha256OfFile(ostDll);
+		// 		if (list.Any((GithubRelease r) => AssetDigest(r, "OpenSteamTool.dll") == ostHash))
+		// 		{
+		// 			detected = UnlockerMode.OpenSteamToolsNightly;
+		// 		}
+		// 	}
+		// }
 		if (!detected.HasValue)
 		{
 			List<GithubRelease> list2 = await FetchAllReleasesAsync("mendy-tools", "verynotsusdllsthataredefnotstrelated", null, ct);
@@ -529,15 +540,51 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		}
 	}
 
-	private static void EnsureGabLuchiLuaPath(string steamRoot)
+	private static void EnsureOstDefaults(string steamRoot)
 	{
 		string path = Path.Combine(steamRoot, "opensteamtool.toml");
 		if (!File.Exists(path))
 		{
-			File.WriteAllText(path, "[lua]\r\npaths = [\"config\\\\stplug-in\"]");
+			File.WriteAllText(path, "[manifest]\r\nurl = \"wudrm\"\r\n\r\n[lua]\r\npaths = [\"config\\\\lua\"]");
 			return;
 		}
 		List<string> list = File.ReadAllLines(path).ToList();
+		EnsureSectionHasKey(list, "manifest", "url", "\"wudrm\"");
+		EnsureLuaPath(list);
+		File.WriteAllLines(path, list);
+	}
+
+	private static void EnsureSectionHasKey(List<string> lines, string section, string key, string value)
+	{
+		int num = lines.FindIndex((string l) => IsActiveTableHeader(l, section));
+		if (num < 0)
+		{
+			if (lines.Count > 0 && lines[lines.Count - 1].Trim().Length > 0)
+			{
+				lines.Add("");
+			}
+			lines.Add("[" + section + "]");
+			lines.Add(key + " = " + value);
+			return;
+		}
+		int num2 = lines.FindIndex(num + 1, IsActiveAnyTableHeader);
+		if (num2 < 0)
+		{
+			num2 = lines.Count;
+		}
+		for (int i = num + 1; i < num2; i++)
+		{
+			string text = lines[i].TrimStart();
+			if (!text.StartsWith('#') && Regex.IsMatch(text, "^" + Regex.Escape(key) + "\\s*="))
+			{
+				return;
+			}
+		}
+		lines.Insert(num + 1, key + " = " + value);
+	}
+
+	private static void EnsureLuaPath(List<string> list)
+	{
 		int num = list.FindIndex((string l) => IsActiveTableHeader(l, "lua"));
 		if (num < 0)
 		{
@@ -549,8 +596,7 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 				}
 			}
 			list.Add("[lua]");
-			list.Add("paths = [\"config\\\\stplug-in\"]");
-			File.WriteAllLines(path, list);
+			list.Add("paths = [\"config\\\\lua\"]");
 			return;
 		}
 		int num2 = list.FindIndex(num + 1, IsActiveAnyTableHeader);
@@ -570,8 +616,7 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		}
 		if (num3 < 0)
 		{
-			list.Insert(num + 1, "paths = [\"config\\\\stplug-in\"]");
-			File.WriteAllLines(path, list);
+			list.Insert(num + 1, "paths = [\"config\\\\lua\"]");
 			return;
 		}
 		int num5;
@@ -582,15 +627,57 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		{
 			num5 = num2 - 1;
 		}
-		if (!Regex.IsMatch(string.Join("\n", list.GetRange(num3, num5 - num3 + 1)), "[\"']\\s*" + Regex.Escape("config/stplug-in").Replace("/", "[/\\\\]+") + "\\s*[\"']", RegexOptions.IgnoreCase))
+		if (!Regex.IsMatch(string.Join("\n", list.GetRange(num3, num5 - num3 + 1)), "[\"']\\s*" + Regex.Escape("config/lua").Replace("/", "[/\\\\]+") + "\\s*[\"']", RegexOptions.IgnoreCase))
 		{
 			int index = num5;
 			string text2 = list[index];
 			int num6 = text2.LastIndexOf(']');
 			string text3 = text2.Substring(0, num6).TrimEnd();
-			string text4 = (Regex.IsMatch(text3, "\\[\\s*$") ? (text3 + " \"config\\\\stplug-in\"") : (text3 + ", \"config\\\\stplug-in\""));
+			string text4 = (Regex.IsMatch(text3, "\\[\\s*$") ? (text3 + " \"config\\\\lua\"") : (text3 + ", \"config\\\\lua\""));
 			list[index] = text4 + text2.Substring(num6);
-			File.WriteAllLines(path, list);
+		}
+	}
+
+	private static void MigrateStPlugInToLua(string steamRoot)
+	{
+		string oldDir = Path.Combine(steamRoot, "config", "stplug-in");
+		string newDir = Path.Combine(steamRoot, "config", "lua");
+		if (!Directory.Exists(oldDir))
+		{
+			return;
+		}
+		if (!Directory.Exists(newDir))
+		{
+			Directory.Move(oldDir, newDir);
+			return;
+		}
+		string[] files = Directory.GetFiles(oldDir);
+		foreach (string file in files)
+		{
+			string dest = Path.Combine(newDir, Path.GetFileName(file));
+			if (!File.Exists(dest))
+			{
+				File.Copy(file, dest);
+			}
+		}
+	}
+
+	private static void CleanupLegacyFiles(string steamRoot)
+	{
+		string[] legacyFiles = new string[3] { "winmm.dll", "winmm_real.dll", "luatools_loader.log" };
+		foreach (string file in legacyFiles)
+		{
+			string path = Path.Combine(steamRoot, file);
+			if (File.Exists(path))
+			{
+				try
+				{
+					File.Delete(path);
+				}
+				catch
+				{
+				}
+			}
 		}
 	}
 

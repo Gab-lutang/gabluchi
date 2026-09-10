@@ -547,7 +547,7 @@ public class HomeViewModel : ObservableObject
 
 	public async Task RefreshLibraryAsync()
 	{
-		string dir = _steam.StPlugInDir;
+		string dir = _steam.LuaDir;
 		if (dir == null || !Directory.Exists(dir))
 		{
 			GameCount = 0;

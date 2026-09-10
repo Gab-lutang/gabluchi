@@ -12,7 +12,7 @@ using GabLuchi.Models;
 
 namespace GabLuchi.Services;
 
-public class SteamlessService(GithubProxy gh, SteamLibraryService library, SteamDepotInfo depots)
+public class SteamlessService(GithubProxy gh, SteamLibraryService library, SteamDepotInfo depots, GoldbergService goldberg, SteamApiCheckBypassService bypass)
 {
 	private static readonly string ToolDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GabLuchi", "steamless");
 
@@ -141,7 +141,14 @@ public class SteamlessService(GithubProxy gh, SteamLibraryService library, Steam
 				}
 			}
 		}
-		return new SteamlessResult(patched, unchanged, exes.Count, null);
+		int goldbergReplaced = 0;
+		bool bypassApplied = false;
+		GoldbergApplyResult goldbergResult = await goldberg.ApplyAsync(appId, ct);
+		goldbergReplaced = goldbergResult.Replaced;
+		bool goldbergApplied = goldbergReplaced > 0;
+		bypass.Apply(installDir, goldbergApplied);
+		bypassApplied = true;
+		return new SteamlessResult(patched, unchanged, exes.Count, null, goldbergReplaced, bypassApplied);
 	}
 
 	private async Task<IReadOnlyList<string>> ResolveExesAsync(long appId, string installDir, CancellationToken ct)
@@ -181,6 +188,16 @@ public class SteamlessService(GithubProxy gh, SteamLibraryService library, Steam
 			WorkingDirectory = (Path.GetDirectoryName(cliPath) ?? Environment.CurrentDirectory)
 		};
 		using Process proc = Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start Steamless.");
-		await proc.WaitForExitAsync(ct);
+		using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+		timeout.CancelAfter(TimeSpan.FromSeconds(90));
+		try
+		{
+			await proc.WaitForExitAsync(timeout.Token);
+		}
+		catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+		{
+			try { proc.Kill(entireProcessTree: true); } catch { }
+			throw new TimeoutException("Steamless CLI timed out after 90 seconds.");
+		}
 	}
 }

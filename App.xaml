@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Application x:Class="GabLuchi.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" xmlns:local="clr-namespace:GabLuchi" ShutdownMode="OnExplicitShutdown">
+<Application x:Class="GabLuchi.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" xmlns:local="clr-namespace:GabLuchi" xmlns:views="clr-namespace:GabLuchi.Views" ShutdownMode="OnExplicitShutdown">
   <Application.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -12,6 +12,7 @@
       <local:ImagePathToSourceConverter x:Key="ImagePathToSource" />
       <local:EqualityMultiConverter x:Key="EqualityMulti" />
       <local:FilterOptionDisplayConverter x:Key="FilterOptionDisplay" />
+      <views:UrlToHosterConverter x:Key="UrlToHoster" />
       <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </ResourceDictionary>
   </Application.Resources>

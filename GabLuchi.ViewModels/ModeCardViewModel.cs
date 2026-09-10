@@ -42,9 +42,9 @@ public class ModeCardViewModel(UnlockerMode mode, string title, string descripti
 
 	public bool IsRecommended => Mode == UnlockerMode.OpenSteamTools;
 
-	public bool IsExperimental => Mode == UnlockerMode.OpenSteamToolsNightly;
+	public bool IsExperimental => false;
 
-	public bool SupportsCloudRedirect => Mode == UnlockerMode.OpenSteamToolsNightly;
+	public bool SupportsCloudRedirect => Mode == UnlockerMode.OpenSteamTools;
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]

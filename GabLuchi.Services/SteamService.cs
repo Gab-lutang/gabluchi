@@ -42,7 +42,7 @@ public class SteamService(SettingsService settings)
 		}
 	}
 
-	public string? StPlugInDir
+	public string? LuaDir
 	{
 		get
 		{
@@ -51,7 +51,7 @@ public class SteamService(SettingsService settings)
 			{
 				return null;
 			}
-			return Path.Combine(effectivePath, "config", "stplug-in");
+			return Path.Combine(effectivePath, "config", "lua");
 		}
 	}
 

@@ -422,7 +422,7 @@ public class ModeViewModel : ObservableObject
 
 	private async Task RefreshCloudRedirectAsync(bool forceRefresh)
 	{
-		CloudRedirectUnlocked = _unlocker.SelectedMode == UnlockerMode.OpenSteamToolsNightly;
+		CloudRedirectUnlocked = _unlocker.SelectedMode == UnlockerMode.OpenSteamTools;
 		CloudRedirectAddonState cloudRedirectAddonState = await _unlocker.GetCloudRedirectStateAsync(CloudRedirectUnlocked, forceRefresh);
 		CloudRedirectInstalled = cloudRedirectAddonState.Installed;
 		CloudRedirectEnabled = cloudRedirectAddonState.Enabled;

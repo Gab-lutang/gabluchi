@@ -2,6 +2,7 @@ using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel.__Internals;
 using CommunityToolkit.Mvvm.Input;
+using GabLuchi.Models;
 using GabLuchi.Resources;
 using GabLuchi.Services;
 
@@ -34,6 +36,10 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 	private readonly SettingsService _settings;
 
 	private readonly SteamlessService _steamless;
+
+	private readonly RestoreService _restore;
+
+	private readonly SteamLibraryService _library;
 
 	private List<LuaTileViewModel> _all = new List<LuaTileViewModel>();
 
@@ -163,6 +169,9 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	private RelayCommand? toggleFilterPanelCommand;
+
+	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
+	private RelayCommand<LuaTileViewModel>? launchGameCommand;
 
 	public Action<long>? NavigateToAdd { get; set; }
 
@@ -623,12 +632,16 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 	[ExcludeFromCodeCoverage]
 	public IRelayCommand ToggleFilterPanelCommand => toggleFilterPanelCommand ?? (toggleFilterPanelCommand = new RelayCommand(ToggleFilterPanel));
 
+	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
+	[ExcludeFromCodeCoverage]
+	public IRelayCommand<LuaTileViewModel> LaunchGameCommand => launchGameCommand ?? (launchGameCommand = new RelayCommand<LuaTileViewModel>(LaunchGame));
+
 	protected override void SavePageSizeSetting(int size)
 	{
 		_settings.ManagePageSize = size;
 	}
 
-	public ManageViewModel(SteamService steam, SteamAppListCache appList, SteamAppInfoCache appInfo, CoverCache covers, SteamDepotInfo depotInfo, ToastService toast, SettingsService settings, SteamlessService steamless)
+	public ManageViewModel(SteamService steam, SteamAppListCache appList, SteamAppInfoCache appInfo, CoverCache covers, SteamDepotInfo depotInfo, ToastService toast, SettingsService settings, SteamlessService steamless, RestoreService restore, SteamLibraryService library)
 	{
 		_steam = steam;
 		_appList = appList;
@@ -638,6 +651,8 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 		_toast = toast;
 		_settings = settings;
 		_steamless = steamless;
+		_restore = restore;
+		_library = library;
 		InitPageSize(settings.ManagePageSize);
 	}
 
@@ -906,6 +921,77 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 		Clipboard.SetText(tile.AppId.ToString());
 	}
 
+	private void LaunchGame(LuaTileViewModel tile)
+	{
+		try
+		{
+			string installDir = _library.GetInstallDir(tile.AppId);
+			if (installDir == null)
+			{
+				_toast.Show(Strings.Manage_Action_LaunchGame, Strings.Manage_Steamless_NoInstall, error: true);
+				return;
+			}
+			string mainExe = FindMainExe(installDir);
+			if (mainExe == null)
+			{
+				_toast.Show(Strings.Manage_Action_LaunchGame, Strings.Manage_Steamless_NoInstall, error: true);
+				return;
+			}
+			Process.Start(new ProcessStartInfo(mainExe)
+			{
+				WorkingDirectory = installDir
+			});
+			_toast.Show(Strings.Manage_Action_LaunchGame, string.Format(Strings.Manage_Toast_LaunchGame_Done, tile.Name));
+		}
+		catch (Exception ex)
+		{
+			_toast.Show(Strings.Manage_Action_LaunchGame, ex.Message, error: true);
+		}
+	}
+
+	private static string FindMainExe(string installDir)
+	{
+		string[] skipExes = ["createdump", "unins000", "unins", "setup", "install", "uninstall", "register"];
+		try
+		{
+			string[] exes = Directory.GetFiles(installDir, "*.exe", SearchOption.TopDirectoryOnly);
+			if (exes.Length == 0)
+			{
+				return null;
+			}
+			string candidate = exes.FirstOrDefault(e => !skipExes.Any(s => Path.GetFileNameWithoutExtension(e).Contains(s, StringComparison.OrdinalIgnoreCase)));
+			return candidate ?? exes[0];
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
+	private static void CreateDesktopShortcut(string gameName, string exePath, string installDir)
+	{
+		try
+		{
+			string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+			string safeName = string.Join("_", gameName.Split(Path.GetInvalidFileNameChars()));
+			string shortcutPath = Path.Combine(desktopPath, safeName + ".lnk");
+			Type shellType = Type.GetTypeFromProgID("WScript.Shell");
+			if (shellType == null)
+			{
+				return;
+			}
+			dynamic shell = Activator.CreateInstance(shellType);
+			dynamic shortcut = shell.CreateShortcut(shortcutPath);
+			shortcut.TargetPath = exePath;
+			shortcut.WorkingDirectory = installDir;
+			shortcut.Description = gameName + " (No Steam)";
+			shortcut.Save();
+		}
+		catch
+		{
+		}
+	}
+
 	[RelayCommand]
 	private void Update(LuaTileViewModel tile)
 	{
@@ -942,7 +1028,25 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 			}
 			else
 			{
-				_toast.Show(Strings.Manage_Action_RemoveDrm, string.Format(Strings.Manage_Toast_Steamless_Done, steamlessResult.Patched, steamlessResult.Unchanged));
+				string msg = string.Format(Strings.Manage_Toast_Steamless_Done, steamlessResult.Patched, steamlessResult.Unchanged);
+				if (steamlessResult.GoldbergReplaced > 0)
+				{
+					msg += " " + string.Format(Strings.Manage_Toast_Goldberg_Applied, steamlessResult.GoldbergReplaced);
+				}
+				if (steamlessResult.BypassApplied)
+				{
+					msg += " " + Strings.Manage_Toast_Bypass_Applied;
+				}
+				_toast.Show(Strings.Manage_Action_RemoveDrm, msg);
+				string installDir = _library.GetInstallDir(tile.AppId);
+				if (installDir != null)
+				{
+					string mainExe = FindMainExe(installDir);
+					if (mainExe != null)
+					{
+						CreateDesktopShortcut(tile.Name, mainExe, installDir);
+					}
+				}
 			}
 		}
 		catch (Exception ex)
@@ -1073,6 +1177,8 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 		int patched = 0;
 		int unchanged = 0;
 		int failed = 0;
+		int goldbergTotal = 0;
+		int bypassCount = 0;
 		try
 		{
 			foreach (LuaTileViewModel tile in list)
@@ -1100,6 +1206,8 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 				{
 					patched += result.Patched;
 					unchanged += result.Unchanged;
+					goldbergTotal += result.GoldbergReplaced;
+					if (result.BypassApplied) bypassCount++;
 				}
 				done++;
 				OnUi(delegate
@@ -1107,11 +1215,102 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 					Progress = (double)done / (double)list.Count * 100.0;
 				});
 			}
-			_toast.Show(Strings.Manage_Action_RemoveDrm, string.Format(Strings.Manage_Toast_Steamless_Many, patched, unchanged, failed));
+			string msg2 = string.Format(Strings.Manage_Toast_Steamless_Many, patched, unchanged, failed);
+			if (goldbergTotal > 0)
+			{
+				msg2 += " " + string.Format(Strings.Manage_Toast_Goldberg_Many, goldbergTotal);
+			}
+			if (bypassCount > 0)
+			{
+				msg2 += " " + string.Format(Strings.Manage_Toast_Bypass_Many, bypassCount);
+			}
+			_toast.Show(Strings.Manage_Action_RemoveDrm, msg2);
 		}
 		catch (Exception ex)
 		{
 			_toast.Show(Strings.Manage_Action_RemoveDrm, string.Format(Strings.Manage_Steamless_Failed, ex.Message), error: true);
+		}
+		finally
+		{
+			IsBusy = false;
+			IsProgressIndeterminate = false;
+		}
+	}
+
+	[RelayCommand]
+	private async Task RestoreCrack(LuaTileViewModel? tile)
+	{
+		if (tile == null || IsBusy || MessageBox.Show(Strings.Manage_Restore_Confirm_Body, Strings.Manage_Restore_Confirm_Title, MessageBoxButton.OKCancel, MessageBoxImage.Exclamation) != MessageBoxResult.OK)
+		{
+			return;
+		}
+		IsBusy = true;
+		IsProgressIndeterminate = true;
+		Progress = 0.0;
+		try
+		{
+			RestoreResult result = await _restore.RestoreAsync(tile.AppId);
+			if (result.Failed)
+			{
+				string text = ((result.Error == "no-install") ? Strings.Manage_Restore_NoInstall : string.Format(Strings.Manage_Restore_Failed, ""));
+				_toast.Show(Strings.Manage_Action_RestoreCrack, text, error: true);
+			}
+			else
+			{
+				_toast.Show(Strings.Manage_Action_RestoreCrack, string.Format(Strings.Manage_Toast_Restore_Done, result.Restored, result.Deleted));
+			}
+		}
+		catch (Exception ex)
+		{
+			_toast.Show(Strings.Manage_Action_RestoreCrack, string.Format(Strings.Manage_Restore_Failed, ex.Message), error: true);
+		}
+		finally
+		{
+			IsBusy = false;
+			IsProgressIndeterminate = false;
+		}
+	}
+
+	[RelayCommand]
+	private async Task RestoreCrackSelected()
+	{
+		List<LuaTileViewModel> list = _all.Where((LuaTileViewModel t) => t.IsSelected).ToList();
+		if (list.Count == 0 || IsBusy || MessageBox.Show(string.Format(Strings.Manage_Restore_Many_Body, list.Count), Strings.Manage_Restore_Many_Title, MessageBoxButton.OKCancel, MessageBoxImage.Exclamation) != MessageBoxResult.OK)
+		{
+			return;
+		}
+		IsBusy = true;
+		IsProgressIndeterminate = true;
+		Progress = 0.0;
+		int done = 0;
+		int restored = 0;
+		int deleted = 0;
+		int failed = 0;
+		try
+		{
+			foreach (LuaTileViewModel tile in list)
+			{
+				RestoreResult result = await _restore.RestoreAsync(tile.AppId);
+				if (result.Failed)
+				{
+					failed++;
+				}
+				else
+				{
+					restored += result.Restored;
+					deleted += result.Deleted;
+				}
+				done++;
+				OnUi(delegate
+				{
+					Progress = (double)done / (double)list.Count * 100.0;
+				});
+			}
+			_toast.Show(Strings.Manage_Action_RestoreCrack, string.Format(Strings.Manage_Toast_Restore_Many, restored, deleted, failed));
+		}
+		catch (Exception ex)
+		{
+			_toast.Show(Strings.Manage_Action_RestoreCrack, string.Format(Strings.Manage_Restore_Failed, ex.Message), error: true);
 		}
 		finally
 		{
@@ -1176,7 +1375,7 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 				SetEmpty(Strings.Manage_Empty_NoSteam);
 				return;
 			}
-			string dir = Path.Combine(effectivePath, "config", "stplug-in");
+			string dir = Path.Combine(effectivePath, "config", "lua");
 			if (!Directory.Exists(dir))
 			{
 				_all = new List<LuaTileViewModel>();

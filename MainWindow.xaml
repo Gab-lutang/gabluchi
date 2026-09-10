@@ -52,9 +52,34 @@
                 <ui:SymbolIcon Symbol="ShieldTask24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_MultiplayerFix}" TargetPageType="{x:Type views:MultiplayerFixView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="People24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_CrackFix}" TargetPageType="{x:Type views:CrackFixView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="ArrowDownload24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_DownloadGames}" TargetPageType="{x:Type views:DownloadGamesView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="ArrowDown24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
             <ui:NavigationViewItem Content="Plugin" TargetPageType="{x:Type views:PluginView}">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="PuzzlePiece24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_OlderVersions}" TargetPageType="{x:Type views:OlderVersionView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="History24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_DlcUnlocker}" TargetPageType="{x:Type views:DlcUnlockerView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="ShieldTask24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
           </ui:NavigationView.MenuItems>

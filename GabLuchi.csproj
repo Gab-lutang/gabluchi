@@ -81,4 +81,70 @@
       <HintPath>$(GabLuchiRuntimeDir)\System.Text.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="third_party\goldberg\regular\x64\steam_api64.dll">
+      <Link>goldberg\regular\x64\steam_api64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\goldberg\regular\x86\steam_api.dll">
+      <Link>goldberg\regular\x86\steam_api.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\goldberg\tools\generate_interfaces_x64.exe">
+      <Link>goldberg\tools\generate_interfaces_x64.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\goldberg\tools\generate_interfaces_x86.exe">
+      <Link>goldberg\tools\generate_interfaces_x86.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\steam_api_bypass\SteamAPICheckBypass.dll">
+      <Link>steam_api_bypass\SteamAPICheckBypass.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\steam_api_bypass\SteamAPICheckBypass_x32.dll">
+      <Link>steam_api_bypass\SteamAPICheckBypass_x32.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\DepotDownloaderMod\DepotDownloaderMod.dll" Condition="Exists('third_party\DepotDownloaderMod\DepotDownloaderMod.dll')">
+      <Link>DepotDownloaderMod\DepotDownloaderMod.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\7za\7za.exe">
+      <Link>7za.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\dlc_unlockers\smokeapi\smoke_api32.dll" Condition="Exists('third_party\dlc_unlockers\smokeapi\smoke_api32.dll')">
+      <Link>dlc_unlockers\smokeapi\smoke_api32.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\dlc_unlockers\smokeapi\smoke_api64.dll" Condition="Exists('third_party\dlc_unlockers\smokeapi\smoke_api64.dll')">
+      <Link>dlc_unlockers\smokeapi\smoke_api64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\dlc_unlockers\creamapi\steam_api.dll" Condition="Exists('third_party\dlc_unlockers\creamapi\steam_api.dll')">
+      <Link>dlc_unlockers\creamapi\steam_api.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\dlc_unlockers\creamapi\steam_api64.dll" Condition="Exists('third_party\dlc_unlockers\creamapi\steam_api64.dll')">
+      <Link>dlc_unlockers\creamapi\steam_api64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\dlc_unlockers\uplayr1\uplay_r1_loader.dll" Condition="Exists('third_party\dlc_unlockers\uplayr1\uplay_r1_loader.dll')">
+      <Link>dlc_unlockers\uplayr1\uplay_r1_loader.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\dlc_unlockers\uplayr1\uplay_r1_loader64.dll" Condition="Exists('third_party\dlc_unlockers\uplayr1\uplay_r1_loader64.dll')">
+      <Link>dlc_unlockers\uplayr1\uplay_r1_loader64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\dlc_unlockers\uplayr2\upc_r2_loader.dll" Condition="Exists('third_party\dlc_unlockers\uplayr2\upc_r2_loader.dll')">
+      <Link>dlc_unlockers\uplayr2\upc_r2_loader.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="third_party\dlc_unlockers\uplayr2\upc_r2_loader64.dll" Condition="Exists('third_party\dlc_unlockers\uplayr2\upc_r2_loader64.dll')">
+      <Link>dlc_unlockers\uplayr2\upc_r2_loader64.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

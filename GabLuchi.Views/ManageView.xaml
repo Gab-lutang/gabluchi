@@ -134,6 +134,7 @@
                 <Separator />
                 <MenuItem Header="{x:Static res:Strings.Manage_Action_Update}" Command="{Binding PlacementTarget.Tag.UpdateCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon ArrowDownload24}" />
                 <MenuItem Header="{x:Static res:Strings.Manage_Action_RemoveDrm}" Command="{Binding PlacementTarget.Tag.RemoveDrmCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon WrenchScrewdriver24}" />
+                <MenuItem Header="{x:Static res:Strings.Manage_Action_RestoreCrack}" Command="{Binding PlacementTarget.Tag.RestoreCrackCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon ArrowUndo24}" />
                 <Separator />
                 <MenuItem Header="{x:Static res:Strings.Manage_Action_OpenStore}" Command="{Binding PlacementTarget.Tag.OpenStorePageCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Globe24}" />
                 <MenuItem Header="{x:Static res:Strings.Manage_Action_OpenInSteam}" Command="{Binding PlacementTarget.Tag.OpenInSteamCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Open24}" />
@@ -205,6 +206,7 @@
         <ui:Button Margin="0,0,8,0" Content="{x:Static res:Strings.Manage_Clear}" Command="{Binding ClearSelectionCommand}" Icon="{ui:SymbolIcon Dismiss24}" />
         <ui:Button Margin="0,0,8,0" Content="{x:Static res:Strings.Manage_CopySelected}" Command="{Binding CopySelectedCommand}" Icon="{ui:SymbolIcon Copy24}" />
         <ui:Button Margin="0,0,8,0" Content="{x:Static res:Strings.Manage_RemoveDrmSelected}" Command="{Binding RemoveDrmSelectedCommand}" Icon="{ui:SymbolIcon WrenchScrewdriver24}" />
+        <ui:Button Margin="0,0,8,0" Content="{x:Static res:Strings.Manage_RestoreCrackSelected}" Command="{Binding RestoreCrackSelectedCommand}" Icon="{ui:SymbolIcon ArrowUndo24}" />
         <ui:Button Appearance="Danger" Content="{x:Static res:Strings.Manage_DeleteSelected}" Command="{Binding DeleteSelectedCommand}" Icon="{ui:SymbolIcon Delete24}" />
       </StackPanel>
     </Border>
@@ -338,6 +340,8 @@
             <ProgressBar Height="3" Margin="0,0,0,8" Maximum="100" IsIndeterminate="{Binding DataContext.IsProgressIndeterminate, ElementName=Root}" Value="{Binding DataContext.Progress, ElementName=Root}" Visibility="{Binding DataContext.IsBusy, ElementName=Root, Converter={StaticResource BoolToVis}}" />
             <ui:Button HorizontalAlignment="Stretch" Appearance="Primary" Content="{x:Static res:Strings.Manage_Action_Update}" Command="{Binding DataContext.UpdateCommand, ElementName=Root}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon ArrowDownload24}" IsEnabled="{Binding DataContext.NotBusy, ElementName=Root}" />
             <ui:Button Margin="0,8,0,0" HorizontalAlignment="Stretch" Content="{x:Static res:Strings.Manage_Action_RemoveDrm}" Command="{Binding DataContext.RemoveDrmCommand, ElementName=Root}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon WrenchScrewdriver24}" IsEnabled="{Binding DataContext.NotBusy, ElementName=Root}" />
+            <ui:Button Margin="0,8,0,0" HorizontalAlignment="Stretch" Content="{x:Static res:Strings.Manage_Action_RestoreCrack}" Command="{Binding DataContext.RestoreCrackCommand, ElementName=Root}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon ArrowUndo24}" IsEnabled="{Binding DataContext.NotBusy, ElementName=Root}" />
+            <ui:Button Margin="0,8,0,0" HorizontalAlignment="Stretch" Appearance="Primary" Content="{x:Static res:Strings.Manage_Action_LaunchGame}" Command="{Binding DataContext.LaunchGameCommand, ElementName=Root}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Play24}" />
             <UniformGrid Margin="0,8,0,0" Columns="2" Rows="2">
               <ui:Button Margin="0,0,4,4" HorizontalAlignment="Stretch" Content="{x:Static res:Strings.Manage_Action_OpenStore}" Command="{Binding DataContext.OpenStorePageCommand, ElementName=Root}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Globe24}" />
               <ui:Button Margin="4,0,0,4" HorizontalAlignment="Stretch" Content="{x:Static res:Strings.Manage_Action_OpenInSteam}" Command="{Binding DataContext.OpenInSteamCommand, ElementName=Root}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Open24}" />

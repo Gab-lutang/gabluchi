@@ -427,6 +427,14 @@ public static class Strings
 
 	public static string Manage_Toast_Steamless_Done => Get("Manage_Toast_Steamless_Done");
 
+	public static string Manage_Toast_Goldberg_Applied => Get("Manage_Toast_Goldberg_Applied");
+
+	public static string Manage_Toast_Bypass_Applied => Get("Manage_Toast_Bypass_Applied");
+
+	public static string Manage_Toast_Goldberg_Many => Get("Manage_Toast_Goldberg_Many");
+
+	public static string Manage_Toast_Bypass_Many => Get("Manage_Toast_Bypass_Many");
+
 	public static string Manage_Steamless_NoInstall => Get("Manage_Steamless_NoInstall");
 
 	public static string Manage_Steamless_Failed => Get("Manage_Steamless_Failed");
@@ -454,6 +462,32 @@ public static class Strings
 	public static string Manage_Steamless_Many_Body => Get("Manage_Steamless_Many_Body");
 
 	public static string Manage_Toast_Steamless_Many => Get("Manage_Toast_Steamless_Many");
+
+	public static string Manage_Action_RestoreCrack => Get("Manage_Action_RestoreCrack");
+
+	public static string Manage_RestoreCrackSelected => Get("Manage_RestoreCrackSelected");
+
+	public static string Manage_Restore_Confirm_Title => Get("Manage_Restore_Confirm_Title");
+
+	public static string Manage_Restore_Confirm_Body => Get("Manage_Restore_Confirm_Body");
+
+	public static string Manage_Toast_Restore_Done => Get("Manage_Toast_Restore_Done");
+
+	public static string Manage_Restore_NoInstall => Get("Manage_Restore_NoInstall");
+
+	public static string Manage_Restore_Failed => Get("Manage_Restore_Failed");
+
+	public static string Manage_Restore_Many_Title => Get("Manage_Restore_Many_Title");
+
+	public static string Manage_Action_LaunchGame => Get("Manage_Action_LaunchGame");
+
+	public static string Manage_Toast_LaunchGame_Done => Get("Manage_Toast_LaunchGame_Done");
+
+	public static string Manage_Toast_Shortcut_Created => Get("Manage_Toast_Shortcut_Created");
+
+	public static string Manage_Restore_Many_Body => Get("Manage_Restore_Many_Body");
+
+	public static string Manage_Toast_Restore_Many => Get("Manage_Toast_Restore_Many");
 
 	public static string Manage_Toast_Copied_Title => Get("Manage_Toast_Copied_Title");
 
@@ -766,6 +800,194 @@ public static class Strings
 	public static string Plugin_Err_VerifyFailed => Get("Plugin_Err_VerifyFailed");
 
 	public static string Plugin_Err_NoGabLuchiJs => Get("Plugin_Err_NoGabLuchiJs");
+
+	public static string Nav_OlderVersions => Get("Nav_OlderVersions");
+
+	public static string OlderVersion_Title => Get("OlderVersion_Title");
+
+	public static string OlderVersion_AppId => Get("OlderVersion_AppId");
+
+	public static string OlderVersion_DepotId => Get("OlderVersion_DepotId");
+
+	public static string OlderVersion_ManifestId => Get("OlderVersion_ManifestId");
+
+	public static string OlderVersion_DestDir => Get("OlderVersion_DestDir");
+
+	public static string OlderVersion_Download => Get("OlderVersion_Download");
+
+	public static string OlderVersion_OpenSteamDb => Get("OlderVersion_OpenSteamDb");
+
+	public static string OlderVersion_CheckDotNet => Get("OlderVersion_CheckDotNet");
+
+	public static string OlderVersion_DotNetAvailable => Get("OlderVersion_DotNetAvailable");
+
+	public static string OlderVersion_DotNetMissing => Get("OlderVersion_DotNetMissing");
+
+	public static string OlderVersion_Downloading => Get("OlderVersion_Downloading");
+
+	public static string OlderVersion_Done => Get("OlderVersion_Done");
+
+	public static string OlderVersion_Error => Get("OlderVersion_Error");
+
+	public static string OlderVersion_BrowseDest => Get("OlderVersion_BrowseDest");
+
+	public static string Nav_MultiplayerFix => Get("Nav_MultiplayerFix");
+
+	public static string MultiplayerFix_Title => Get("MultiplayerFix_Title");
+
+	public static string MultiplayerFix_Subtitle => Get("MultiplayerFix_Subtitle");
+
+	public static string MultiplayerFix_SearchLabel => Get("MultiplayerFix_SearchLabel");
+
+	public static string MultiplayerFix_SearchPlaceholder => Get("MultiplayerFix_SearchPlaceholder");
+
+	public static string MultiplayerFix_Search => Get("MultiplayerFix_Search");
+
+	public static string MultiplayerFix_Searching => Get("MultiplayerFix_Searching");
+
+	public static string MultiplayerFix_NoResults => Get("MultiplayerFix_NoResults");
+
+	public static string MultiplayerFix_Found => Get("MultiplayerFix_Found");
+
+	public static string MultiplayerFix_Open => Get("MultiplayerFix_Open");
+
+	public static string MultiplayerFix_OpenOnSite => Get("MultiplayerFix_OpenOnSite");
+
+	public static string Nav_CrackFix => Get("Nav_CrackFix");
+
+	public static string CrackFix_Title => Get("CrackFix_Title");
+
+	public static string CrackFix_Subtitle => Get("CrackFix_Subtitle");
+
+	public static string CrackFix_SearchLabel => Get("CrackFix_SearchLabel");
+
+	public static string CrackFix_GameName => Get("CrackFix_GameName");
+
+	public static string CrackFix_GameDir => Get("CrackFix_GameDir");
+
+	public static string CrackFix_SearchPlaceholder => Get("CrackFix_SearchPlaceholder");
+
+	public static string CrackFix_Search => Get("CrackFix_Search");
+
+	public static string CrackFix_Loading => Get("CrackFix_Loading");
+
+	public static string CrackFix_Found => Get("CrackFix_Found");
+
+	public static string CrackFix_Download => Get("CrackFix_Download");
+
+	public static string CrackFix_Downloading => Get("CrackFix_Downloading");
+
+	public static string CrackFix_Extracting => Get("CrackFix_Extracting");
+
+	public static string CrackFix_Applying => Get("CrackFix_Applying");
+
+	public static string CrackFix_Done => Get("CrackFix_Done");
+
+	public static string CrackFix_NoFixes => Get("CrackFix_NoFixes");
+
+	public static string CrackFix_NoGameDir => Get("CrackFix_NoGameDir");
+
+	public static string CrackFix_ExtractFailed => Get("CrackFix_ExtractFailed");
+
+	public static string CrackFix_BrowseGameDir => Get("CrackFix_BrowseGameDir");
+
+	public static string Nav_DlcUnlocker => Get("Nav_DlcUnlocker");
+
+	public static string DlcUnlocker_Title => Get("DlcUnlocker_Title");
+
+	public static string DlcUnlocker_Subtitle => Get("DlcUnlocker_Subtitle");
+
+	public static string DlcUnlocker_GameDir => Get("DlcUnlocker_GameDir");
+
+	public static string DlcUnlocker_AppIdLabel => Get("DlcUnlocker_AppIdLabel");
+
+	public static string DlcUnlocker_Detect => Get("DlcUnlocker_Detect");
+
+	public static string DlcUnlocker_SelectUnlocker => Get("DlcUnlocker_SelectUnlocker");
+
+	public static string DlcUnlocker_DlcIds => Get("DlcUnlocker_DlcIds");
+
+	public static string DlcUnlocker_DlcIdsNote => Get("DlcUnlocker_DlcIdsNote");
+
+	public static string DlcUnlocker_FetchDlcs => Get("DlcUnlocker_FetchDlcs");
+
+	public static string DlcUnlocker_Install => Get("DlcUnlocker_Install");
+
+	public static string DlcUnlocker_Uninstall => Get("DlcUnlocker_Uninstall");
+
+	public static string DlcUnlocker_BrowseGameDir => Get("DlcUnlocker_BrowseGameDir");
+
+	public static string DlcUnlocker_InvalidDir => Get("DlcUnlocker_InvalidDir");
+
+	public static string DlcUnlocker_Detecting => Get("DlcUnlocker_Detecting");
+
+	public static string DlcUnlocker_NoPlatform => Get("DlcUnlocker_NoPlatform");
+
+	public static string DlcUnlocker_PlatformDetected => Get("DlcUnlocker_PlatformDetected");
+
+	public static string DlcUnlocker_AlreadyInstalled => Get("DlcUnlocker_AlreadyInstalled");
+
+	public static string DlcUnlocker_FetchingDlcs => Get("DlcUnlocker_FetchingDlcs");
+
+	public static string DlcUnlocker_NoDlcsFound => Get("DlcUnlocker_NoDlcsFound");
+
+	public static string DlcUnlocker_DlcsFetched => Get("DlcUnlocker_DlcsFetched");
+
+	public static string DlcUnlocker_Installing => Get("DlcUnlocker_Installing");
+
+	public static string DlcUnlocker_Installed => Get("DlcUnlocker_Installed");
+
+	public static string DlcUnlocker_InstallFailed => Get("DlcUnlocker_InstallFailed");
+
+	public static string DlcUnlocker_Uninstalling => Get("DlcUnlocker_Uninstalling");
+
+	public static string DlcUnlocker_Uninstalled => Get("DlcUnlocker_Uninstalled");
+
+	public static string DlcUnlocker_UninstallFailed => Get("DlcUnlocker_UninstallFailed");
+
+	public static string Nav_DownloadGames => Get("Nav_DownloadGames");
+
+	public static string DownloadGames_Title => Get("DownloadGames_Title");
+
+	public static string DownloadGames_Subtitle => Get("DownloadGames_Subtitle");
+
+	public static string DownloadGames_Description => Get("DownloadGames_Description");
+
+	public static string DownloadGames_SearchLabel => Get("DownloadGames_SearchLabel");
+
+	public static string DownloadGames_GameName => Get("DownloadGames_GameName");
+
+	public static string DownloadGames_SearchPlaceholder => Get("DownloadGames_SearchPlaceholder");
+
+	public static string DownloadGames_Search => Get("DownloadGames_Search");
+
+	public static string DownloadGames_InstallDir => Get("DownloadGames_InstallDir");
+
+	public static string DownloadGames_Download => Get("DownloadGames_Download");
+
+	public static string DownloadGames_Loading => Get("DownloadGames_Loading");
+
+	public static string DownloadGames_Found => Get("DownloadGames_Found");
+
+	public static string DownloadGames_Downloading => Get("DownloadGames_Downloading");
+
+	public static string DownloadGames_Extracting => Get("DownloadGames_Extracting");
+
+	public static string DownloadGames_Done => Get("DownloadGames_Done");
+
+	public static string DownloadGames_Cancelled => Get("DownloadGames_Cancelled");
+
+	public static string DownloadGames_ExtractFailed => Get("DownloadGames_ExtractFailed");
+
+	public static string DownloadGames_NoInstallDir => Get("DownloadGames_NoInstallDir");
+
+	public static string DownloadGames_NoUrls => Get("DownloadGames_NoUrls");
+
+	public static string DownloadGames_OpenedInBrowser => Get("DownloadGames_OpenedInBrowser");
+
+	public static string DownloadGames_OpenedMirror => Get("DownloadGames_OpenedMirror");
+
+	public static string DownloadGames_Extract => Get("DownloadGames_Extract");
 
 	public static string Get(string key)
 	{
