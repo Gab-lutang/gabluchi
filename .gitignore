@@ -1,6 +1,10 @@
 # Build output
 **/bin/
 **/obj/
+Release/publish/
+Release/*.exe
+Release/*.nupkg
+Releases/
 
 # Local runtime state
 *.user
