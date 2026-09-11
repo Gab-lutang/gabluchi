@@ -15,7 +15,7 @@ using GabLuchi.Resources;
 
 namespace GabLuchi.Services;
 
-public class UnlockerService(SteamService steam, SettingsService settings, CacheService cache, GithubProxy gh, DefenderService defender)
+public class UnlockerService(SteamService steam, SettingsService settings, CacheService cache, GithubProxy gh, DefenderService defender, ManifestPreCacheService preCache)
 {
 	private static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions
 	{
@@ -325,6 +325,20 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 				try
 				{
 					CleanupLegacyFiles(root);
+				}
+				catch
+				{
+				}
+				try
+				{
+					MigrateDepotCache(root);
+				}
+				catch
+				{
+				}
+				try
+				{
+					await preCache.PreCacheAsync(root, null, ct);
 				}
 				catch
 				{
@@ -673,6 +687,32 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 				try
 				{
 					File.Delete(path);
+				}
+				catch
+				{
+				}
+			}
+		}
+	}
+
+	private static void MigrateDepotCache(string steamRoot)
+	{
+		string oldDir = Path.Combine(steamRoot, "config", "depotcache");
+		string newDir = Path.Combine(steamRoot, "depotcache");
+		if (!Directory.Exists(oldDir))
+		{
+			return;
+		}
+		Directory.CreateDirectory(newDir);
+		string[] files = Directory.GetFiles(oldDir, "*.manifest");
+		foreach (string file in files)
+		{
+			string dest = Path.Combine(newDir, Path.GetFileName(file));
+			if (!File.Exists(dest))
+			{
+				try
+				{
+					File.Move(file, dest);
 				}
 				catch
 				{

@@ -64,7 +64,7 @@ public class SteamService(SettingsService settings)
 			{
 				return null;
 			}
-			return Path.Combine(effectivePath, "config", "depotcache");
+			return Path.Combine(effectivePath, "depotcache");
 		}
 	}
 

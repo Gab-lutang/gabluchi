@@ -66,6 +66,7 @@ public partial class App : Application
 			services.AddSingleton<ManifestDownloader>();
 			services.AddSingleton<FixRepository>();
 			services.AddSingleton<HubcapService>();
+			services.AddSingleton<ManifestPreCacheService>();
 			services.AddSingleton<UpdateService>();
 			services.AddSingleton<PluginAddService>();
 		services.AddSingleton<CompanionService>();

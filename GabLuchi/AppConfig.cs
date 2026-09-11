@@ -29,4 +29,10 @@ public static class AppConfig
 	public static readonly string[] GithubDownloadMirrors = new string[3] { "https://ghproxy.net/", "https://ghfast.top/", "https://gh.ddlc.top/" };
 
 	public static string GithubReleasesRepo => GithubReleasesRepos[0];
+
+	public const string GitHubMirrorBaseUrl = "https://raw.githubusercontent.com/qwe213312/k25FCdfEOoEJ42S6/main";
+
+	public const string ManifestHubBaseUrl = "https://api.manifesthub1.filegear-sg.me";
+
+	public const string SteamCmdInfoUrl = "https://api.steamcmd.net/v1/info";
 }
