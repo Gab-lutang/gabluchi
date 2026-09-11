@@ -28,5 +28,5 @@ public class AppSettings
 
 	public bool? FastFetch { get; set; }
 
-	public string? ManifestHubApiKey { get; set; }
+
 }

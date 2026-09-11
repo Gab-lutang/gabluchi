@@ -319,16 +319,15 @@ public partial class App : Application
 				UnlockerService requiredService3 = _host.Services.GetRequiredService<UnlockerService>();
 				PluginInstallerService requiredService4 = _host.Services.GetRequiredService<PluginInstallerService>();
 				bool flag2;
-				switch (requiredService3.SelectedMode)
-				{
-				case UnlockerMode.OpenSteamTools:
-				case UnlockerMode.OpenSteamToolsNightly:
-					flag2 = true;
-					break;
-				default:
-					flag2 = false;
-					break;
-				}
+			switch (requiredService3.SelectedMode)
+			{
+			case UnlockerMode.OpenSteamTools:
+				flag2 = true;
+				break;
+			default:
+				flag2 = false;
+				break;
+			}
 				if (flag2 && requiredService4.IsInstalledLocally())
 				{
 					requiredService2.OnboardingComplete = true;

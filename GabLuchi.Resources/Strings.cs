@@ -253,8 +253,6 @@ public static class Strings
 
 	public static string Mode_CloudRedirect_LaunchFailed => Get("Mode_CloudRedirect_LaunchFailed");
 
-	public static string Mode_Desc_OpenSteamToolsNightly => Get("Mode_Desc_OpenSteamToolsNightly");
-
 	public static string Mode_Experimental => Get("Mode_Experimental");
 
 	public static string Mode_CloudRedirectSupport => Get("Mode_CloudRedirectSupport");

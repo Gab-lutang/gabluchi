@@ -142,9 +142,8 @@ public class CrackFixViewModel : ObservableObject
 				GameDir = dlg.SelectedPath;
 			}
 		}
-		catch (Exception ex)
+		catch (Exception)
 		{
-			System.Diagnostics.Debug.WriteLine($"[Crack] BrowseGameDir error: {ex}");
 		}
 	}
 

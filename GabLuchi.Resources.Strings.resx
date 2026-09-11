@@ -40,7 +40,7 @@
   <data name="Plugin_Feature_Millennium" xml:space="preserve"><value>Works with or without Millennium</value></data>
   <data name="Home_NoModeSelected" xml:space="preserve"><value>No mode selected</value></data>
   <data name="Fixes_Toast_DownloadFailed_Body" xml:space="preserve"><value>Something went wrong — try again.</value></data>
-  <data name="Mode_CloudRedirect_Locked" xml:space="preserve"><value>Select GabLuchi Unlocker Nightly to use CloudRedirect.</value></data>
+  <data name="Mode_CloudRedirect_Locked" xml:space="preserve"><value>Select GabLuchi Unlocker to use CloudRedirect.</value></data>
   <data name="Add_Featured_TopSellers" xml:space="preserve"><value>Top Sellers</value></data>
   <data name="Settings_GuestHint" xml:space="preserve"><value>Sign in to download manifests and DLC unlocks</value></data>
   <data name="Manage_Toast_Steamless_Done" xml:space="preserve"><value>{0} patched, {1} unchanged.</value></data>
@@ -361,7 +361,7 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="Drop_BrowseFiles" xml:space="preserve"><value>Browse files…</value></data>
   <data name="Drop_Picker_Title" xml:space="preserve"><value>Choose .lua / .manifest / .zip files</value></data>
   <data name="Manage_RestartSteam_Ask" xml:space="preserve"><value>Restart Steam now so the changes take effect?</value></data>
-  <data name="Mode_CloudRedirect_AddonDesc" xml:space="preserve"><value>Brings back native Steam Cloud support via third-party storage providers such as Google Drive / OneDrive / Cloudflare R2 + more. Only compatible with GabLuchi Unlocker Nightly at the moment. Don't forget to configure it by clicking "Manage" after enabling, then restart Steam!</value></data>
+  <data name="Mode_CloudRedirect_AddonDesc" xml:space="preserve"><value>Brings back native Steam Cloud support via third-party storage providers such as Google Drive / OneDrive / Cloudflare R2 + more. Don't forget to configure it by clicking "Manage" after enabling, then restart Steam!</value></data>
   <data name="Fixes_Toast_CouldntApply" xml:space="preserve"><value>Couldn't apply fix</value></data>
   <data name="Settings_BotLink_Dismiss" xml:space="preserve"><value>Dismiss</value></data>
   <data name="Manage_MissingHint" xml:space="preserve"><value>On Steam but not in your lua (often censored or blacklisted depots)</value></data>
@@ -372,7 +372,6 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="Settings_Language_Hint" xml:space="preserve"><value>Choose the app's display language. Applies after a restart.</value></data>
   <data name="Manage_Action_Update" xml:space="preserve"><value>Update / re-download</value></data>
   <data name="Settings_SteamNotFound" xml:space="preserve"><value>Steam not found</value></data>
-  <data name="Mode_Desc_OpenSteamToolsNightly" xml:space="preserve"><value>Nightly build of the GabLuchi unlocker from the latest source. Newest fixes, but may be less stable.</value></data>
   <data name="Home_LastAdded" xml:space="preserve"><value>LAST ADDED</value></data>
   <data name="Plugin_Status_Installed" xml:space="preserve"><value>Installed</value></data>
   <data name="Plugin_Err_MissingAssets" xml:space="preserve"><value>Release {0} is missing {1} or {2}.</value></data>

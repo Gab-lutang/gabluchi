@@ -36,11 +36,10 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 
 	private (GithubRelease release, DateTime fetchedAt)? _crReleaseCache;
 
-	public IReadOnlyList<ModeDefinition> Modes { get; } = new _003C_003Ez__ReadOnlyArray<ModeDefinition>(new ModeDefinition[3]
+	public IReadOnlyList<ModeDefinition> Modes { get; } = Array.AsReadOnly(new ModeDefinition[3]
 	{
 		new ModeDefinition(UnlockerMode.SteamTools, "SteamTools", Strings.Mode_Desc_SteamTools, ModeKind.Loose, "mendy-tools", "verynotsusdllsthataredefnotstrelated", null, new string[2] { "dwmapi.dll", "xinput1_4.dll" }, null, null, null, null),
 		new ModeDefinition(UnlockerMode.OpenSteamTools, "GabLuchi Unlocker", Strings.Mode_Desc_OpenSteamTools, ModeKind.Zip, "OpenSteam001", "OpenSteamTool", null, new string[3] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll" }, "OpenSteamTool-{version}-Release.zip", null, null, null),
-		// new ModeDefinition(UnlockerMode.OpenSteamToolsNightly, "GabLuchi Unlocker Nightly", Strings.Mode_Desc_OpenSteamToolsNightly, ModeKind.Zip, "Gab-lutang", "gabluchi-nightly", null, new string[4] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll", "opensteamtool.toml" }, "gabluchi-{version}-Release.zip", null, null, null),
 		new ModeDefinition(UnlockerMode.CloudRedirect, "CloudRedirect (SteamTools Fix)", Strings.Mode_Desc_CloudRedirect, ModeKind.Cli, "Selectively11", "CloudRedirect", null, new string[1] { "cloud_redirect.dll" }, null, "CloudRedirectCLI.exe", "/stfixer", "cloud_redirect.dll")
 	});
 
@@ -170,35 +169,6 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		return (status: flag2 ? ModeStatus.UpdateAvailable : ModeStatus.UpToDate, latestTag: item);
 	}
 
-	// private async Task<(ModeStatus status, string? latestTag)> NightlyStatusAsync(string root, CancellationToken ct)
-	// {
-	// 	string dwmapi = Path.Combine(root, "dwmapi.dll");
-	// 	if (!File.Exists(dwmapi))
-	// 	{
-	// 		return (status: ModeStatus.NotInstalled, latestTag: null);
-	// 	}
-	// 	List<GithubRelease> list = await FetchAllReleasesAsync("mendy-tools", "verynotsusdllsthataredefnotstrelated", null, ct);
-	// 	if (list == null)
-	// 	{
-	// 		return (status: ModeStatus.Unknown, latestTag: null);
-	// 	}
-	// 	List<GithubRelease> list2 = (from r in list
-	// 		where r.TagName.StartsWith("ost-", StringComparison.OrdinalIgnoreCase)
-	// 		orderby r.PublishedAt ?? DateTimeOffset.MinValue descending
-	// 		select r).ToList();
-	// 	if (list2.Count == 0)
-	// 	{
-	// 		return (status: ModeStatus.Unknown, latestTag: null);
-	// 	}
-	// 	GithubRelease githubRelease = list2[0];
-	// 	string text = Sha256OfFile(dwmapi);
-	// 	if (AssetDigest(githubRelease, "dwmapi.dll") == text)
-	// 	{
-	// 		return (status: ModeStatus.UpToDate, latestTag: githubRelease.TagName);
-	// 	}
-	// 	return (status: ModeStatus.UpdateAvailable, latestTag: githubRelease.TagName);
-	// }
-
 	public async Task<ModeInstallResult> InstallAsync(UnlockerMode mode, IProgress<double?>? progress = null, CancellationToken ct = default(CancellationToken))
 	{
 		ModeDefinition def = Def(mode);
@@ -306,7 +276,7 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 				cache.GabLuchiInstalledVersion = release.TagName;
 			}
 			UnlockerMode unlockerMode = mode;
-			if ((unlockerMode == UnlockerMode.OpenSteamTools || unlockerMode == UnlockerMode.OpenSteamToolsNightly) ? true : false)
+			if (unlockerMode == UnlockerMode.OpenSteamTools)
 			{
 				try
 				{
@@ -446,19 +416,6 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		string dwmapi = Path.Combine(root, "dwmapi.dll");
 		string xinput = Path.Combine(root, "xinput1_4.dll");
 		UnlockerMode? detected = null;
-		// string ostDll = Path.Combine(root, "OpenSteamTool.dll");
-		// if (File.Exists(ostDll))
-		// {
-		// 	List<GithubRelease> list = await FetchAllReleasesAsync("Gab-lutang", "gabluchi-nightly", null, ct);
-		// 	if (list != null)
-		// 	{
-		// 		string ostHash = Sha256OfFile(ostDll);
-		// 		if (list.Any((GithubRelease r) => AssetDigest(r, "OpenSteamTool.dll") == ostHash))
-		// 		{
-		// 			detected = UnlockerMode.OpenSteamToolsNightly;
-		// 		}
-		// 	}
-		// }
 		if (!detected.HasValue)
 		{
 			List<GithubRelease> list2 = await FetchAllReleasesAsync("mendy-tools", "verynotsusdllsthataredefnotstrelated", null, ct);

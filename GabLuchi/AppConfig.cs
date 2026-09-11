@@ -32,7 +32,5 @@ public static class AppConfig
 
 	public const string GitHubMirrorBaseUrl = "https://raw.githubusercontent.com/qwe213312/k25FCdfEOoEJ42S6/main";
 
-	public const string ManifestHubBaseUrl = "https://api.manifesthub1.filegear-sg.me";
-
 	public const string SteamCmdInfoUrl = "https://api.steamcmd.net/v1/info";
 }

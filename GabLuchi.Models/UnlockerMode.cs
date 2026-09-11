@@ -4,6 +4,5 @@ public enum UnlockerMode
 {
 	SteamTools,
 	OpenSteamTools,
-	CloudRedirect,
-	OpenSteamToolsNightly
+	CloudRedirect
 }

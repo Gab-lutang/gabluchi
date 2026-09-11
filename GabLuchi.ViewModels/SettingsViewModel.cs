@@ -45,14 +45,6 @@ public class SettingsViewModel : ObservableObject
 	private string? _loginRequiredMessage;
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor("ShowBotLinkBanner")]
-	private bool _isBotProvisioned;
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor("ShowBotLinkBanner")]
-	private bool _botBannerDismissed;
-
-	[ObservableProperty]
 	private string _steamPath = "";
 
 	[ObservableProperty]
@@ -99,7 +91,6 @@ public class SettingsViewModel : ObservableObject
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor("ShowHubcapStats")]
-	[NotifyPropertyChangedFor("HubcapStatsPending")]
 	[NotifyPropertyChangedFor("HubcapStatsText")]
 	private bool _hubcapIsKeyConfigured;
 
@@ -113,32 +104,14 @@ public class SettingsViewModel : ObservableObject
 	[ObservableProperty]
 	[NotifyPropertyChangedFor("HubcapStatsDisplay")]
 	[NotifyPropertyChangedFor("HubcapStatsText")]
-	[NotifyPropertyChangedFor("HubcapStatsPending")]
-	[NotifyPropertyChangedFor("HubcapUsagePercent")]
 	[NotifyPropertyChangedFor("ShowHubcapStats")]
 	private HubcapStats? _hubcapStats;
-
-	[ObservableProperty]
-	private string _codeInput = "";
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor("CanRedeemCode")]
-	private bool _isRedeemingCode;
-
-	[ObservableProperty]
-	private string? _codeError;
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	private RelayCommand? dismissLoginRequiredCommand;
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
-	private RelayCommand? dismissBotBannerCommand;
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	private AsyncRelayCommand? signInCommand;
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
-	private AsyncRelayCommand? signInWithCodeCommand;
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	private RelayCommand? overrideSteamFolderCommand;
@@ -168,8 +141,6 @@ public class SettingsViewModel : ObservableObject
 	private RelayCommand? clearHubcapKeyCommand;
 
 	public bool IsRealUser => !IsGuest;
-
-	public bool ShowBotLinkBanner => false;
 
 	public Action? RequestShowWindow { get; set; }
 
@@ -222,11 +193,7 @@ public class SettingsViewModel : ObservableObject
 		}
 	}
 
-	public double HubcapUsagePercent => 0.0;
-
 	public bool ShowHubcapStats => HubcapIsKeyConfigured;
-
-	public bool HubcapStatsPending => false;
 
 	public string HubcapStatsText => HubcapIsKeyConfigured ? FormatLicenseStatus() : Strings.Common_Loading;
 
@@ -242,8 +209,6 @@ public class SettingsViewModel : ObservableObject
 	public Action? RequestRestart { get; set; }
 
 	public Action? RequestRestartPrompt { get; set; }
-
-	public bool CanRedeemCode => !IsRedeemingCode;
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
@@ -338,48 +303,6 @@ public class SettingsViewModel : ObservableObject
 				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.LoginRequiredMessage);
 				_loginRequiredMessage = value;
 				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.LoginRequiredMessage);
-			}
-		}
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
-	public bool IsBotProvisioned
-	{
-		get
-		{
-			return _isBotProvisioned;
-		}
-		set
-		{
-			if (!EqualityComparer<bool>.Default.Equals(_isBotProvisioned, value))
-			{
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.IsBotProvisioned);
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.ShowBotLinkBanner);
-				_isBotProvisioned = value;
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.IsBotProvisioned);
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.ShowBotLinkBanner);
-			}
-		}
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
-	public bool BotBannerDismissed
-	{
-		get
-		{
-			return _botBannerDismissed;
-		}
-		set
-		{
-			if (!EqualityComparer<bool>.Default.Equals(_botBannerDismissed, value))
-			{
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.BotBannerDismissed);
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.ShowBotLinkBanner);
-				_botBannerDismissed = value;
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.BotBannerDismissed);
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.ShowBotLinkBanner);
 			}
 		}
 	}
@@ -736,81 +659,13 @@ public class SettingsViewModel : ObservableObject
 		}
 	}
 
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
-	public string CodeInput
-	{
-		get
-		{
-			return _codeInput;
-		}
-		[MemberNotNull("_codeInput")]
-		set
-		{
-			if (!EqualityComparer<string>.Default.Equals(_codeInput, value))
-			{
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.CodeInput);
-				_codeInput = value;
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.CodeInput);
-			}
-		}
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
-	public bool IsRedeemingCode
-	{
-		get
-		{
-			return _isRedeemingCode;
-		}
-		set
-		{
-			if (!EqualityComparer<bool>.Default.Equals(_isRedeemingCode, value))
-			{
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.IsRedeemingCode);
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.CanRedeemCode);
-				_isRedeemingCode = value;
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.IsRedeemingCode);
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.CanRedeemCode);
-			}
-		}
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
-	public string? CodeError
-	{
-		get
-		{
-			return _codeError;
-		}
-		set
-		{
-			if (!EqualityComparer<string>.Default.Equals(_codeError, value))
-			{
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.CodeError);
-				_codeError = value;
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.CodeError);
-			}
-		}
-	}
-
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
 	public IRelayCommand DismissLoginRequiredCommand => dismissLoginRequiredCommand ?? (dismissLoginRequiredCommand = new RelayCommand(DismissLoginRequired));
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
-	public IRelayCommand DismissBotBannerCommand => dismissBotBannerCommand ?? (dismissBotBannerCommand = new RelayCommand(DismissBotBanner));
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
 	public IAsyncRelayCommand SignInCommand => signInCommand ?? (signInCommand = new AsyncRelayCommand(SignInAsync));
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
-	public IAsyncRelayCommand SignInWithCodeCommand => signInWithCodeCommand ?? (signInWithCodeCommand = new AsyncRelayCommand(SignInWithCodeAsync));
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
@@ -889,14 +744,7 @@ public class SettingsViewModel : ObservableObject
 		DisplayName = _auth.DisplayName;
 		Email = null;
 		AvatarUrl = _auth.AvatarUrl;
-		IsBotProvisioned = false;
 		LoginRequiredMessage = null;
-	}
-
-	[RelayCommand]
-	private void DismissBotBanner()
-	{
-		BotBannerDismissed = true;
 	}
 
 	[RelayCommand]
@@ -905,30 +753,6 @@ public class SettingsViewModel : ObservableObject
 		if (RequestSignIn != null)
 		{
 			await RequestSignIn();
-		}
-	}
-
-	[RelayCommand]
-	private async Task SignInWithCodeAsync()
-	{
-		string text = CodeInput.Trim();
-		if (text.Length != 6)
-		{
-			return;
-		}
-		IsRedeemingCode = true;
-		CodeError = null;
-		try
-		{
-			CodeInput = "";
-		}
-		catch (Exception ex)
-		{
-			CodeError = ex.Message;
-		}
-		finally
-		{
-			IsRedeemingCode = false;
 		}
 	}
 
@@ -983,14 +807,10 @@ public class SettingsViewModel : ObservableObject
 	[RelayCommand]
 	private void OpenHubcap()
 	{
-		string url = Config.DiscordInviteUrl;
-		if (!string.IsNullOrWhiteSpace(url))
+		Process.Start(new ProcessStartInfo("https://hubcapmanifest.com")
 		{
-			Process.Start(new ProcessStartInfo(url)
-			{
-				UseShellExecute = true
-			});
-		}
+			UseShellExecute = true
+		});
 	}
 
 	[RelayCommand]

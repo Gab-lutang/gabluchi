@@ -120,19 +120,6 @@ public class SettingsService
 		}
 	}
 
-	public string? ManifestHubApiKey
-	{
-		get
-		{
-			return _settings.ManifestHubApiKey;
-		}
-		set
-		{
-			_settings.ManifestHubApiKey = (string.IsNullOrWhiteSpace(value) ? null : value);
-			Save();
-		}
-	}
-
 	public string? LicenseToken
 	{
 		get
