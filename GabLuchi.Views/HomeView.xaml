@@ -254,7 +254,6 @@
             </StackPanel>
           </Button>
         </UniformGrid>
-        <views:DropZone Margin="0,14,0,0" DataContext="{Binding Drop}" />
         <Grid Name="RecentHeader" Margin="0,22,0,0" Opacity="0">
           <Grid.RenderTransform>
             <TranslateTransform Y="14" />
@@ -324,6 +323,5 @@
         </StackPanel>
       </StackPanel>
     </ScrollViewer>
-    <views:ConfirmOverlay DataContext="{Binding Drop}" />
   </Grid>
 </UserControl>
