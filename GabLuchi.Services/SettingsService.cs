@@ -55,19 +55,6 @@ public class SettingsService
 		}
 	}
 
-	public bool DonateKeys
-	{
-		get
-		{
-			return _settings.DonateKeys ?? true;
-		}
-		set
-		{
-			_settings.DonateKeys = value;
-			Save();
-		}
-	}
-
 	public int ManagePageSize
 	{
 		get
@@ -239,7 +226,7 @@ public class SettingsService
 
 	private void Save()
 	{
-		if (_settings.SteamPathOverride == null && _settings.SelectedMode == null && !_settings.AutoUpdateApps.HasValue && !_settings.DonateKeys.HasValue && !_settings.ManagePageSize.HasValue && _settings.Language == null && _settings.HubcapApiKey == null && _settings.LicenseToken == null && _settings.LicenseMachineId == null && !_settings.StartWithWindows.HasValue && !_settings.MinimizeToTray.HasValue && !_settings.FastFetch.HasValue)
+		if (_settings.SteamPathOverride == null && _settings.SelectedMode == null && !_settings.AutoUpdateApps.HasValue && !_settings.ManagePageSize.HasValue && _settings.Language == null && _settings.HubcapApiKey == null && _settings.LicenseToken == null && _settings.LicenseMachineId == null && !_settings.StartWithWindows.HasValue && !_settings.MinimizeToTray.HasValue && !_settings.FastFetch.HasValue)
 		{
 			string[] array = new string[3] { FilePath, BakPath, TmpPath };
 			foreach (string path in array)

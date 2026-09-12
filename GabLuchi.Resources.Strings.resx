@@ -89,7 +89,6 @@
   <data name="Plugin_Err_SteamNotFound" xml:space="preserve"><value>Steam installation not found.</value></data>
   <data name="Manage_Depot" xml:space="preserve"><value>Depot</value></data>
   <data name="Manage_Refresh" xml:space="preserve"><value>Refresh</value></data>
-  <data name="Settings_Section_Community" xml:space="preserve"><value>COMMUNITY</value></data>
   <data name="Fixes_Manifest" xml:space="preserve"><value>Manifest</value></data>
   <data name="Settings_MinimizeToTray_Hint" xml:space="preserve"><value>When you close the window, keep GabLuchi running in the system tray instead of quitting. Double-click the tray icon to restore.</value></data>
   <data name="Drop_Picker_Filter" xml:space="preserve"><value>Lua / manifest / zip|*.lua;*.manifest;*.zip|All files|*.*</value></data>
@@ -182,9 +181,8 @@
   <data name="Onboarding_Go" xml:space="preserve"><value>Let's go!</value></data>
   <data name="Onboarding_No" xml:space="preserve"><value>No thanks</value></data>
   <data name="Mode_Desc_OpenSteamTools" xml:space="preserve"><value>GabLuchi's ground-up unlocker. Rebuilt from scratch, better than SteamTools in basically every way.</value></data>
-  <data name="Settings_DonateKeys" xml:space="preserve"><value>Donate Decryption Keys</value></data>
-  <data name="Manage_RemoveFailed_Count" xml:space="preserve"><value>{0} files couldn't be deleted.</value></data>
   <data name="Settings_HubcapKeyError" xml:space="preserve"><value>Couldn't verify the key — it may be invalid, expired, or Hubcap is unreachable.</value></data>
+  <data name="Manage_RemoveFailed_Count" xml:space="preserve"><value>{0} files couldn't be deleted.</value></data>
   <data name="Fixes_Toast_PartiallyApplied_Body" xml:space="preserve"><value>{0} file(s) couldn't be written — close the game and try again.</value></data>
   <data name="Manage_RemoveFailed_Named" xml:space="preserve"><value>Couldn't delete "{0}":
 {1}</value></data>
@@ -357,7 +355,6 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="Fixes_Toast_DownloadFailed" xml:space="preserve"><value>Download failed</value></data>
   <data name="Settings_BotCode_Hint" xml:space="preserve"><value>Have a code? Run /login in Discord and enter it here.</value></data>
   <data name="Settings_HubcapKey" xml:space="preserve"><value>Hubcap API key</value></data>
-  <data name="Settings_DonateKeys_Hint" xml:space="preserve"><value>Share spare Steam depot decryption keys to grow the community pool. Only validated keys are sent — no account info or personal data.</value></data>
   <data name="Drop_BrowseFiles" xml:space="preserve"><value>Browse files…</value></data>
   <data name="Drop_Picker_Title" xml:space="preserve"><value>Choose .lua / .manifest / .zip files</value></data>
   <data name="Manage_RestartSteam_Ask" xml:space="preserve"><value>Restart Steam now so the changes take effect?</value></data>

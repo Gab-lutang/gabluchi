@@ -62,9 +62,6 @@ public class SettingsViewModel : ObservableObject
 	[ObservableProperty]
 	private bool _fastFetch;
 
-	[ObservableProperty]
-	private bool _donateKeys;
-
 	private const string RunKeyPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
 
 	private const string RunValueName = "GabLuchi";
@@ -427,26 +424,6 @@ public class SettingsViewModel : ObservableObject
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
-	public bool DonateKeys
-	{
-		get
-		{
-			return _donateKeys;
-		}
-		set
-		{
-			if (!EqualityComparer<bool>.Default.Equals(_donateKeys, value))
-			{
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.DonateKeys);
-				_donateKeys = value;
-				OnDonateKeysChanged(value);
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.DonateKeys);
-			}
-		}
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
 	public bool StartWithWindows
 	{
 		get
@@ -720,7 +697,6 @@ public class SettingsViewModel : ObservableObject
 		RefreshSteam();
 		_autoUpdateApps = settings.AutoUpdateApps;
 		_fastFetch = settings.FastFetch;
-		_donateKeys = settings.DonateKeys;
 		_startWithWindows = settings.StartWithWindows;
 		_minimizeToTray = settings.MinimizeToTray;
 		_hubcapIsKeyConfigured = _license.IsActivated;
@@ -954,12 +930,6 @@ public class SettingsViewModel : ObservableObject
 	private void OnFastFetchChanged(bool value)
 	{
 		_settings.FastFetch = value;
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	private void OnDonateKeysChanged(bool value)
-	{
-		_settings.DonateKeys = value;
 	}
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]

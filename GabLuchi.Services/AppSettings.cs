@@ -8,8 +8,6 @@ public class AppSettings
 
 	public bool? AutoUpdateApps { get; set; }
 
-	public bool? DonateKeys { get; set; }
-
 	public int? ManagePageSize { get; set; }
 
 	public int? FixesPageSize { get; set; }

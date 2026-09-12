@@ -69,17 +69,6 @@ public class CacheService
 		Save();
 	}
 
-	public IReadOnlyCollection<string> GetDonatedAppIds()
-	{
-		return _cache.DonatedAppIds;
-	}
-
-	public void SaveDonatedAppIds(IEnumerable<string> appIds)
-	{
-		_cache.DonatedAppIds = appIds.Distinct().ToList();
-		Save();
-	}
-
 	public IReadOnlyList<long> GetHardwareAppIds()
 	{
 		return _cache.HardwareAppIds;
@@ -139,7 +128,7 @@ public class CacheService
 
 	private void Save()
 	{
-		if (_cache.GabLuchiInstalledVersion == null && _cache.GabLuchiInstalledZipDigest == null && _cache.SteamApiRequestTimes.Count == 0 && _cache.DonatedAppIds.Count == 0 && _cache.HardwareAppIds.Count == 0 && _cache.HardwareAppIdsFetchedAtMs == 0L && _cache.LoadedAppIds.Count == 0 && !_cache.OnboardingComplete)
+		if (_cache.GabLuchiInstalledVersion == null && _cache.GabLuchiInstalledZipDigest == null && _cache.SteamApiRequestTimes.Count == 0 && _cache.HardwareAppIds.Count == 0 && _cache.HardwareAppIdsFetchedAtMs == 0L && _cache.LoadedAppIds.Count == 0 && !_cache.OnboardingComplete)
 		{
 			try
 			{

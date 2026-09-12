@@ -41,8 +41,6 @@ public static class Strings
 
 	public static string Settings_Section_Install => Get("Settings_Section_Install");
 
-	public static string Settings_Section_Community => Get("Settings_Section_Community");
-
 	public static string Settings_SignOut => Get("Settings_SignOut");
 
 	public static string Settings_BrowsingAsGuest => Get("Settings_BrowsingAsGuest");
@@ -152,10 +150,6 @@ public static class Strings
 	public static string Settings_AutoUpdateApps => Get("Settings_AutoUpdateApps");
 
 	public static string Settings_AutoUpdateApps_Hint => Get("Settings_AutoUpdateApps_Hint");
-
-	public static string Settings_DonateKeys => Get("Settings_DonateKeys");
-
-	public static string Settings_DonateKeys_Hint => Get("Settings_DonateKeys_Hint");
 
 	public static string Settings_Section_Startup => Get("Settings_Section_Startup");
 
