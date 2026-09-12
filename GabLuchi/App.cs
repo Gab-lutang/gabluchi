@@ -133,7 +133,7 @@ public partial class App : Application
 			{
 				((DispatcherObject)this).Dispatcher.Invoke((Action)delegate
 				{
-					Updates.ApplyAndRestart(new string[2] { "--minimized", "--tray-locked" });
+					Updates.ApplyAndRestart(new string[1] { "--minimized" });
 				});
 				return;
 			}
