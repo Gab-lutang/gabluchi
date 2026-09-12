@@ -225,8 +225,7 @@
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <TextBlock Margin="0,24,0,0" FontSize="13" FontWeight="SemiBold" Foreground="#d1d5db" Text="{x:Static res:Strings.Add_AlreadyHaveFiles}" />
-        <views:DropZone Margin="0,8,0,0" DataContext="{Binding Drop}" />
+
       </StackPanel>
     </ScrollViewer>
     <Grid Background="#99000000" Visibility="{Binding IsConfirmingOverwrite, Converter={StaticResource BoolToVis}}">
@@ -260,6 +259,5 @@
         </Grid>
       </Border>
     </Grid>
-    <views:ConfirmOverlay DataContext="{Binding Drop}" />
   </Grid>
 </UserControl>
