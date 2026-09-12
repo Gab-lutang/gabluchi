@@ -342,10 +342,7 @@ public partial class App : Application
 		{
 			HandleProtocolUrl(url);
 		}
-		if (Program.SessionTrayLock)
-		{
-			RunUpdateFlowAsync();
-		}
+		RunUpdateFlowAsync();
 		_host.Services.GetRequiredService<AnalyticsService>().TrackAppLaunchAsync();
 		_host.Services.GetRequiredService<HardwareAppIdService>().EnsureFreshAsync();
 	}
