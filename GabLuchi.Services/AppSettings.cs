@@ -20,8 +20,6 @@ public class AppSettings
 
 	public string? LicenseMachineId { get; set; }
 
-	public bool? StartWithWindows { get; set; }
-
 	public bool? FastFetch { get; set; }
 
 

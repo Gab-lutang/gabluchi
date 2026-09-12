@@ -17,10 +17,6 @@ public static class Program
 
 	internal static EventWaitHandle? ShowWindowSignal;
 
-	private const string EnableTrayLockEventName = "GabLuchi.EnableTrayLock";
-
-	internal static EventWaitHandle? EnableTrayLockSignal;
-
 	private const string RecheckUpdatesEventName = "GabLuchi.RecheckUpdates";
 
 	internal static EventWaitHandle? RecheckUpdatesSignal;
@@ -28,8 +24,6 @@ public static class Program
 	internal static string? StartupUrl;
 
 	internal static bool StartMinimized;
-
-	internal static bool SessionTrayLock;
 
 	internal static bool FirstRun;
 
@@ -51,7 +45,6 @@ public static class Program
 		ProtocolService.Register();
 		string text = null;
 		bool flag = false;
-		bool flag2 = false;
 		if (args != null && args.Length > 0)
 		{
 			foreach (string text2 in args)
@@ -63,10 +56,6 @@ public static class Program
 				else if (text2.Equals("--minimized", StringComparison.OrdinalIgnoreCase))
 				{
 					flag = true;
-				}
-				else if (text2.Equals("--tray-locked", StringComparison.OrdinalIgnoreCase))
-				{
-					flag2 = true;
 				}
 			}
 		}
@@ -93,27 +82,12 @@ public static class Program
 					{
 					}
 				}
-				if (!flag2)
-				{
-					return;
-				}
 				try
 				{
-					if (EventWaitHandle.TryOpenExisting("GabLuchi.EnableTrayLock", out EventWaitHandle result2))
+					if (EventWaitHandle.TryOpenExisting("GabLuchi.RecheckUpdates", out EventWaitHandle result2))
 					{
 						result2.Set();
 						result2.Dispose();
-					}
-				}
-				catch
-				{
-				}
-				try
-				{
-					if (EventWaitHandle.TryOpenExisting("GabLuchi.RecheckUpdates", out EventWaitHandle result3))
-					{
-						result3.Set();
-						result3.Dispose();
 					}
 					return;
 				}
@@ -124,15 +98,12 @@ public static class Program
 			}
 			StartupUrl = text;
 			StartMinimized = flag;
-			SessionTrayLock = flag2;
 			ShowWindowSignal = new EventWaitHandle(initialState: false, EventResetMode.AutoReset, "GabLuchi.ShowWindow");
-			EnableTrayLockSignal = new EventWaitHandle(initialState: false, EventResetMode.AutoReset, "GabLuchi.EnableTrayLock");
 			RecheckUpdatesSignal = new EventWaitHandle(initialState: false, EventResetMode.AutoReset, "GabLuchi.RecheckUpdates");
 			App app = new App();
 			app.InitializeComponent();
 			app.Run();
 			ShowWindowSignal.Dispose();
-			EnableTrayLockSignal.Dispose();
 			RecheckUpdatesSignal.Dispose();
 		}
 	}

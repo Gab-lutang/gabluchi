@@ -151,16 +151,6 @@ public static class Strings
 
 	public static string Settings_AutoUpdateApps_Hint => Get("Settings_AutoUpdateApps_Hint");
 
-	public static string Settings_Section_Startup => Get("Settings_Section_Startup");
-
-	public static string Settings_StartWithWindows => Get("Settings_StartWithWindows");
-
-	public static string Settings_StartWithWindows_Hint => Get("Settings_StartWithWindows_Hint");
-
-	public static string Tray_Open => Get("Tray_Open");
-
-	public static string Tray_Exit => Get("Tray_Exit");
-
 	public static string Settings_SteamNotFound => Get("Settings_SteamNotFound");
 
 	public static string Settings_SteamSource_Custom => Get("Settings_SteamSource_Custom");

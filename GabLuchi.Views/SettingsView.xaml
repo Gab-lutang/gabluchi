@@ -137,22 +137,6 @@
           <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#f87171" TextWrapping="Wrap" Text="{Binding SteamWarning}" Visibility="{Binding SteamWarning, Converter={StaticResource NullToCollapsed}}" />
         </StackPanel>
       </Border>
-      <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_Startup}" />
-      <Border Style="{StaticResource SettingsCard}">
-        <StackPanel>
-          <Grid Margin="14,12">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel VerticalAlignment="Center">
-              <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_StartWithWindows}" />
-              <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_StartWithWindows_Hint}" TextWrapping="Wrap" />
-            </StackPanel>
-            <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding StartWithWindows, Mode=TwoWay}" />
-          </Grid>
-        </StackPanel>
-      </Border>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

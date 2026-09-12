@@ -21,8 +21,6 @@ public partial class App : Application
 {
 	private readonly IHost _host;
 
-	private bool _exitAfterSilentInstall;
-
 	private readonly SemaphoreSlim _updateFlowGate = new SemaphoreSlim(1, 1);
 
 	internal static Func<Task>? RunUpdateFlow;
@@ -195,7 +193,7 @@ public partial class App : Application
 		MainWindow window = _host.Services.GetRequiredService<MainWindow>();
 		settingsVm.RequestShowWindow = delegate
 		{
-			((DispatcherObject)this).Dispatcher.Invoke((Action)window.RestoreFromTray);
+			((DispatcherObject)this).Dispatcher.Invoke((Action)window.ShowAndActivate);
 		};
 		if (Program.ShowWindowSignal != null)
 		{
@@ -206,20 +204,13 @@ public partial class App : Application
 					string text = ProtocolService.TryReadPending();
 					if (text == null || !ProtocolService.Parse(text).Silent)
 					{
-						window.RestoreFromTray();
+						window.ShowAndActivate();
 					}
 					if (text != null)
 					{
 						HandleProtocolUrl(text);
 					}
 				});
-			}, null, -1, executeOnlyOnce: false);
-		}
-		if (Program.EnableTrayLockSignal != null)
-		{
-			ThreadPool.RegisterWaitForSingleObject(Program.EnableTrayLockSignal, delegate
-			{
-				Program.SessionTrayLock = true;
 			}, null, -1, executeOnlyOnce: false);
 		}
 		if (Program.RecheckUpdatesSignal != null)
@@ -301,10 +292,9 @@ public partial class App : Application
 		};
 		string url = Program.StartupUrl ?? ProtocolService.TryReadPending();
 		bool flag = (url != null && ProtocolService.Parse(url).Silent) || Program.StartMinimized;
-		_exitAfterSilentInstall = flag && Program.StartupUrl != null;
 		if (flag)
 		{
-			window.StartSilent();
+			window.Show();
 		}
 		else
 		{
@@ -438,17 +428,6 @@ public partial class App : Application
 			{
 				requiredService.ProtocolInstall(num.Value, delegate(string msg, bool error)
 				{
-					((DispatcherObject)this).Dispatcher.Invoke((Action)delegate
-					{
-						window.ShowInstallNotification(msg, error);
-						if (_exitAfterSilentInstall)
-						{
-							Task.Delay(6000).ContinueWith(delegate
-							{
-								((DispatcherObject)this).Dispatcher.Invoke((Action)base.Shutdown);
-							});
-						}
-					});
 				});
 			}
 			else

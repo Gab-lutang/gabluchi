@@ -647,10 +647,6 @@ internal static class __KnownINotifyPropertyChangedArgs
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Obsolete("This field is not intended to be referenced directly by user code")]
-	public static readonly PropertyChangedEventArgs StartWithWindows = new PropertyChangedEventArgs("StartWithWindows");
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	[Obsolete("This field is not intended to be referenced directly by user code")]
 	public static readonly PropertyChangedEventArgs SelectedLanguage = new PropertyChangedEventArgs("SelectedLanguage");
 
 	[EditorBrowsable(EditorBrowsableState.Never)]

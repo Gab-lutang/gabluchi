@@ -721,7 +721,7 @@ public class HttpServerService : IHostedService
 		{
 			MainWindow requiredService = _services.GetRequiredService<MainWindow>();
 			FixesViewModel requiredService2 = _services.GetRequiredService<FixesViewModel>();
-			requiredService.RestoreFromTray();
+			requiredService.ShowAndActivate();
 			requiredService.NavigateToFixes();
 			requiredService2.OpenForAppIdAsync(appId);
 		});
@@ -755,7 +755,7 @@ public class HttpServerService : IHostedService
 		return OnUiThread(delegate
 		{
 			MainWindow requiredService = _services.GetRequiredService<MainWindow>();
-			requiredService.RestoreFromTray();
+			requiredService.ShowAndActivate();
 			requiredService.NavigateToSettings();
 		});
 	}

@@ -62,13 +62,6 @@ public class SettingsViewModel : ObservableObject
 	[ObservableProperty]
 	private bool _fastFetch;
 
-	private const string RunKeyPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
-
-	private const string RunValueName = "GabLuchi";
-
-	[ObservableProperty]
-	private bool _startWithWindows;
-
 	[ObservableProperty]
 	private LanguageOption _selectedLanguage;
 
@@ -421,26 +414,6 @@ public class SettingsViewModel : ObservableObject
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
-	public bool StartWithWindows
-	{
-		get
-		{
-			return _startWithWindows;
-		}
-		set
-		{
-			if (!EqualityComparer<bool>.Default.Equals(_startWithWindows, value))
-			{
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.StartWithWindows);
-				_startWithWindows = value;
-				OnStartWithWindowsChanged(value);
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.StartWithWindows);
-			}
-		}
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
 	public LanguageOption SelectedLanguage
 	{
 		get
@@ -674,7 +647,6 @@ public class SettingsViewModel : ObservableObject
 		RefreshSteam();
 		_autoUpdateApps = settings.AutoUpdateApps;
 		_fastFetch = settings.FastFetch;
-		_startWithWindows = settings.StartWithWindows;
 		_hubcapIsKeyConfigured = _license.IsActivated;
 		_suppressLanguagePrompt = true;
 		_selectedLanguage = LanguageOptions.FirstOrDefault((LanguageOption o) => o.Tag == settings.Language) ?? LanguageOptions[0];
@@ -906,30 +878,6 @@ public class SettingsViewModel : ObservableObject
 	private void OnFastFetchChanged(bool value)
 	{
 		_settings.FastFetch = value;
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	private void OnStartWithWindowsChanged(bool value)
-	{
-		_settings.StartWithWindows = value;
-		try
-		{
-			using RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", writable: true);
-			if (registryKey != null)
-			{
-				if (value)
-				{
-					registryKey.SetValue("GabLuchi", "\"" + Environment.ProcessPath + "\" --minimized");
-				}
-				else
-				{
-					registryKey.DeleteValue("GabLuchi", throwOnMissingValue: false);
-				}
-			}
-		}
-		catch
-		{
-		}
 	}
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]

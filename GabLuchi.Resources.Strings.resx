@@ -73,8 +73,6 @@
   <data name="Fixes_Toast_FixApplied" xml:space="preserve"><value>Fix applied</value></data>
   <data name="Onboarding_Plugin_Detail" xml:space="preserve"><value>Adds the "Add via GabLuchi" button to Steam store pages.</value></data>
   <data name="Plugin_Row_LatestVersion" xml:space="preserve"><value>Latest version</value></data>
-  <data name="Tray_Exit" xml:space="preserve"><value>Exit</value></data>
-  <data name="Tray_Open" xml:space="preserve"><value>Open GabLuchi</value></data>
   <data name="Plugin_Toast_Title" xml:space="preserve"><value>Plugin</value></data>
   <data name="Settings_HubcapValidate" xml:space="preserve"><value>Validate &amp; Save</value></data>
   <data name="Home_RecentlyAdded" xml:space="preserve"><value>Recently added</value></data>
@@ -98,11 +96,9 @@
   <data name="Fixes_Title" xml:space="preserve"><value>Fixes</value></data>
   <data name="Fixes_Build" xml:space="preserve"><value>Build {0}</value></data>
   <data name="Fixes_Count" xml:space="preserve"><value>{0} fixes</value></data>
-  <data name="Settings_StartWithWindows" xml:space="preserve"><value>Start with Windows</value></data>
   <data name="Add_NeedsHubcapKey" xml:space="preserve"><value>Needs license key</value></data>
   <data name="Add_SignIn_Dlc" xml:space="preserve"><value>Sign in with Discord to view DLC unlocks.</value></data>
   <data name="Drop_Hint" xml:space="preserve"><value>They're placed into the right Steam folders automatically.</value></data>
-  <data name="Settings_Section_Startup" xml:space="preserve"><value>STARTUP</value></data>
   <data name="Plugin_Subtitle" xml:space="preserve"><value>The GabLuchi Steam Plugin! — Now using LuaLoader instead of Shittenium</value></data>
   <data name="Onboarding_Recommended_Detail" xml:space="preserve"><value>Mode: GabLuchi Unlocker · FastFetch on</value></data>
   <data name="Drop_Count_Manifests" xml:space="preserve"><value>{0} manifest(s)</value></data>
@@ -137,7 +133,7 @@
   <data name="Settings_AutoUpdateApps" xml:space="preserve"><value>Auto Update Apps (Don't Lock Manifests)</value></data>
   <data name="Manage_Sort_ReleaseNewest" xml:space="preserve"><value>Release date (newest)</value></data>
   <data name="Settings_SteamSource_Custom" xml:space="preserve"><value>Custom location</value></data>
-  <data name="Plugin_Footer" xml:space="preserve"><value>LuaLoader installs into your Steam folder. This app works as the backend — if you close it from the tray, the plugin will no longer function!</value></data>
+  <data name="Plugin_Footer" xml:space="preserve"><value>LuaLoader installs into your Steam folder. This app works as the backend — if you close it, the plugin will no longer function!</value></data>
   <data name="Add_FastFetch_NoSource" xml:space="preserve"><value>No available sources found for this game</value></data>
   <data name="Settings_BotCode_Redeem" xml:space="preserve"><value>Redeem</value></data>
   <data name="Home_Welcome" xml:space="preserve"><value>Welcome to GabLuchi</value></data>
@@ -246,7 +242,6 @@
   <data name="Add_NoKey" xml:space="preserve"><value>NO KEY</value></data>
   <data name="Settings_BotLink_Title" xml:space="preserve"><value>Finish linking your account</value></data>
   <data name="Add_Fetch" xml:space="preserve"><value>Fetch</value></data>
-  <data name="Settings_StartWithWindows_Hint" xml:space="preserve"><value>Launch GabLuchi automatically when Windows starts.</value></data>
   <data name="Add_Err_Generate" xml:space="preserve"><value>Generation failed — check your connection and try again.</value></data>
   <data name="Settings_HubcapGetKey" xml:space="preserve"><value>Get a key at</value></data>
   <data name="Add_Reveal" xml:space="preserve"><value>Reveal</value></data>
