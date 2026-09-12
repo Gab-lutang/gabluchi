@@ -22,8 +22,6 @@ public class AppSettings
 
 	public bool? StartWithWindows { get; set; }
 
-	public bool? MinimizeToTray { get; set; }
-
 	public bool? FastFetch { get; set; }
 
 

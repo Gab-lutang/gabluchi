@@ -157,10 +157,6 @@ public static class Strings
 
 	public static string Settings_StartWithWindows_Hint => Get("Settings_StartWithWindows_Hint");
 
-	public static string Settings_MinimizeToTray => Get("Settings_MinimizeToTray");
-
-	public static string Settings_MinimizeToTray_Hint => Get("Settings_MinimizeToTray_Hint");
-
 	public static string Tray_Open => Get("Tray_Open");
 
 	public static string Tray_Exit => Get("Tray_Exit");

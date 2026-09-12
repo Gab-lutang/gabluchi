@@ -70,9 +70,6 @@ public class SettingsViewModel : ObservableObject
 	private bool _startWithWindows;
 
 	[ObservableProperty]
-	private bool _minimizeToTray;
-
-	[ObservableProperty]
 	private LanguageOption _selectedLanguage;
 
 	private bool _suppressLanguagePrompt;
@@ -444,26 +441,6 @@ public class SettingsViewModel : ObservableObject
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
-	public bool MinimizeToTray
-	{
-		get
-		{
-			return _minimizeToTray;
-		}
-		set
-		{
-			if (!EqualityComparer<bool>.Default.Equals(_minimizeToTray, value))
-			{
-				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.MinimizeToTray);
-				_minimizeToTray = value;
-				OnMinimizeToTrayChanged(value);
-				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.MinimizeToTray);
-			}
-		}
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
 	public LanguageOption SelectedLanguage
 	{
 		get
@@ -698,7 +675,6 @@ public class SettingsViewModel : ObservableObject
 		_autoUpdateApps = settings.AutoUpdateApps;
 		_fastFetch = settings.FastFetch;
 		_startWithWindows = settings.StartWithWindows;
-		_minimizeToTray = settings.MinimizeToTray;
 		_hubcapIsKeyConfigured = _license.IsActivated;
 		_suppressLanguagePrompt = true;
 		_selectedLanguage = LanguageOptions.FirstOrDefault((LanguageOption o) => o.Tag == settings.Language) ?? LanguageOptions[0];
@@ -953,16 +929,6 @@ public class SettingsViewModel : ObservableObject
 		}
 		catch
 		{
-		}
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	private void OnMinimizeToTrayChanged(bool value)
-	{
-		_settings.MinimizeToTray = value;
-		if (!value)
-		{
-			RequestShowWindow?.Invoke();
 		}
 	}
 

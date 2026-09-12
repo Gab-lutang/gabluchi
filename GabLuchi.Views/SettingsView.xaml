@@ -151,18 +151,6 @@
             </StackPanel>
             <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding StartWithWindows, Mode=TwoWay}" />
           </Grid>
-          <Border Style="{StaticResource RowDivider}" />
-          <Grid Margin="14,12">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel VerticalAlignment="Center">
-              <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_MinimizeToTray}" />
-              <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_MinimizeToTray_Hint}" TextWrapping="Wrap" />
-            </StackPanel>
-            <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding MinimizeToTray, Mode=TwoWay}" />
-          </Grid>
         </StackPanel>
       </Border>
     </StackPanel>

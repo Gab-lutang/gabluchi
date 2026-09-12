@@ -82,7 +82,7 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 
 	private void OnWindowClosing(object? sender, CancelEventArgs e)
 	{
-		if (!_reallyExiting && (_settings.MinimizeToTray || Program.SessionTrayLock))
+		if (!_reallyExiting && Program.SessionTrayLock)
 		{
 			e.Cancel = true;
 			Hide();

@@ -651,10 +651,6 @@ internal static class __KnownINotifyPropertyChangingArgs
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Obsolete("This field is not intended to be referenced directly by user code")]
-	public static readonly PropertyChangingEventArgs MinimizeToTray = new PropertyChangingEventArgs("MinimizeToTray");
-
-	[EditorBrowsable(EditorBrowsableState.Never)]
-	[Obsolete("This field is not intended to be referenced directly by user code")]
 	public static readonly PropertyChangingEventArgs SelectedLanguage = new PropertyChangingEventArgs("SelectedLanguage");
 
 	[EditorBrowsable(EditorBrowsableState.Never)]

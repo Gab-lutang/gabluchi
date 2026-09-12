@@ -90,7 +90,6 @@
   <data name="Manage_Depot" xml:space="preserve"><value>Depot</value></data>
   <data name="Manage_Refresh" xml:space="preserve"><value>Refresh</value></data>
   <data name="Fixes_Manifest" xml:space="preserve"><value>Manifest</value></data>
-  <data name="Settings_MinimizeToTray_Hint" xml:space="preserve"><value>When you close the window, keep GabLuchi running in the system tray instead of quitting. Double-click the tray icon to restore.</value></data>
   <data name="Drop_Picker_Filter" xml:space="preserve"><value>Lua / manifest / zip|*.lua;*.manifest;*.zip|All files|*.*</value></data>
   <data name="Add_Confirm_Replace" xml:space="preserve"><value>Replace "{0}"?</value></data>
   <data name="Fixes_SignInRequired" xml:space="preserve"><value>Sign in required</value></data>
@@ -262,7 +261,6 @@ This deletes its .lua file from Steam\config\stplug-in. Restart Steam afterwards
   <data name="Drop_Title" xml:space="preserve"><value>Drop .lua, .manifest or .zip files here</value></data>
   <data name="Manage_Toggle_Missing" xml:space="preserve"><value>Missing depots / DLC</value></data>
   <data name="Plugin_Status_OutOfDate" xml:space="preserve"><value>Out of date</value></data>
-  <data name="Settings_MinimizeToTray" xml:space="preserve"><value>Minimize to System Tray</value></data>
   <data name="Add_Confirm_NoChanges" xml:space="preserve"><value>No depot/DLC changes — same content.</value></data>
   <data name="Settings_HubcapKeyBad" xml:space="preserve"><value>That doesn't look like a valid key (smm_…).</value></data>
   <data name="Settings_Section_License" xml:space="preserve"><value>GABLUCHI LICENSE</value></data>

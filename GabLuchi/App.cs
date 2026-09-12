@@ -301,7 +301,7 @@ public partial class App : Application
 		};
 		string url = Program.StartupUrl ?? ProtocolService.TryReadPending();
 		bool flag = (url != null && ProtocolService.Parse(url).Silent) || Program.StartMinimized;
-		_exitAfterSilentInstall = flag && Program.StartupUrl != null && !settingsVm.MinimizeToTray;
+		_exitAfterSilentInstall = flag && Program.StartupUrl != null;
 		if (flag)
 		{
 			window.StartSilent();
