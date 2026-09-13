@@ -206,8 +206,10 @@ public class LuaTileViewModel : ObservableObject
 	public int FixableIssues
 	{
 		get => _fixableIssues;
-		set => SetProperty(ref _fixableIssues, value);
+		set { if (SetProperty(ref _fixableIssues, value)) OnPropertyChanged(nameof(HasFixableIssues)); }
 	}
+
+	public bool HasFixableIssues => FixableIssues > 0;
 
 	private string _dlcStatus = "";
 	public string DlcStatus

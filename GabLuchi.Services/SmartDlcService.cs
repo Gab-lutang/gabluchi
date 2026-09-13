@@ -24,7 +24,10 @@ public class SmartDlcService(
 		IReadOnlyList<long> DlcIds,
 		DlcUnlockerInstallResult? InstallResult,
 		string Message
-	);
+	)
+	{
+		public bool HasRecommendedUnlocker => RecommendedUnlocker != null;
+	}
 
 	public async Task<IReadOnlyList<SmartDlcResult>> ScanAllAsync(Func<long, string, int, int, Task>? progress = null)
 	{

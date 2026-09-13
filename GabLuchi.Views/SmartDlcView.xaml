@@ -69,7 +69,7 @@
                            Content="{x:Static res:Strings.SmartDlc_Install}"
                            Command="{Binding DataContext.InstallSingleCommand, ElementName=Root}"
                            CommandParameter="{Binding}"
-                           IsEnabled="{Binding RecommendedUnlocker, Converter={StaticResource NullToCollapsed}}" />
+                           IsEnabled="{Binding HasRecommendedUnlocker}" />
               </Grid>
 
               <!-- Platform + unlocker info -->

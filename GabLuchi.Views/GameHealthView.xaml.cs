@@ -7,9 +7,10 @@ namespace GabLuchi.Views;
 
 public partial class GameHealthView : UserControl
 {
-	public GameHealthView()
+	public GameHealthView(GameHealthViewModel viewModel)
 	{
 		InitializeComponent();
+		DataContext = viewModel;
 	}
 
 	private void FixIssue_Click(object sender, RoutedEventArgs e)
