@@ -31,6 +31,18 @@
           </StackPanel>
         </Border>
 
+        <!-- Download Progress -->
+        <Border Margin="0,14,0,0" Padding="14" Background="#0DFFFFFF"
+                BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="8"
+                Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVis}}">
+          <StackPanel>
+            <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#e5e7eb" Text="{Binding DownloadStatus}" />
+            <ProgressBar Margin="0,8,0,0" Height="6" Minimum="0" Maximum="100"
+                         Value="{Binding DownloadProgress, Mode=OneWay}"
+                         Background="#1e293b" Foreground="#06b6d4" />
+          </StackPanel>
+        </Border>
+
         <!-- Loading -->
         <StackPanel Margin="0,14,0,0" HorizontalAlignment="Center" Orientation="Horizontal"
                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
@@ -51,18 +63,18 @@
                   </Grid.ColumnDefinitions>
                   <StackPanel Grid.Column="0">
                     <TextBlock FontSize="13.5" FontWeight="SemiBold" Foreground="#e5e7eb"
-                               TextWrapping="Wrap" Text="{Binding Title}" />
+                               TextWrapping="Wrap" Text="{Binding GameName}" />
                     <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="#6b7280"
-                               Text="{Binding Url}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="#9ca3af">
-                      <Run Text="Score: " /><Run Text="{Binding Score, StringFormat=F2}" />
+                               Text="{Binding FileName}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="#06b6d4">
+                      <Run Text="AppID: " /><Run Text="{Binding AppId}" />
                     </TextBlock>
                   </StackPanel>
-                  <ui:Button Grid.Column="1" VerticalAlignment="Center"
-                             Content="{x:Static res:Strings.MultiplayerFix_Open}"
-                             Command="{Binding DataContext.OpenInBrowserCmd, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                  <ui:Button Grid.Column="1" VerticalAlignment="Center" Appearance="Primary"
+                             Content="{x:Static res:Strings.MultiplayerFix_Download}"
+                             Command="{Binding DataContext.DownloadAndApplyCmd, RelativeSource={RelativeSource AncestorType=UserControl}}"
                              CommandParameter="{Binding}"
-                             Icon="{ui:SymbolIcon Globe24}" />
+                             Icon="{ui:SymbolIcon ArrowDownload24}" />
                 </Grid>
               </Border>
             </DataTemplate>

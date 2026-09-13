@@ -70,6 +70,7 @@ public partial class App : Application
 		services.AddSingleton<CompanionService>();
 		services.AddSingleton<DepotDownloaderModService>();
 		services.AddSingleton<MultiplayerFixService>();
+		services.AddSingleton<OnlineFixService>();
 			services.AddSingleton<CrackFixService>();
 			services.AddSingleton<SteamRipService>();
 		services.AddSingleton<SmokeApiUnlocker>();

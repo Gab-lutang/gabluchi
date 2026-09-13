@@ -445,6 +445,7 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="MultiplayerFix_Found" xml:space="preserve"><value>{0} results found</value></data>
   <data name="MultiplayerFix_Open" xml:space="preserve"><value>Open</value></data>
   <data name="MultiplayerFix_OpenOnSite" xml:space="preserve"><value>Open on Site</value></data>
+  <data name="MultiplayerFix_Download" xml:space="preserve"><value>Download &amp; Apply</value></data>
   <data name="Nav_CrackFix" xml:space="preserve"><value>Crack Fixes</value></data>
   <data name="CrackFix_Title" xml:space="preserve"><value>Crack Fixes</value></data>
   <data name="CrackFix_Subtitle" xml:space="preserve"><value>Download and apply cracks from CrakFiles</value></data>

@@ -831,6 +831,8 @@ public static class Strings
 
 	public static string MultiplayerFix_OpenOnSite => Get("MultiplayerFix_OpenOnSite");
 
+	public static string MultiplayerFix_Download => Get("MultiplayerFix_Download");
+
 	public static string Nav_CrackFix => Get("Nav_CrackFix");
 
 	public static string CrackFix_Title => Get("CrackFix_Title");
