@@ -1,13 +1,15 @@
+using System.CodeDom.Compiler;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using GabLuchi.ViewModels;
 
 namespace GabLuchi.Views;
 
-public partial class SmartDlcView : UserControl
+public partial class SmartDlcView : UserControl, IComponentConnector
 {
 	public SmartDlcView(SmartDlcViewModel viewModel)
 	{
 		InitializeComponent();
-		DataContext = viewModel;
+		base.DataContext = viewModel;
 	}
 }

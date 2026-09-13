@@ -1,23 +1,28 @@
+using System;
+using System.CodeDom.Compiler;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using GabLuchi.Models;
 using GabLuchi.ViewModels;
 
 namespace GabLuchi.Views;
 
-public partial class GameHealthView : UserControl
+public partial class GameHealthView : UserControl, IComponentConnector
 {
+	private readonly GameHealthViewModel _viewModel;
+
 	public GameHealthView(GameHealthViewModel viewModel)
 	{
 		InitializeComponent();
-		DataContext = viewModel;
+		base.DataContext = (_viewModel = viewModel);
 	}
 
 	private void FixIssue_Click(object sender, RoutedEventArgs e)
 	{
-		if (sender is Button btn && btn.Tag is HealthIssue issue && DataContext is GameHealthViewModel vm)
+		if (sender is Button btn && btn.Tag is HealthIssue issue)
 		{
-			_ = FixIssueCore(vm, issue);
+			_ = FixIssueCore(_viewModel, issue);
 		}
 	}
 
