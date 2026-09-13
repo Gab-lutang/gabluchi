@@ -518,4 +518,10 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="Health_Subtitle" xml:space="preserve"><value>Scan your installed games for common issues and auto-fix them.</value></data>
   <data name="Health_ScanAll" xml:space="preserve"><value>Scan All Games</value></data>
   <data name="Health_FixAll" xml:space="preserve"><value>Fix All</value></data>
+  <data name="Nav_SmartDlc" xml:space="preserve"><value>DLC Smart</value></data>
+  <data name="SmartDlc_Title" xml:space="preserve"><value>Smart DLC Auto-Unlock</value></data>
+  <data name="SmartDlc_Subtitle" xml:space="preserve"><value>Auto-detect platform, fetch DLCs, and install the right unlocker in one click.</value></data>
+  <data name="SmartDlc_ScanAll" xml:space="preserve"><value>Scan All Games</value></data>
+  <data name="SmartDlc_UnlockAll" xml:space="preserve"><value>Unlock All</value></data>
+  <data name="SmartDlc_Install" xml:space="preserve"><value>Install</value></data>
 </root>

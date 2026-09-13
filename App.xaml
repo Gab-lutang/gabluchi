@@ -15,6 +15,9 @@
       <views:UrlToHosterConverter x:Key="UrlToHoster" />
       <views:HealthSeverityIconConverter x:Key="HealthSeverityIcon" />
       <views:HealthSeverityColorConverter x:Key="HealthSeverityColor" />
+      <views:SmartDlcPlatformLabelConverter x:Key="SmartDlcPlatformLabel" />
+      <views:SmartDlcUnlockerLabelConverter x:Key="SmartDlcUnlockerLabel" />
+      <views:SmartDlcCountLabelConverter x:Key="SmartDlcCountLabel" />
       <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </ResourceDictionary>
   </Application.Resources>

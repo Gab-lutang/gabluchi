@@ -81,6 +81,11 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 		RootNavigation.Navigate(typeof(GameHealthView));
 	}
 
+	public void NavigateToSmartDlc()
+	{
+		RootNavigation.Navigate(typeof(SmartDlcView));
+	}
+
 	private void RestartSteam_Click(object sender, RoutedEventArgs e)
 	{
 		if (base.DataContext is MainViewModel mainViewModel)

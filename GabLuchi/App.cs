@@ -78,6 +78,7 @@ public partial class App : Application
 		services.AddSingleton<UplayR2Unlocker>();
 		services.AddSingleton<DlcUnlockerManager>();
 		services.AddSingleton<GameHealthService>();
+		services.AddSingleton<SmartDlcService>();
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<CompanionService>());
 			services.AddSingleton<HttpServerService>();
 			services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<HttpServerService>());
@@ -96,6 +97,7 @@ public partial class App : Application
 			services.AddSingleton<DownloadGamesViewModel>();
 		services.AddSingleton<DlcUnlockerViewModel>();
 		services.AddSingleton<GameHealthViewModel>();
+		services.AddSingleton<SmartDlcViewModel>();
 		services.AddSingleton<OnboardingViewModel>();
 		services.AddSingleton<MainViewModel>();
 			services.AddSingleton<HomeView>();
@@ -110,6 +112,7 @@ public partial class App : Application
 			services.AddSingleton<DownloadGamesView>();
 		services.AddSingleton<DlcUnlockerView>();
 		services.AddSingleton<GameHealthView>();
+		services.AddSingleton<SmartDlcView>();
 		services.AddSingleton<SettingsView>();
 			services.AddSingleton<MainWindow>();
 		}).Build();

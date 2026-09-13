@@ -977,6 +977,18 @@ public static class Strings
 
 	public static string Health_FixAll => Get("Health_FixAll");
 
+	public static string Nav_SmartDlc => Get("Nav_SmartDlc");
+
+	public static string SmartDlc_Title => Get("SmartDlc_Title");
+
+	public static string SmartDlc_Subtitle => Get("SmartDlc_Subtitle");
+
+	public static string SmartDlc_ScanAll => Get("SmartDlc_ScanAll");
+
+	public static string SmartDlc_UnlockAll => Get("SmartDlc_UnlockAll");
+
+	public static string SmartDlc_Install => Get("SmartDlc_Install");
+
 	public static string Get(string key)
 	{
 		return Rm.GetString(key, CultureInfo.CurrentUICulture) ?? key;

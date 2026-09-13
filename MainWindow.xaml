@@ -52,6 +52,11 @@
                 <ui:SymbolIcon Symbol="HeartPulse24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_SmartDlc}" TargetPageType="{x:Type views:SmartDlcView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="ShieldCheckmark24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
             <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Fixes}" TargetPageType="{x:Type views:FixesView}">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="ShieldTask24" />
