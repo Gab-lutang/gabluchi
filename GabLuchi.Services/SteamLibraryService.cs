@@ -84,4 +84,35 @@ public class SteamLibraryService(SteamService steam)
 	{
 		return s.Replace("\\\\", "\\");
 	}
+
+	public List<long> GetInstalledAppIds()
+	{
+		List<long> ids = new List<long>();
+		try
+		{
+			string effectivePath = steam.EffectivePath;
+			if (effectivePath == null)
+				return ids;
+
+			foreach (string root in GetLibraryRoots(effectivePath))
+			{
+				string steamappsDir = Path.Combine(root, "steamapps");
+				if (!Directory.Exists(steamappsDir))
+					continue;
+
+				foreach (string acf in Directory.GetFiles(steamappsDir, "appmanifest_*.acf"))
+				{
+					string fileName = Path.GetFileNameWithoutExtension(acf);
+					if (fileName.StartsWith("appmanifest_") && long.TryParse(fileName.Substring(12), out long appId))
+					{
+						ids.Add(appId);
+					}
+				}
+			}
+		}
+		catch
+		{
+		}
+		return ids;
+	}
 }

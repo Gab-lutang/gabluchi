@@ -1440,21 +1440,27 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 
 	private async Task PopulateHealthStatusAsync(List<LuaTileViewModel> tiles)
 	{
-		foreach (LuaTileViewModel tile in tiles)
+		await Task.Run(async () =>
 		{
-			try
+			await Parallel.ForEachAsync(tiles, new ParallelOptions { MaxDegreeOfParallelism = 8 }, async (tile, ct) =>
 			{
-				QuickFixService.QuickFixStatus status = await _quickFix.GetStatusAsync(tile.AppId);
-				tile.HealthScore = status.HealthScore;
-				tile.HealthLabel = status.HealthLabel;
-				tile.HealthColor = status.HealthColor;
-				tile.FixableIssues = status.FixableIssues;
-				tile.DlcStatus = status.HasDlcUnlocker ? $"DLC: {status.Platform} unlocked" : (status.Platform == "steam" ? "DLC: unlockable" : "");
-			}
-			catch
-			{
-			}
-		}
+				try
+				{
+					QuickFixService.QuickFixStatus status = await _quickFix.GetStatusAsync(tile.AppId);
+					System.Windows.Application.Current.Dispatcher.Invoke(() =>
+					{
+						tile.HealthScore = status.HealthScore;
+						tile.HealthLabel = status.HealthLabel;
+						tile.HealthColor = status.HealthColor;
+						tile.FixableIssues = status.FixableIssues;
+						tile.DlcStatus = status.HasDlcUnlocker ? $"DLC: {status.Platform} unlocked" : (status.Platform == "steam" ? "DLC: unlockable" : "");
+					});
+				}
+				catch
+				{
+				}
+			});
+		});
 	}
 
 	private void StartCoverPrefetch(IReadOnlyList<LuaTileViewModel> tiles)

@@ -10,7 +10,6 @@ namespace GabLuchi.Services;
 public class SmartDlcService(
 	DlcUnlockerManager dlcManager,
 	SteamLibraryService library,
-	SteamService steam,
 	SteamDepotInfo depots,
 	SteamAppListCache appList
 )
@@ -123,73 +122,7 @@ public class SmartDlcService(
 
 	private List<long> GetInstalledAppIds()
 	{
-		List<long> ids = new List<long>();
-		try
-		{
-			string effectivePath = steam.EffectivePath;
-			if (effectivePath == null)
-				return ids;
-
-			foreach (string root in GetLibraryRoots(effectivePath))
-			{
-				string steamappsDir = Path.Combine(root, "steamapps");
-				if (!Directory.Exists(steamappsDir))
-					continue;
-
-				foreach (string acf in Directory.GetFiles(steamappsDir, "appmanifest_*.acf"))
-				{
-					string content = File.ReadAllText(acf);
-					string? appIdStr = ExtractAcfValue(content, "appid");
-					if (appIdStr != null && long.TryParse(appIdStr, out long appId))
-					{
-						ids.Add(appId);
-					}
-				}
-			}
-		}
-		catch
-		{
-		}
-		return ids;
-	}
-
-	private static IEnumerable<string> GetLibraryRoots(string steamRoot)
-	{
-		yield return steamRoot;
-		string path = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");
-		if (!File.Exists(path))
-			yield break;
-
-		foreach (string line in File.ReadLines(path))
-		{
-			if (!line.TrimStart().StartsWith("\"path\""))
-				continue;
-
-			int firstQuote = line.IndexOf('"', 6);
-			int secondQuote = line.IndexOf('"', firstQuote + 1);
-			if (firstQuote >= 0 && secondQuote > firstQuote)
-			{
-				string libPath = line.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
-				if (Directory.Exists(libPath))
-					yield return libPath;
-			}
-		}
-	}
-
-	private static string? ExtractAcfValue(string content, string key)
-	{
-		foreach (string line in content.Split('\n'))
-		{
-			string trimmed = line.Trim();
-			if (trimmed.StartsWith($"\"{key}\""))
-			{
-				int firstQuote = trimmed.IndexOf('"', key.Length + 2);
-				int secondQuote = trimmed.IndexOf('"', firstQuote + 1);
-				if (firstQuote >= 0 && secondQuote > firstQuote)
-					return trimmed.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
-			}
-		}
-		return null;
+		return library.GetInstalledAppIds();
 	}
 
 	private string GetGameName(long appId)
