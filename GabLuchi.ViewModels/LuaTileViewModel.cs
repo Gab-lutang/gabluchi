@@ -181,6 +181,43 @@ public class LuaTileViewModel : ObservableObject
 		_nameIsPlaceholder = nameIsPlaceholder;
 	}
 
+	private int _healthScore;
+	public int HealthScore
+	{
+		get => _healthScore;
+		set { if (SetProperty(ref _healthScore, value)) OnPropertyChanged(nameof(HealthColor)); OnPropertyChanged(nameof(HealthLabel)); OnPropertyChanged(nameof(HasHealthData)); }
+	}
+
+	private string _healthLabel = "";
+	public string HealthLabel
+	{
+		get => _healthLabel;
+		set => SetProperty(ref _healthLabel, value);
+	}
+
+	private string _healthColor = "#6b7280";
+	public string HealthColor
+	{
+		get => _healthColor;
+		set => SetProperty(ref _healthColor, value);
+	}
+
+	private int _fixableIssues;
+	public int FixableIssues
+	{
+		get => _fixableIssues;
+		set => SetProperty(ref _fixableIssues, value);
+	}
+
+	private string _dlcStatus = "";
+	public string DlcStatus
+	{
+		get => _dlcStatus;
+		set => SetProperty(ref _dlcStatus, value);
+	}
+
+	public bool HasHealthData => HealthScore > 0;
+
 	public async Task EnsureResolvedAsync(SteamAppInfoCache appInfo, CoverCache covers)
 	{
 		if (string.IsNullOrEmpty(ReleaseLabel))

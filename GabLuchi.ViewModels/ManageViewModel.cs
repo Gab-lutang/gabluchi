@@ -41,6 +41,8 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 
 	private readonly SteamLibraryService _library;
 
+	private readonly QuickFixService _quickFix;
+
 	private List<LuaTileViewModel> _all = new List<LuaTileViewModel>();
 
 	private List<LuaTileViewModel> _filtered = new List<LuaTileViewModel>();
@@ -596,6 +598,22 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 	[ExcludeFromCodeCoverage]
 	public IAsyncRelayCommand<LuaTileViewModel?> RemoveDrmCommand => removeDrmCommand ?? (removeDrmCommand = new AsyncRelayCommand<LuaTileViewModel>(RemoveDrm));
 
+	private IAsyncRelayCommand<LuaTileViewModel?>? quickFixCommand;
+	public IAsyncRelayCommand<LuaTileViewModel?> QuickFixCommand => quickFixCommand ?? (quickFixCommand = new AsyncRelayCommand<LuaTileViewModel?>(QuickFix));
+
+	private async Task QuickFix(LuaTileViewModel? tile)
+	{
+		if (tile == null)
+			return;
+		_toast.Show("Quick Fix", $"Applying fixes for {tile.Name}...");
+		QuickFixService.QuickFixStatus result = await _quickFix.ApplyQuickFixesAsync(tile.AppId);
+		tile.HealthScore = result.HealthScore;
+		tile.HealthLabel = result.HealthLabel;
+		tile.HealthColor = result.HealthColor;
+		tile.FixableIssues = result.FixableIssues;
+		_toast.Show("Quick Fix", $"Done — {tile.Name}: {result.HealthLabel} ({result.HealthScore}/100)");
+	}
+
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
 	public IRelayCommand<LuaTileViewModel> DeleteCommand => deleteCommand ?? (deleteCommand = new RelayCommand<LuaTileViewModel>(Delete));
@@ -641,7 +659,7 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 		_settings.ManagePageSize = size;
 	}
 
-	public ManageViewModel(SteamService steam, SteamAppListCache appList, SteamAppInfoCache appInfo, CoverCache covers, SteamDepotInfo depotInfo, ToastService toast, SettingsService settings, SteamlessService steamless, RestoreService restore, SteamLibraryService library)
+	public ManageViewModel(SteamService steam, SteamAppListCache appList, SteamAppInfoCache appInfo, CoverCache covers, SteamDepotInfo depotInfo, ToastService toast, SettingsService settings, SteamlessService steamless, RestoreService restore, SteamLibraryService library, QuickFixService quickFix)
 	{
 		_steam = steam;
 		_appList = appList;
@@ -653,6 +671,7 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 		_steamless = steamless;
 		_restore = restore;
 		_library = library;
+		_quickFix = quickFix;
 		InitPageSize(settings.ManagePageSize);
 	}
 
@@ -1411,10 +1430,30 @@ public class ManageViewModel : PagedListViewModel<LuaTileViewModel>
 				SetEmpty(Strings.Manage_Empty_NoLuas);
 			}
 			StartCoverPrefetch(_all);
+			_ = PopulateHealthStatusAsync(_all);
 		}
 		finally
 		{
 			base.IsLoading = false;
+		}
+	}
+
+	private async Task PopulateHealthStatusAsync(List<LuaTileViewModel> tiles)
+	{
+		foreach (LuaTileViewModel tile in tiles)
+		{
+			try
+			{
+				QuickFixService.QuickFixStatus status = await _quickFix.GetStatusAsync(tile.AppId);
+				tile.HealthScore = status.HealthScore;
+				tile.HealthLabel = status.HealthLabel;
+				tile.HealthColor = status.HealthColor;
+				tile.FixableIssues = status.FixableIssues;
+				tile.DlcStatus = status.HasDlcUnlocker ? $"DLC: {status.Platform} unlocked" : (status.Platform == "steam" ? "DLC: unlockable" : "");
+			}
+			catch
+			{
+			}
 		}
 	}
 

@@ -79,6 +79,7 @@ public partial class App : Application
 		services.AddSingleton<DlcUnlockerManager>();
 		services.AddSingleton<GameHealthService>();
 		services.AddSingleton<SmartDlcService>();
+		services.AddSingleton<QuickFixService>();
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<CompanionService>());
 			services.AddSingleton<HttpServerService>();
 			services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<HttpServerService>());

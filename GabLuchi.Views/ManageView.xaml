@@ -183,6 +183,25 @@
                 <TextBlock Height="36" FontSize="13.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" TextWrapping="Wrap" Text="{Binding Name}" />
                 <TextBlock Margin="0,4,0,0" FontSize="11.5" Foreground="#6b7280" Text="{Binding AppId, StringFormat={x:Static res:Strings.Common_AppId}}" />
                 <TextBlock Margin="0,2,0,0" FontSize="11" Foreground="#4b5563" TextTrimming="CharacterEllipsis" Text="{Binding AddedReleaseLabel}" />
+                <!-- Health status + DLC status -->
+                <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                  <Border Padding="5,2" CornerRadius="4" Background="#14ffffff" Visibility="{Binding HasHealthData, Converter={StaticResource BoolToVis}}">
+                    <StackPanel Orientation="Horizontal">
+                      <Border Width="6" Height="6" Margin="0,0,4,0" CornerRadius="3" Background="{Binding HealthColor}" />
+                      <TextBlock FontSize="10" Foreground="{Binding HealthColor}" Text="{Binding HealthLabel}" />
+                    </StackPanel>
+                  </Border>
+                  <Border Margin="6,0,0,0" Padding="5,2" CornerRadius="4" Background="#1422c55e" Visibility="{Binding DlcStatus, Converter={StaticResource NullToCollapsed}}">
+                    <TextBlock FontSize="10" Foreground="#22c55e" Text="{Binding DlcStatus}" />
+                  </Border>
+                  <Border Margin="6,0,0,0" Padding="5,2" CornerRadius="4" Background="#14eab308" Visibility="{Binding FixableIssues, Converter={StaticResource BoolToVis}}">
+                    <TextBlock FontSize="10" Foreground="#eab308" Text="{Binding FixableIssues, StringFormat='{}{0} fix'}" />
+                  </Border>
+                </StackPanel>
+                <!-- Quick Fix button -->
+                <Button Margin="0,6,0,0" Padding="6,3" HorizontalAlignment="Left" Background="#1622c55e" Foreground="#22c55e" FontSize="11" FontWeight="SemiBold"
+                        Content="Quick Fix" Visibility="{Binding FixableIssues, Converter={StaticResource BoolToVis}}"
+                        Command="{Binding DataContext.QuickFixCommand, ElementName=Root}" CommandParameter="{Binding}" />
               </StackPanel>
             </StackPanel>
           </Border>
