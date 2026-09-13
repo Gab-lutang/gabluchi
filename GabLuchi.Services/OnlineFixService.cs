@@ -27,7 +27,7 @@ public class OnlineFixService(SteamLibraryService library, ToastService toast)
 
 	private const string ArchivePassword = "online-fix.me";
 
-	private static readonly Regex LinkRegex = new Regex("<a[^>]+href=\"([^\"]+\\.rar)\"[^>]*>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+	private static readonly Regex LinkRegex = new Regex("<a[^>]+href=\"([^\"]+\\.rar)\"[^>]*>([^<]+)</a>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
 	private static readonly Regex SizeRegex = new Regex("(\\d+)", RegexOptions.Compiled);
 
@@ -64,11 +64,16 @@ public class OnlineFixService(SteamLibraryService library, ToastService toast)
 		foreach (Match match in matches)
 		{
 			string href = match.Groups[1].Value;
-			if (string.IsNullOrEmpty(href))
+			string displayText = match.Groups[2].Value.Trim();
+			if (string.IsNullOrEmpty(href) || string.IsNullOrEmpty(displayText))
 			{
 				continue;
 			}
-			string fileName = Path.GetFileName(href);
+			if (!displayText.EndsWith(".rar", StringComparison.OrdinalIgnoreCase))
+			{
+				continue;
+			}
+			string fileName = displayText;
 			string gameName = ExtractGameName(fileName);
 			long appId = ExtractAppId(fileName);
 			if (appId <= 0)
