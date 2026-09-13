@@ -62,6 +62,11 @@
                 <ui:SymbolIcon Symbol="ShieldTask24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_MultiplayerFix}" TargetPageType="{x:Type views:MultiplayerFixView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="People24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
             <ui:NavigationViewItem Content="Plugin" TargetPageType="{x:Type views:PluginView}">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="PuzzlePiece24" />
