@@ -109,14 +109,15 @@ public partial class GameHealthViewModel : ObservableObject
 			{
 				ProgressText = "No games found. Check Steam path in Settings.";
 			}
-			else
-			{
-				ProgressText = $"Scan complete — {Results.Count} games checked.";
-			}
 
 			foreach (GameHealthReport report in reports.OrderByDescending(r => r.HealthScore))
 			{
 				Results.Add(report);
+			}
+
+			if (reports.Count > 0)
+			{
+				ProgressText = $"Scan complete — {Results.Count} games checked.";
 			}
 
 			OnPropertyChanged(nameof(SummaryText));
