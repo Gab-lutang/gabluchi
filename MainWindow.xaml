@@ -47,6 +47,11 @@
                 <ui:SymbolIcon Symbol="Options24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Health}" TargetPageType="{x:Type views:GameHealthView}">
+              <ui:NavigationViewItem.Icon>
+                <ui:SymbolIcon Symbol="HeartPulse24" />
+              </ui:NavigationViewItem.Icon>
+            </ui:NavigationViewItem>
             <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Fixes}" TargetPageType="{x:Type views:FixesView}">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="ShieldTask24" />

@@ -513,4 +513,9 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="DownloadGames_OpenedInBrowser" xml:space="preserve"><value>Opened download page in browser.</value></data>
   <data name="DownloadGames_OpenedMirror" xml:space="preserve"><value>Opened {0} in browser. Download the file, then click Extract.</value></data>
   <data name="DownloadGames_Extract" xml:space="preserve"><value>Extract Downloaded Archive</value></data>
+  <data name="Nav_Health" xml:space="preserve"><value>Health</value></data>
+  <data name="Health_Title" xml:space="preserve"><value>Game Health Scanner</value></data>
+  <data name="Health_Subtitle" xml:space="preserve"><value>Scan your installed games for common issues and auto-fix them.</value></data>
+  <data name="Health_ScanAll" xml:space="preserve"><value>Scan All Games</value></data>
+  <data name="Health_FixAll" xml:space="preserve"><value>Fix All</value></data>
 </root>

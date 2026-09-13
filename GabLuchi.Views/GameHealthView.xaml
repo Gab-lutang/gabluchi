@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="GabLuchi.Views.GameHealthView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:res="clr-namespace:GabLuchi.Resources" xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml" TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+  <Grid Name="Root">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <!-- Header -->
+    <Grid Grid.Row="0" Margin="8,16,16,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <StackPanel>
+        <TextBlock FontSize="22" FontWeight="Bold" Text="{x:Static res:Strings.Health_Title}" />
+        <TextBlock Margin="0,2,0,0" FontSize="13" Foreground="#9ca3af" Text="{x:Static res:Strings.Health_Subtitle}" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+        <ui:Button Margin="0,0,8,0" Appearance="Primary" Content="{Binding ScanButtonText}"
+                   Command="{Binding ScanAllCommand}" Icon="{ui:SymbolIcon Search24}"                    IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolToVis}}" />
+        <ui:Button Content="{x:Static res:Strings.Health_FixAll}"
+                   Command="{Binding FixAllCommand}" Icon="{ui:SymbolIcon CheckmarkCircle24}"
+                   IsEnabled="{Binding HasResults}" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Summary -->
+    <Border Grid.Row="1" Margin="8,12,16,0" Padding="14" Background="#0DFFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="10"
+            Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}">
+      <StackPanel>
+        <TextBlock FontSize="14" FontWeight="SemiBold" Text="{Binding SummaryText}" Foreground="{Binding SummaryColor}" />
+      </StackPanel>
+    </Border>
+
+    <!-- Progress -->
+    <TextBlock Grid.Row="2" Margin="8,10,16,0" FontSize="12" Foreground="#9ca3af" Text="{Binding ProgressText}"
+               Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}" />
+
+    <!-- Loading ring -->
+    <ui:ProgressRing Grid.Row="3" Margin="0,20,0,0" HorizontalAlignment="Center" Width="40" Height="40" IsIndeterminate="True"
+                     Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}" />
+
+    <!-- Results -->
+    <ItemsControl Grid.Row="4" Margin="8,12,16,8" ItemsSource="{Binding Results}" VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.ScrollUnit="Pixel">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Border Margin="0,0,0,8" Padding="16" Background="#0DFFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="10">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+
+              <!-- Game name + score -->
+              <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock FontSize="15" FontWeight="SemiBold" Text="{Binding GameName}" Foreground="#e5e7eb" />
+                  <TextBlock Margin="0,2,0,0" FontSize="11" Foreground="#6b7280" Text="{Binding InstallDir}" TextTrimming="CharacterEllipsis" MaxWidth="600" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <Border Padding="8,3" CornerRadius="6" Background="{Binding ScoreColor}">
+                    <TextBlock FontSize="12" FontWeight="Bold" Foreground="#000000" Text="{Binding HealthScore, StringFormat='{}{0}/100'}" />
+                  </Border>
+                  <Border Margin="6,0,0,0" Padding="8,3" CornerRadius="6" Background="#14ffffff">
+                    <TextBlock FontSize="11" Foreground="{Binding ScoreColor}" Text="{Binding ScoreLabel}" />
+                  </Border>
+                </StackPanel>
+              </Grid>
+
+              <!-- Issues -->
+              <ItemsControl Grid.Row="1" Margin="0,10,0,0" ItemsSource="{Binding Issues}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Grid Margin="0,3">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                      </Grid.ColumnDefinitions>
+                      <ui:SymbolIcon Grid.Column="0" Margin="0,0,8,0" VerticalAlignment="Center" Symbol="{Binding Severity, Converter={StaticResource HealthSeverityIcon}}" />
+                      <TextBlock Grid.Column="1" Margin="0,0,6,0" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"
+                                 Text="{Binding Category}" Foreground="{Binding Severity, Converter={StaticResource HealthSeverityColor}}" />
+                      <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock FontSize="12" Text="{Binding Title}" Foreground="#e5e7eb" />
+                        <TextBlock Margin="0,1,0,0" FontSize="11" Foreground="#6b7280" Text="{Binding Description}" TextWrapping="Wrap" />
+                      </StackPanel>
+                      <Button Grid.Column="3" Margin="6,0,0,0" Padding="6,2" VerticalAlignment="Center" Content="Fix"
+                              Visibility="{Binding HasFix, Converter={StaticResource BoolToVis}}"
+                              Tag="{Binding}" Click="FixIssue_Click" Background="#22c55e" Foreground="#000000" FontSize="11" FontWeight="SemiBold" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </Grid>
+</UserControl>

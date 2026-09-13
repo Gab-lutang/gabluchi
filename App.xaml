@@ -13,6 +13,8 @@
       <local:EqualityMultiConverter x:Key="EqualityMulti" />
       <local:FilterOptionDisplayConverter x:Key="FilterOptionDisplay" />
       <views:UrlToHosterConverter x:Key="UrlToHoster" />
+      <views:HealthSeverityIconConverter x:Key="HealthSeverityIcon" />
+      <views:HealthSeverityColorConverter x:Key="HealthSeverityColor" />
       <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </ResourceDictionary>
   </Application.Resources>

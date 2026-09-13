@@ -967,6 +967,16 @@ public static class Strings
 
 	public static string DownloadGames_Extract => Get("DownloadGames_Extract");
 
+	public static string Nav_Health => Get("Nav_Health");
+
+	public static string Health_Title => Get("Health_Title");
+
+	public static string Health_Subtitle => Get("Health_Subtitle");
+
+	public static string Health_ScanAll => Get("Health_ScanAll");
+
+	public static string Health_FixAll => Get("Health_FixAll");
+
 	public static string Get(string key)
 	{
 		return Rm.GetString(key, CultureInfo.CurrentUICulture) ?? key;

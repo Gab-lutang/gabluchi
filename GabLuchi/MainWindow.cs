@@ -76,6 +76,11 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 		RootNavigation.Navigate(typeof(ModeView));
 	}
 
+	public void NavigateToHealth()
+	{
+		RootNavigation.Navigate(typeof(GameHealthView));
+	}
+
 	private void RestartSteam_Click(object sender, RoutedEventArgs e)
 	{
 		if (base.DataContext is MainViewModel mainViewModel)
