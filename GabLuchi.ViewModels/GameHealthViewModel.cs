@@ -29,8 +29,10 @@ public partial class GameHealthViewModel : ObservableObject
 	public bool IsScanning
 	{
 		get => _isScanning;
-		set => SetProperty(ref _isScanning, value);
+		set { if (SetProperty(ref _isScanning, value)) OnPropertyChanged(nameof(IsNotScanning)); }
 	}
+
+	public bool IsNotScanning => !IsScanning;
 
 	private bool _isFixing;
 	public bool IsFixing
@@ -93,7 +95,7 @@ public partial class GameHealthViewModel : ObservableObject
 
 		IsScanning = true;
 		Results.Clear();
-		ProgressText = "Scanning games...";
+		ProgressText = "Finding installed games...";
 
 		try
 		{
@@ -103,12 +105,20 @@ public partial class GameHealthViewModel : ObservableObject
 				await Task.Delay(10);
 			});
 
+			if (reports.Count == 0)
+			{
+				ProgressText = "No games found. Check Steam path in Settings.";
+			}
+			else
+			{
+				ProgressText = $"Scan complete — {Results.Count} games checked.";
+			}
+
 			foreach (GameHealthReport report in reports.OrderByDescending(r => r.HealthScore))
 			{
 				Results.Add(report);
 			}
 
-			ProgressText = $"Scan complete — {Results.Count} games checked.";
 			OnPropertyChanged(nameof(SummaryText));
 			OnPropertyChanged(nameof(SummaryColor));
 			OnPropertyChanged(nameof(HasResults));

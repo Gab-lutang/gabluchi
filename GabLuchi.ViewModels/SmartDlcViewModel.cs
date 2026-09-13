@@ -27,8 +27,10 @@ public partial class SmartDlcViewModel : ObservableObject
 	public bool IsScanning
 	{
 		get => _isScanning;
-		set => SetProperty(ref _isScanning, value);
+		set { if (SetProperty(ref _isScanning, value)) OnPropertyChanged(nameof(IsNotScanning)); }
 	}
+
+	public bool IsNotScanning => !IsScanning;
 
 	private bool _isBusy;
 	public bool IsBusy

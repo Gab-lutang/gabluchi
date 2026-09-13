@@ -21,7 +21,7 @@
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
         <ui:Button Margin="0,0,8,0" Appearance="Primary" Content="{x:Static res:Strings.SmartDlc_ScanAll}"
-                   Command="{Binding ScanAllCommand}" Icon="{ui:SymbolIcon Search24}" IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolToVis}}" />
+                   Command="{Binding ScanAllCommand}" Icon="{ui:SymbolIcon Search24}"                    IsEnabled="{Binding IsNotScanning}" />
         <ui:Button Content="{x:Static res:Strings.SmartDlc_UnlockAll}"
                    Command="{Binding UnlockAllCommand}" Icon="{ui:SymbolIcon ShieldCheckmark24}"
                    IsEnabled="{Binding HasResults}" />

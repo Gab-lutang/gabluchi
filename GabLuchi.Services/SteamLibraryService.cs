@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Text.RegularExpressions.Generated;
@@ -26,6 +27,7 @@ public class SteamLibraryService(SteamService steam)
 			string effectivePath = steam.EffectivePath;
 			if (effectivePath == null)
 			{
+				Debug.WriteLine($"[SteamLibraryService] EffectivePath is null");
 				return null;
 			}
 			foreach (string libraryRoot in GetLibraryRoots(effectivePath))
@@ -47,8 +49,9 @@ public class SteamLibraryService(SteamService steam)
 				}
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
+			Debug.WriteLine($"[SteamLibraryService] GetInstallDir({appId}) failed: {ex.Message}");
 		}
 		return null;
 	}
@@ -59,6 +62,7 @@ public class SteamLibraryService(SteamService steam)
 		string path = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");
 		if (!File.Exists(path))
 		{
+			Debug.WriteLine($"[SteamLibraryService] libraryfolders.vdf not found at {path}");
 			yield break;
 		}
 		string input;
@@ -66,8 +70,9 @@ public class SteamLibraryService(SteamService steam)
 		{
 			input = File.ReadAllText(path);
 		}
-		catch
+		catch (Exception ex)
 		{
+			Debug.WriteLine($"[SteamLibraryService] Failed to read libraryfolders.vdf: {ex.Message}");
 			yield break;
 		}
 		foreach (Match item in PathRegex().Matches(input))
@@ -92,15 +97,26 @@ public class SteamLibraryService(SteamService steam)
 		{
 			string effectivePath = steam.EffectivePath;
 			if (effectivePath == null)
+			{
+				Debug.WriteLine($"[SteamLibraryService] GetInstalledAppIds: EffectivePath is null");
 				return ids;
+			}
+			Debug.WriteLine($"[SteamLibraryService] GetInstalledAppIds: EffectivePath = {effectivePath}");
 
+			int libraryCount = 0;
 			foreach (string root in GetLibraryRoots(effectivePath))
 			{
+				libraryCount++;
 				string steamappsDir = Path.Combine(root, "steamapps");
 				if (!Directory.Exists(steamappsDir))
+				{
+					Debug.WriteLine($"[SteamLibraryService] steamapps dir not found: {steamappsDir}");
 					continue;
+				}
 
-				foreach (string acf in Directory.GetFiles(steamappsDir, "appmanifest_*.acf"))
+				string[] acfs = Directory.GetFiles(steamappsDir, "appmanifest_*.acf");
+				Debug.WriteLine($"[SteamLibraryService] Found {acfs.Length} ACF files in {steamappsDir}");
+				foreach (string acf in acfs)
 				{
 					string fileName = Path.GetFileNameWithoutExtension(acf);
 					if (fileName.StartsWith("appmanifest_") && long.TryParse(fileName.Substring(12), out long appId))
@@ -109,9 +125,11 @@ public class SteamLibraryService(SteamService steam)
 					}
 				}
 			}
+			Debug.WriteLine($"[SteamLibraryService] GetInstalledAppIds: {ids.Count} IDs from {libraryCount} libraries");
 		}
-		catch
+		catch (Exception ex)
 		{
+			Debug.WriteLine($"[SteamLibraryService] GetInstalledAppIds failed: {ex}");
 		}
 		return ids;
 	}
