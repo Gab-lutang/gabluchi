@@ -215,22 +215,17 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 
 func startKeepAlive(selfURL string) {
 	if selfURL == "" {
-		log.Println("keep-alive: no SELF_URL/RENDER_EXTERNAL_URL set, skipping")
 		return
 	}
-	log.Printf("keep-alive: enabled, pinging %s/health every 14m", selfURL)
 	go func() {
-		ticker := time.NewTicker(14 * time.Minute)
+		ticker := time.NewTicker(4 * time.Minute)
 		defer ticker.Stop()
 		client := &http.Client{Timeout: 10 * time.Second}
 		for range ticker.C {
 			resp, err := client.Get(selfURL + "/health")
-			if err != nil {
-				log.Printf("keep-alive: ping failed: %v", err)
-				continue
+			if err == nil {
+				resp.Body.Close()
 			}
-			resp.Body.Close()
-			log.Printf("keep-alive: ping ok %d", resp.StatusCode)
 		}
 	}()
 }
