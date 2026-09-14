@@ -250,3 +250,152 @@ gh release create v$VER --repo Gab-lutang/gabluchi --title "v$VER" --notes "..."
   "Releases\releases.win.json" `
   "Releases\assets.win.json"
 ```
+
+---
+
+## 12. Dev Workflow — Side-by-Side Testing
+
+Dev builds install to a **separate folder** so they never conflict with the production install.
+
+| Build | PackId | Install path | Channel | Velopack JSON |
+|---|---|---|---|---|
+| Production | `GabLuchi` | `%LocalAppData%\GabLuchi\` | `stable` | `releases.win.json` |
+| Dev | `GabLuchi-Dev` | `%LocalAppData%\GabLuchi-Dev\` | `dev` | `releases.dev.json` |
+
+Both auto-update independently from the same GitHub repo. Production users never see dev builds. Dev users never see production builds.
+
+### Branch Strategy
+
+| Branch | Purpose | Who merges |
+|---|---|---|
+| `main` | Production releases | LO, after dev testing passes |
+| `dev` | Testing builds for LO + bro | LO pushes freely |
+
+### Dev Build Script
+
+```powershell
+# === VERSION (use -dev.N suffix) ===
+$VER = "1.0.24-dev.1"
+
+# === CLEAN ===
+Get-ChildItem -Recurse -Directory -Filter "bin" -EA SilentlyContinue | % { Remove-Item $_.FullName -Recurse -Force }
+Get-ChildItem -Recurse -Directory -Filter "obj" -EA SilentlyContinue | % { Remove-Item $_.FullName -Recurse -Force }
+Remove-Item "Release" -Recurse -Force -EA SilentlyContinue
+Remove-Item "Releases" -Recurse -Force -EA SilentlyContinue
+
+# === BUILD ===
+dotnet publish -c Release -r win-x64 --self-contained -o Release/publish
+
+# === PACK (note: --packId GabLuchi-Dev, --channel dev) ===
+vpk pack --packId GabLuchi-Dev --packVersion $VER --packDir "Release\publish" --mainExe GabLuchi.exe --channel dev
+
+# === STRIP BOM from RELEASES-dev ===
+$p = "Releases\RELEASES-dev"
+if (Test-Path $p) {
+    $b = [IO.File]::ReadAllBytes($p)
+    if ($b[0]-eq 239 -and $b[1]-eq 187 -and $b[2]-eq 191) {
+        [IO.File]::WriteAllBytes($p, $b[3..($b.Length-1)])
+    }
+}
+
+# === VERIFY ===
+Get-Content "Releases\releases.dev.json"
+
+# === COMMIT & PUSH to dev ===
+git add -A; git commit -m "v$VER - description"; git push origin dev
+
+# === TAG ===
+git tag v$VER; git push origin v$VER
+
+# === PRE-RELEASE (note: --prerelease flag) ===
+gh release create v$VER --repo Gab-lutang/gabluchi --title "v$VER" --prerelease --notes "Dev build" `
+  "Releases\GabLuchi-Dev-$VER-full.nupkg" `
+  "Releases\GabLuchi-Dev-win-Setup.exe" `
+  "Releases\GabLuchi-Dev-win-Portable.zip" `
+  "Releases\RELEASES-dev" `
+  "Releases\releases.dev.json" `
+  "Releases\assets.dev.json"
+```
+
+### Dev→Production Promotion
+
+When dev testing passes and you're ready to ship:
+
+```powershell
+# Merge dev into main
+git checkout main
+git merge dev
+git push origin main
+
+# Then run the normal production release script (Section 11)
+# The production build uses --packId GabLuchi (no suffix) and no --channel flag
+```
+
+### Key Rules
+
+- **Dev version format**: `X.X.X-dev.N` (e.g., `1.0.24-dev.1`, `1.0.24-dev.2`)
+- **Production version format**: `X.X.X` (e.g., `1.0.24`)
+- **Dev releases are tagged `--prerelease`** on GitHub — shows as pre-release, not latest
+- **Same GitHub repo** — Velopack distinguishes by channel JSON files
+- **Both users** (LO + bro) install the dev Setup.exe once → auto-updates to future dev releases
+- **Production users** are unaffected — they only see `releases.win.json`
+
+### First-Time Dev Setup (for bro)
+
+1. Download the dev pre-release Setup.exe from GitHub
+2. Run it — installs to `%LocalAppData%\GabLuchi-Dev\`
+3. Done — future dev releases auto-update
+
+To go back to production: uninstall `GabLuchi-Dev`, install from main release.
+
+---
+
+## 13. GabLuchi Connect — Relay Server
+
+The lobby relay server enables multiplayer invites without Steam's broken Spacewar invite system.
+
+### Architecture
+
+```
+Host GabLuchi → ws://relay → sends lobby info → gets 6-char code
+Friend GabLuchi → ws://relay → sends code → gets host's IP + port
+Relay pairs them, exchanges info, disconnects. No data stored.
+```
+
+### Relay Server Location
+
+- **Source**: `GabLuchi/ConnectRelay/` (Go project)
+- **Hosted on**: Render free tier (separate workspace)
+- **URL**: Set in `GabLuchi.Services/ConnectRelayService.cs` → `RelayWsUrl`
+
+### Relay Server Deploy
+
+```bash
+# From GabLuchi/ConnectRelay/
+docker build -t gabluchi-connect .
+# Test locally
+docker run -p 8080:8080 gabluchi-connect
+# Deploy to Render via GitHub (push ConnectRelay/ to a repo, connect Render)
+```
+
+### Relay Server Features
+
+- WebSocket endpoint at `/ws`
+- Health check at `/health`
+- 6-char hex codes, expire in 5 minutes
+- Rate limiting: 10 connections per IP per minute
+- Stateless — no database, no logs, no persistence
+- ~200 lines of Go
+
+### Client Integration
+
+- `GabLuchi.Services/ConnectRelayService.cs` — WebSocket client
+- `GabLuchi.ViewModels/MultiplayerFixViewModel.cs` — Share/Join commands
+- `GabLuchi.Views/MultiplayerFixView.xaml` — Connect with Friend UI section
+
+### Privacy
+
+- Relay sees: game name, app ID, IP, port (transient only)
+- Relay does NOT see: Steam credentials, game files, personal data
+- All data is ephemeral — codes expire in 5 minutes, no logging
+- Open source — fully auditable
