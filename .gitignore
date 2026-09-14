@@ -10,3 +10,5 @@ Releases/
 *.user
 *.suo
 .vs/
+
+GabLuchi/ConnectRelay/relay.exe
