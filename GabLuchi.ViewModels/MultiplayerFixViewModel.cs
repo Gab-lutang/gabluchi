@@ -132,7 +132,14 @@ public class MultiplayerFixViewModel : ObservableObject
 		string? gameDir = _library.GetInstallDir(entry.AppId);
 		if (string.IsNullOrEmpty(gameDir) || !Directory.Exists(gameDir))
 		{
-			_toast.Show(Strings.MultiplayerFix_Title, "Game not found in Steam library. Install it first.", error: true);
+			List<string> roots = _library.GetLibraryRootsList();
+			string rootList = roots.Count > 0
+				? string.Join("\n", roots)
+				: "(no libraries found)";
+			string msg = string.Format(
+				"AppId {0} not found in {1} Steam libraries:\n{2}",
+				entry.AppId, roots.Count, rootList);
+			_toast.Show(Strings.MultiplayerFix_Title, msg, error: true);
 			return;
 		}
 		IsDownloading = true;

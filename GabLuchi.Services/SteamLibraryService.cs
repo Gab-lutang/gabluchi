@@ -90,6 +90,27 @@ public class SteamLibraryService(SteamService steam)
 		return s.Replace("\\\\", "\\");
 	}
 
+	public List<string> GetLibraryRootsList()
+	{
+		List<string> roots = new List<string>();
+		try
+		{
+			string effectivePath = steam.EffectivePath;
+			if (effectivePath == null)
+			{
+				return roots;
+			}
+			foreach (string root in GetLibraryRoots(effectivePath))
+			{
+				roots.Add(root);
+			}
+		}
+		catch
+		{
+		}
+		return roots;
+	}
+
 	public List<long> GetInstalledAppIds()
 	{
 		List<long> ids = new List<long>();
