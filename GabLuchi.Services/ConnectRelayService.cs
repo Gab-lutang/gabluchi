@@ -12,7 +12,7 @@ namespace GabLuchi.Services;
 
 public class ConnectRelayService
 {
-	private const string RelayWsUrl = "ws://localhost:8080/ws";
+	private const string RelayWsUrl = "wss://gabluchi-connect.onrender.com/ws";
 	private const string PublicIpUrl = "https://api.ipify.org";
 	private const int ConnectTimeoutSeconds = 10;
 
