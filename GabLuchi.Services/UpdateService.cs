@@ -8,7 +8,7 @@ namespace GabLuchi.Services;
 
 public class UpdateService
 {
-	private readonly UpdateManager[] _managers = AppConfig.GithubReleasesRepos.Select((string repo) => new UpdateManager(new GithubSource(repo, null, prerelease: false, new ProxiedFileDownloader()))).ToArray();
+	private readonly UpdateManager[] _managers = AppConfig.GithubReleasesRepos.Select((string repo) => new UpdateManager(new GithubSource(repo, null, prerelease: true, new ProxiedFileDownloader()))).ToArray();
 
 	private UpdateManager? _stagedMgr;
 
