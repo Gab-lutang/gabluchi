@@ -1,68 +1,19 @@
-# Multiplayer Fix Storage — Distribution Plan
+# Multiplayer Fix Storage — GitHub Distribution Plan
 
 ## Overview
 
-GabLuchi distributes multiplayer fixes using a **GitHub repository as storage**. No servers, no APIs, no external services. Just a public GitHub repo hosting fix archives and an index file.
+Distribute multiplayer fix files to GabLuchi users via a public GitHub repository. No server, no relay, no external services. Just GitHub raw files.
 
-**Primary source:** PeronDepot mirror (existing, automatic)
-**Secondary source:** GabLuchi Fixes GitHub repo (curated, manual)
-**Future:** Local library for user's own fixes
-
----
-
-## Architecture
+## Repository Structure
 
 ```
-User searches "Gang Beasts"
-        ↓
-┌──────────────────┬──────────────────────┐
-│ PeronDepot       │ GitHub Fixes          │
-│ (existing)        │ (new)                 │
-│ Auto-search       │ Fetch index.json      │
-│ Online mirror     │ Download from GitHub   │
-└────────┬─────────┴──────────┬───────────┘
-         │                    │
-         └────────┬───────────┘
-                  ↓
-         Merge results (dedupe by AppId)
-                  ↓
-         Show to user
-                  ↓
-         User clicks Apply
-                  ↓
-         Download .rar from GitHub
-                  ↓
-         Extract + apply (same as perondepot flow)
-```
-
----
-
-## GitHub Repository
-
-**Repo:** `Gab-lutang/gabluchi-fixes` (public)
-
-### Structure
-
-```
-gabluchi-fixes/
+GitHub: Gab-lutang/gabluchi-fixes (public)
 ├── index.json                    ← fix catalog
 ├── fixes/
 │   ├── gang_beasts_123456.rar
 │   ├── shieldwall_1216320.rar
 │   └── ...
-└── README.md                     ← (optional) list of available fixes
 ```
-
-### URLs
-
-| Resource | URL |
-|---|---|
-| Index | `https://raw.githubusercontent.com/Gab-lutang/gabluchi-fixes/main/index.json` |
-| Fix archive | `https://raw.githubusercontent.com/Gab-lutang/gabluchi-fixes/main/fixes/{fileName}` |
-
-No API key. No auth. Just raw URLs.
-
----
 
 ## index.json Schema
 
@@ -89,59 +40,120 @@ No API key. No auth. Just raw URLs.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `appId` | int | Yes | Steam AppId of the game |
-| `gameName` | string | Yes | Display name (e.g., "Gang Beasts") |
-| `password` | string | Yes | Archive password (usually "online-fix.me") |
-| `fileName` | string | Yes | Filename in `fixes/` folder |
-| `dateAdded` | string | Yes | ISO date (YYYY-MM-DD) |
+| appId | int | Yes | Steam AppId of the game |
+| gameName | string | Yes | Human-readable game name |
+| password | string | Yes | Archive password (usually `online-fix.me`) |
+| fileName | string | Yes | Filename in fixes/ folder |
+| dateAdded | string | Yes | ISO date (YYYY-MM-DD) |
 
----
+## Download URL Pattern
 
-## How to Add a Fix
+```
+https://raw.githubusercontent.com/Gab-lutang/gabluchi-fixes/main/fixes/{fileName}
+```
 
-### Step 1: Collect the Fix
+No API key. No auth. No rate limits for normal usage.
 
-1. Go to online-fix.me (or other source)
-2. Download the fix archive for a game
-3. Note: game name, AppId, archive password
+## GabLuchi Search Flow
 
-### Step 2: Add to GitHub Repo
+```
+User searches "Gang Beasts"
+        ↓
+┌──────────────────┬──────────────────────┐
+│ PeronDepot       │ GitHub Fixes          │
+│ (existing)        │ (new)                 │
+│ search perondepot │ GET raw.githubusercontent.com│
+│                    │ /.../index.json       │
+└────────┬─────────┴──────────┬───────────┘
+         │                    │
+         └────────┬───────────┘
+                  ↓
+         Filter by query
+                  ↓
+         Merge results (dedupe by AppId)
+                  ↓
+         Show to user
+                  ↓
+         User clicks Apply
+                  ↓
+         Download .rar from GitHub
+                  ↓
+         Extract + apply (same as perondepot flow)
+```
 
-1. Clone or update `Gab-lutang/gabluchi-fixes`
-2. Copy the archive to `fixes/` folder
-3. Rename to `{game_name}_{appId}.rar` (e.g., `gang_beasts_123456.rar`)
-4. Add entry to `index.json`
-5. Commit + push
+## Architecture
 
-### Step 3: Verify
+```
+┌─────────────────────────────────────────────────────┐
+│                   GabLuchi App                       │
+│                                                       │
+│  ┌───────────────────────────────────────────────┐   │
+│  │              MultiplayerFix Page                │   │
+│  │                                                 │   │
+│  │  Search: "Gang Beasts"                          │   │
+│  │           ↓                                     │   │
+│  │  ┌─────────────┐  ┌─────────────────────┐      │   │
+│  │  │ PeronDepot   │  │ GitHub Fixes        │      │   │
+│  │  │ (existing)   │  │ (new)               │      │   │
+│  │  └──────┬──────┘  └──────────┬──────────┘      │   │
+│  │         └─────────┬──────────┘                  │   │
+│  │                   ↓                              │   │
+│  │         Merged Results                           │   │
+│  │         ┌─────────────────────┐                 │   │
+│  │         │ Gang Beasts  [peron] │                 │   │
+│  │         │ Gang Beasts  [github] │ (if different) │   │
+│  │         └─────────────────────┘                 │   │
+│  └───────────────────────────────────────────────┘   │
+│                                                       │
+│  ┌───────────────────────────────────────────────┐   │
+│  │              Fix Library (Phase 2)              │   │
+│  │              Local storage for user's own fixes │   │
+│  └───────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────┘
+```
 
-- GabLuchi auto-fetches the updated index
-- New fix appears in MultiplayerFix search
-- Users can download and apply
-
----
-
-## GabLuchi Client Integration
-
-### New Files
+## New Files
 
 | File | Purpose |
 |---|---|
-| `GabLuchi.Services/GitHubFixService.cs` | Fetch index.json, download archives |
-| `GabLuchi.Models/GitHubFixEntry.cs` | Data model |
+| `GabLuchi.Models/GitHubFixEntry.cs` | Data model for GitHub fix entries |
+| `GabLuchi.Services/GitHubFixService.cs` | Fetch index, download archives |
 
-### Updated Files
+## Updated Files
 
 | File | Change |
 |---|---|
-| `GabLuchi.ViewModels/MultiplayerFixViewModel.cs` | Merge peronDepot + GitHub results |
-| `GabLuchi.Views/MultiplayerFixView.xaml` | Source badge (perondepot vs github) |
-| `GabLuchi/App.cs` | Register GitHubFixService in DI |
-| `GabLuchi/Resources/Strings.resx` | Add GitHubFix_* strings |
+| `GabLuchi.ViewModels/MultiplayerFixViewModel.cs` | Merge perondepot + GitHub results |
+| `GabLuchi.Views/MultiplayerFixView.xaml` | Add source badges ("perondepot" vs "gabluchi-fixes") |
+| `GabLuchi/App.cs` | Register `GitHubFixService` in DI |
+| `GabLuchi/Resources/Strings.resx` | Add `GitHubFix_*` string resources |
+| `processofbuilding.md` | Document fix distribution workflow |
 
-### GitHubFixService.cs
+## Data Model
 
 ```csharp
+namespace GabLuchi.Models;
+
+public class GitHubFixEntry
+{
+    public int AppId { get; set; }
+    public string GameName { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public string DateAdded { get; set; } = string.Empty;
+
+    public string DownloadUrl =>
+        $"https://raw.githubusercontent.com/Gab-lutang/gabluchi-fixes/main/fixes/{FileName}";
+
+    public string Source => "gabluchi-fixes";
+}
+```
+
+## GitHubFixService.cs
+
+```csharp
+namespace GabLuchi.Services;
+
 public class GitHubFixService
 {
     private const string IndexUrl =
@@ -150,16 +162,32 @@ public class GitHubFixService
     private const string FixesBaseUrl =
         "https://raw.githubusercontent.com/Gab-lutang/gabluchi-fixes/main/fixes/";
 
-    private static readonly JsonSerializerOptions JsonOpts = new()
+    private readonly HttpClient _http;
+
+    public GitHubFixService(HttpClient http)
     {
-        PropertyNameCaseInsensitive = true
-    };
+        _http = http;
+    }
+
+    public async Task<List<GitHubFixEntry>> FetchIndexAsync()
+    {
+        try
+        {
+            var json = await _http.GetStringAsync(IndexUrl);
+            return JsonSerializer.Deserialize<List<GitHubFixEntry>>(json) ?? new();
+        }
+        catch
+        {
+            return new();
+        }
+    }
 
     public async Task<List<GitHubFixEntry>> SearchAsync(string query)
     {
-        var index = await FetchIndexAsync();
-        var q = query.ToLowerInvariant();
-        return index.Where(f =>
+        var all = await FetchIndexAsync();
+        var q = query.Trim().ToLowerInvariant();
+
+        return all.Where(f =>
             f.GameName.Contains(q, StringComparison.OrdinalIgnoreCase) ||
             f.AppId.ToString() == q
         ).ToList();
@@ -167,157 +195,131 @@ public class GitHubFixService
 
     public async Task<bool> DownloadFixAsync(GitHubFixEntry entry, string destPath)
     {
-        using var http = new HttpClient();
-        var bytes = await http.GetByteArrayAsync(entry.DownloadUrl);
-        await File.WriteAllBytesAsync(destPath, bytes);
-        return true;
-    }
-
-    private async Task<List<GitHubFixEntry>> FetchIndexAsync()
-    {
-        using var http = new HttpClient();
-        var json = await http.GetStringAsync(IndexUrl);
-        return JsonSerializer.Deserialize<List<GitHubFixEntry>>(json, JsonOpts) ?? new();
+        try
+        {
+            var bytes = await _http.GetByteArrayAsync(entry.DownloadUrl);
+            await File.WriteAllBytesAsync(destPath, bytes);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 ```
 
-### Merge Logic
+## Merge Logic
 
 ```csharp
 // In MultiplayerFixViewModel.cs
-var peronResults = await _onlineFixService.SearchAsync(query);
-var githubResults = await _gitHubFixService.SearchAsync(query);
+private async Task SearchAllSources(string query)
+{
+    var peronResults = await _onlineFixService.SearchAsync(query);
+    var githubResults = await _gitHubFixService.SearchAsync(query);
 
-// Dedupe: prefer perondepot if same AppId exists
-var merged = peronResults
-    .Concat(githubResults.Where(g => !peronResults.Any(p => p.AppId == g.AppId)))
-    .ToList();
+    // Mark sources
+    peronResults.ForEach(r => r.Source = "perondepot");
+    githubResults.ForEach(r => r.Source = "gabluchi-fixes");
+
+    // Dedupe: prefer perondepot if same AppId exists
+    var merged = peronResults
+        .Concat(githubResults.Where(g =>
+            !peronResults.Any(p => p.AppId == g.AppId)))
+        .ToList();
+
+    Results = merged;
+}
 ```
 
-### Download Flow
+## DI Registration
 
-```
-User clicks "Apply" on a GitHub fix
-        ↓
-Download .rar from GitHub (raw URL)
-        ↓
-Save to temp folder
-        ↓
-Extract with 7za.exe (password from index.json)
-        ↓
-Apply fix files to game directory
-        ↓
-Done
+```csharp
+// In App.cs
+services.AddSingleton<GitHubFixService>();
 ```
 
----
+## UI — Source Badges
 
-## UI Changes
+Each search result shows a badge indicating source:
 
-### MultiplayerFixView.xaml
-
-Add source badge to each result:
-
-```
-┌─────────────────────────────────────────────┐
-│ Gang Beasts          AppId: 123456    [Apply]│
-│ [perondepot]                                │
-│                                              │
-│ Shieldwall           AppId: 1216320   [Apply]│
-│ [gabluchi-fixes]                             │
-└─────────────────────────────────────────────┘
-```
-
-### Source Badges
-
-| Source | Badge Color | Meaning |
-|---|---|---|
-| `perondepot` | Blue | From online mirror (auto) |
-| `gabluchi-fixes` | Green | From GabLuchi GitHub repo (curated) |
-
----
-
-## Benefits
-
-| Feature | GitHub Fixes |
+| Badge | Meaning |
 |---|---|
-| Infrastructure | None — just a GitHub repo |
-| Cost | Free |
-| File size limit | 50 MB per file (GitHub limit) |
-| Bandwidth | Unlimited (raw.githubusercontent.com) |
-| Auth | None (public repo) |
-| Search | Client-side (fetch index, filter locally) |
-| Offline | Works after first fetch (cached) |
-| Spam risk | None |
+| `perondepot` | From perondepot mirror (online) |
+| `gabluchi-fixes` | From GabLuchi GitHub repo |
+| `library` | From local fix library (Phase 2) |
 
----
-
-## Limitations
-
-| Limitation | Workaround |
-|---|---|
-| 50 MB per file (GitHub limit) | Most fixes are 5-20 MB. For larger fixes, use GoFile or split archive. |
-| Manual index updates | Edit index.json + push. Could automate with a script later. |
-| No auto-discovery | GabLuchi must be updated to fetch from GitHub. |
-
----
-
-## Build Plan
+## Build Order
 
 | Step | What | Time |
 |---|---|---|
-| 1 | Create `Gab-lutang/gabluchi-fixes` repo | 5 min (manual) |
-| 2 | Add test fixes to repo | 10 min (manual) |
-| 3 | `GitHubFixEntry.cs` — data model | 5 min |
-| 4 | `GitHubFixService.cs` — fetch + download | 20 min |
-| 5 | Update `MultiplayerFixViewModel.cs` — merge logic | 15 min |
-| 6 | Update `MultiplayerFixView.xaml` — source badge | 10 min |
-| 7 | Update `App.cs` — DI registration | 5 min |
-| 8 | Update `Strings.resx` — string resources | 5 min |
-| 9 | Build + test | 15 min |
+| 1 | Create `Gab-lutang/gabluchi-fixes` repo + add test fixes | 5 min (manual) |
+| 2 | `GitHubFixEntry.cs` — data model | 5 min |
+| 3 | `GitHubFixService.cs` — fetch index + download | 20 min |
+| 4 | Update `MultiplayerFixViewModel.cs` — merge logic | 15 min |
+| 5 | Update `MultiplayerFixView.xaml` — source badges | 10 min |
+| 6 | Update `App.cs` — DI registration | 5 min |
+| 7 | Update `Strings.resx` — string resources | 5 min |
+| 8 | Build + test | 15 min |
+| **Total** | | **~1.5 hours** |
 
-**Total: ~1.5 hours**
+## Manual Steps (User)
 
----
+1. Create public repo `Gab-lutang/gabluchi-fixes`
+2. Create `index.json` with fix entries
+3. Create `fixes/` folder
+4. Upload fix archives to `fixes/`
+5. Push to GitHub
+
+## How to Add a New Fix
+
+1. Download fix from online-fix.me (or wherever)
+2. Rename to `{game_name}_{appId}.rar` (e.g., `gang_beasts_123456.rar`)
+3. Upload to `fixes/` folder in the repo
+4. Add entry to `index.json`:
+   ```json
+   {
+     "appId": 123456,
+     "gameName": "Gang Beasts",
+     "password": "online-fix.me",
+     "fileName": "gang_beasts_123456.rar",
+     "dateAdded": "2026-09-14"
+   }
+   ```
+5. Commit + push
+6. All GabLuchi users automatically see the new fix
 
 ## Future Additions
 
-### Phase 2: Local Library
-
+### Phase 2: Local Fix Library
 - Users add their own fixes locally
 - Stored in `%LocalAppData%\GabLuchi\fixes\`
-- Three sources: perondepot + GitHub + local
+- Search merges: perondepot + GitHub + local
 
 ### Phase 3: Export/Import
-
 - Export local library as zip
-- Share with friends
-- Import into GabLuchi
+- Share with other players
+- Import via file picker
 
 ### Phase 4: Auto-Download
+- GabLuchi fetches fix index on first launch
+- Caches locally for offline use
+- Updates periodically
 
-- GabLuchi fetches fixes on first launch
-- Caches index locally
-- Periodic refresh
+## GitHub Limits
 
-### Phase 5: Fix Versioning
+| Limit | Value | Impact |
+|---|---|---|
+| File size | 50 MB per file | Most fix archives are 5-20 MB |
+| Repo size | 1 GB recommended | ~500 fixes at 2 MB average |
+| API rate | 60 req/hr (unauthenticated) | Raw files don't count against API |
+| Raw file access | Unlimited | No rate limit for raw.githubusercontent.com |
 
-- Track fix versions in index.json
-- Notify users of updates
-- Auto-download new versions
+## Troubleshooting
 
----
-
-## Status
-
-- [ ] Create `Gab-lutang/gabluchi-fixes` repo
-- [ ] Add test fixes (Gang Beasts, Shieldwall)
-- [ ] Build `GitHubFixService.cs`
-- [ ] Build `GitHubFixEntry.cs`
-- [ ] Update `MultiplayerFixViewModel.cs`
-- [ ] Update `MultiplayerFixView.xaml`
-- [ ] Update `App.cs` DI
-- [ ] Update `Strings.resx`
-- [ ] Build + test
-- [ ] Release
+| Issue | Solution |
+|---|---|
+| Fix not showing | Check index.json syntax, ensure fileName matches actual file |
+| Download fails | Check file exists in fixes/ folder, verify URL |
+| Slow search | Index.json might be large, consider pagination |
+| Merge conflicts | Ensure perondepot and GitHub don't duplicate same AppId |

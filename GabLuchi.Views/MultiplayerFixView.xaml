@@ -62,8 +62,15 @@
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
                   <StackPanel Grid.Column="0">
-                    <TextBlock FontSize="13.5" FontWeight="SemiBold" Foreground="#e5e7eb"
-                               TextWrapping="Wrap" Text="{Binding GameName}" />
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock FontSize="13.5" FontWeight="SemiBold" Foreground="#e5e7eb"
+                                 TextWrapping="Wrap" Text="{Binding GameName}" />
+                      <Border Margin="8,2,0,0" Padding="5,1" CornerRadius="4"
+                              Background="{Binding Source, Converter={StaticResource SourceToBrushConverter}}">
+                        <TextBlock FontSize="9" FontWeight="SemiBold" Foreground="White"
+                                   Text="{Binding Source}" />
+                      </Border>
+                    </StackPanel>
                     <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="#6b7280"
                                Text="{Binding FileName}" TextTrimming="CharacterEllipsis" />
                     <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="#06b6d4">

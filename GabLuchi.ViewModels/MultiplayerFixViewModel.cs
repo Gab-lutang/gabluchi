@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ public class MultiplayerFixViewModel : ObservableObject
 {
 	private readonly MultiplayerFixService _service;
 	private readonly OnlineFixService _onlineFix;
+	private readonly GitHubFixService _gitHubFix;
 	private readonly SteamLibraryService _library;
 	private readonly ToastService _toast;
 	private readonly ConnectRelayService _relay;
@@ -170,10 +172,11 @@ public class MultiplayerFixViewModel : ObservableObject
 	public ICommand CopyCodeCmd => copyCodeCommand ?? (copyCodeCommand = new RelayCommand(CopyCode));
 	private RelayCommand? copyCodeCommand;
 
-	public MultiplayerFixViewModel(MultiplayerFixService service, OnlineFixService onlineFix, SteamLibraryService library, ToastService toast, ConnectRelayService relay)
+	public MultiplayerFixViewModel(MultiplayerFixService service, OnlineFixService onlineFix, GitHubFixService gitHubFix, SteamLibraryService library, ToastService toast, ConnectRelayService relay)
 	{
 		_service = service;
 		_onlineFix = onlineFix;
+		_gitHubFix = gitHubFix;
 		_library = library;
 		_toast = toast;
 		_relay = relay;
@@ -186,19 +189,57 @@ public class MultiplayerFixViewModel : ObservableObject
 			return;
 		}
 		IsBusy = true;
-		StatusMessage = "Searching perondepot...";
+		StatusMessage = "Searching...";
 		Results.Clear();
 		try
 		{
-			List<OnlineFixEntry> results = await _onlineFix.SearchAsync(SearchText.Trim());
-			if (results.Count == 0)
+			string query = SearchText.Trim();
+
+			List<OnlineFixEntry> peronResults = new List<OnlineFixEntry>();
+			List<OnlineFixEntry> githubResults = new List<OnlineFixEntry>();
+
+			Task peronTask = Task.Run(async () =>
+			{
+				try
+				{
+					peronResults = await _onlineFix.SearchAsync(query);
+					peronResults.ForEach(r => r.Source = "perondepot");
+				}
+				catch
+				{
+				}
+			});
+
+			Task githubTask = Task.Run(async () =>
+			{
+				try
+				{
+					List<GitHubFixEntry> ghEntries = await _gitHubFix.SearchAsync(query);
+					githubResults = ghEntries.Select(g => new OnlineFixEntry(g.AppId, g.GameName, g.FileName, 0, g.DownloadUrl)
+					{
+						Source = "gabluchi-fixes",
+						Password = g.Password
+					}).ToList();
+				}
+				catch
+				{
+				}
+			});
+
+			await Task.WhenAll(peronTask, githubTask);
+
+			List<OnlineFixEntry> merged = peronResults
+				.Concat(githubResults.Where(g => !peronResults.Any(p => p.AppId == g.AppId)))
+				.ToList();
+
+			if (merged.Count == 0)
 			{
 				StatusMessage = Strings.MultiplayerFix_NoResults;
 			}
 			else
 			{
-				StatusMessage = string.Format(Strings.MultiplayerFix_Found, results.Count);
-				foreach (OnlineFixEntry entry in results)
+				StatusMessage = string.Format(Strings.MultiplayerFix_Found, merged.Count);
+				foreach (OnlineFixEntry entry in merged)
 				{
 					Results.Add(entry);
 				}
@@ -236,7 +277,7 @@ public class MultiplayerFixViewModel : ObservableObject
 		}
 		IsDownloading = true;
 		DownloadProgress = 0;
-		DownloadStatus = "Downloading...";
+		DownloadStatus = "Downloading from " + entry.Source + "...";
 		try
 		{
 			IProgress<double?> progress = new Progress<double?>(p =>
@@ -250,7 +291,23 @@ public class MultiplayerFixViewModel : ObservableObject
 					DownloadProgress = -1;
 				}
 			});
-			OnlineFixApplyResult result = await _onlineFix.ApplyFixAsync(entry, gameDir, progress);
+			OnlineFixApplyResult result;
+			if (entry.Source == "gabluchi-fixes")
+			{
+				result = await _gitHubFix.ApplyFixAsync(
+					new GitHubFixEntry
+					{
+						AppId = entry.AppId,
+						GameName = entry.GameName,
+						FileName = entry.FileName,
+						Password = entry.Password
+					},
+					gameDir, progress);
+			}
+			else
+			{
+				result = await _onlineFix.ApplyFixAsync(entry, gameDir, progress);
+			}
 			if (result.Success)
 			{
 				DownloadStatus = "Done! " + result.FilesInstalled + " files installed to " + gameDir;

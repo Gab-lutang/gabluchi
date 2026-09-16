@@ -18,6 +18,7 @@
       <views:SmartDlcPlatformLabelConverter x:Key="SmartDlcPlatformLabel" />
       <views:SmartDlcUnlockerLabelConverter x:Key="SmartDlcUnlockerLabel" />
       <views:SmartDlcCountLabelConverter x:Key="SmartDlcCountLabel" />
+      <local:SourceToBrushConverter x:Key="SourceToBrushConverter" />
       <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </ResourceDictionary>
   </Application.Resources>

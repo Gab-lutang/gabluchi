@@ -12,6 +12,10 @@ public class OnlineFixEntry
 
 	public string DownloadUrl { get; set; } = "";
 
+	public string Source { get; set; } = "perondepot";
+
+	public string Password { get; set; } = "online-fix.me";
+
 	public OnlineFixEntry(long appId, string gameName, string fileName, long sizeBytes, string downloadUrl)
 	{
 		AppId = appId;
