@@ -286,11 +286,13 @@ Remove-Item "Releases" -Recurse -Force -EA SilentlyContinue
 # === BUILD ===
 dotnet publish -c Release -r win-x64 --self-contained -o Release/publish
 
-# === PACK (note: --packId GabLuchi-Dev, --channel dev) ===
-vpk pack --packId GabLuchi-Dev --packVersion $VER --packDir "Release\publish" --mainExe GabLuchi.exe --channel dev
+# === PACK (note: --packId GabLuchi-Dev, NO --channel flag) ===
+# DO NOT use --channel dev — Velopack 1.2.0 doesn't support .WithChannel()
+# and it creates RELEASES-dev / releases.dev.json which the updater can't find
+vpk pack --packId GabLuchi-Dev --packVersion $VER --packDir "Release\publish" --mainExe GabLuchi.exe
 
-# === STRIP BOM from RELEASES-dev ===
-$p = "Releases\RELEASES-dev"
+# === STRIP BOM from RELEASES ===
+$p = "Release\RELEASES"
 if (Test-Path $p) {
     $b = [IO.File]::ReadAllBytes($p)
     if ($b[0]-eq 239 -and $b[1]-eq 187 -and $b[2]-eq 191) {
@@ -299,7 +301,7 @@ if (Test-Path $p) {
 }
 
 # === VERIFY ===
-Get-Content "Releases\releases.dev.json"
+Get-Content "Release\releases.win.json"
 
 # === COMMIT & PUSH to dev ===
 git add -A; git commit -m "v$VER - description"; git push origin dev
@@ -308,13 +310,14 @@ git add -A; git commit -m "v$VER - description"; git push origin dev
 git tag v$VER; git push origin v$VER
 
 # === PRE-RELEASE (note: --prerelease flag) ===
+# MUST include both RELEASES and releases.win.json for auto-updater to work
 gh release create v$VER --repo Gab-lutang/gabluchi --title "v$VER" --prerelease --notes "Dev build" `
-  "Releases\GabLuchi-Dev-$VER-full.nupkg" `
-  "Releases\GabLuchi-Dev-win-Setup.exe" `
-  "Releases\GabLuchi-Dev-win-Portable.zip" `
-  "Releases\RELEASES-dev" `
-  "Releases\releases.dev.json" `
-  "Releases\assets.dev.json"
+  "Release\GabLuchi-Dev-$VER-dev-full.nupkg" `
+  "Release\GabLuchi-Dev-dev-Setup.exe" `
+  "Release\GabLuchi-Dev-dev-Portable.zip" `
+  "Release\RELEASES" `
+  "Release\releases.win.json" `
+  "Release\assets.win.json"
 ```
 
 ### Dev→Production Promotion
@@ -336,7 +339,8 @@ git push origin main
 - **Dev version format**: `X.X.X-dev.N` (e.g., `1.0.24-dev.1`, `1.0.24-dev.2`)
 - **Production version format**: `X.X.X` (e.g., `1.0.24`)
 - **Dev releases are tagged `--prerelease`** on GitHub — shows as pre-release, not latest
-- **Same GitHub repo** — Velopack distinguishes by channel JSON files
+- **Same GitHub repo** — both dev and prod releases go to the same repo
+- **NEVER use `--channel dev` with vpk pack** — Velopack 1.2.0 creates suffixed files (RELEASES-dev) that the updater can't find. Just pack without channel and upload RELEASES + releases.win.json
 - **Both users** (LO + bro) install the dev Setup.exe once → auto-updates to future dev releases
 - **Production users** are unaffected — they only see `releases.win.json`
 
