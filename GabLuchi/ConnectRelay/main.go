@@ -215,8 +215,6 @@ func handleHost(conn *websocket.Conn, req HostRequest) {
 			break
 		}
 	}
-	}
-
 	// host disconnected — remove lobby
 	lobbiesMu.Lock()
 	if current, exists := lobbies[code]; exists && current.Conn == conn {
