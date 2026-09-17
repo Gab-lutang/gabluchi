@@ -21,13 +21,25 @@ var upgrader = websocket.Upgrader{
 type LobbyInfo struct {
 	GameName string `json:"gameName"`
 	AppID    int64  `json:"appId"`
+	HostName string `json:"hostName"`
 	IP       string `json:"ip"`
 	Port     int    `json:"port"`
+}
+
+type LobbyEntry struct {
+	Code      string    `json:"code"`
+	GameName  string    `json:"gameName"`
+	AppID     int64     `json:"appId"`
+	HostName  string    `json:"hostName"`
+	IP        string    `json:"ip"`
+	Port      int       `json:"port"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 type PendingLobby struct {
 	Info      LobbyInfo
 	CreatedAt time.Time
+	Conn      *websocket.Conn
 }
 
 var (
@@ -97,6 +109,7 @@ func cleanup() {
 		now := time.Now()
 		for code, lobby := range lobbies {
 			if now.Sub(lobby.CreatedAt) > lobbyTTL {
+				log.Printf("cleanup: removing expired lobby %s (%s)", code, lobby.Info.GameName)
 				delete(lobbies, code)
 			}
 		}
@@ -115,10 +128,10 @@ type JoinRequest struct {
 }
 
 type Response struct {
-	OK      bool        `json:"ok"`
-	Code    string      `json:"code,omitempty"`
-	Lobby   *LobbyInfo  `json:"lobby,omitempty"`
-	Error   string      `json:"error,omitempty"`
+	OK      bool       `json:"ok"`
+	Code    string     `json:"code,omitempty"`
+	Lobby   *LobbyInfo `json:"lobby,omitempty"`
+	Error   string     `json:"error,omitempty"`
 }
 
 func handleWS(w http.ResponseWriter, r *http.Request) {
@@ -166,23 +179,47 @@ func handleWS(w http.ResponseWriter, r *http.Request) {
 func handleHost(conn *websocket.Conn, req HostRequest) {
 	code := generateCode()
 
+	hostName := req.HostName
+	if hostName == "" {
+		hostName = "Host"
+	}
+
 	lobby := &PendingLobby{
 		Info: LobbyInfo{
 			GameName: req.GameName,
 			AppID:    req.AppID,
+			HostName: hostName,
 			IP:       req.IP,
 			Port:     req.Port,
 		},
 		CreatedAt: time.Now(),
+		Conn:      conn,
 	}
 
 	lobbiesMu.Lock()
 	lobbies[code] = lobby
 	lobbiesMu.Unlock()
 
-	log.Printf("host: code=%s game=%s app=%d", code, req.GameName, req.AppID)
+	log.Printf("host: code=%s game=%s host=%s app=%d", code, req.GameName, hostName, req.AppID)
 
 	writeJSON(conn, Response{OK: true, Code: code})
+
+	// keep connection open — lobby alive while host is connected
+	// read until disconnect (ignore messages, just detect close)
+	for {
+		_, _, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+	}
+
+	// host disconnected — remove lobby
+	lobbiesMu.Lock()
+	if current, exists := lobbies[code]; exists && current.Conn == conn {
+		delete(lobbies, code)
+		log.Printf("host disconnected: code=%s game=%s", code, req.GameName)
+	}
+	lobbiesMu.Unlock()
 }
 
 func handleJoin(conn *websocket.Conn, req JoinRequest) {
@@ -201,6 +238,28 @@ func handleJoin(conn *websocket.Conn, req JoinRequest) {
 	log.Printf("join: code=%s game=%s", req.Code, lobby.Info.GameName)
 
 	writeJSON(conn, Response{OK: true, Lobby: &lobby.Info})
+}
+
+func handleLobbies(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	lobbiesMu.Lock()
+	entries := make([]LobbyEntry, 0, len(lobbies))
+	for code, lobby := range lobbies {
+		entries = append(entries, LobbyEntry{
+			Code:      code,
+			GameName:  lobby.Info.GameName,
+			AppID:     lobby.Info.AppID,
+			HostName:  lobby.Info.HostName,
+			IP:        lobby.Info.IP,
+			Port:      lobby.Info.Port,
+			CreatedAt: lobby.CreatedAt,
+		})
+	}
+	lobbiesMu.Unlock()
+
+	json.NewEncoder(w).Encode(entries)
 }
 
 func writeJSON(conn *websocket.Conn, v interface{}) {
@@ -245,6 +304,7 @@ func main() {
 	go startKeepAlive(selfURL)
 
 	http.HandleFunc("/ws", handleWS)
+	http.HandleFunc("/lobbies", handleLobbies)
 	http.HandleFunc("/health", healthHandler)
 
 	log.Printf("gabluchi-connect relay starting on :%s", port)
