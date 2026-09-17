@@ -76,15 +76,17 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 		RootNavigation.Navigate(typeof(ModeView));
 	}
 
-	public void NavigateToHealth()
-	{
-		RootNavigation.Navigate(typeof(GameHealthView));
-	}
+	// GameHealth: hidden, feature not released yet
+	// public void NavigateToHealth()
+	// {
+	// 	RootNavigation.Navigate(typeof(GameHealthView));
+	// }
 
-	public void NavigateToSmartDlc()
-	{
-		RootNavigation.Navigate(typeof(SmartDlcView));
-	}
+	// SmartDlc: hidden, feature not released yet
+	// public void NavigateToSmartDlc()
+	// {
+	// 	RootNavigation.Navigate(typeof(SmartDlcView));
+	// }
 
 	private void RestartSteam_Click(object sender, RoutedEventArgs e)
 	{
