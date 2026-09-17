@@ -157,7 +157,7 @@
                         </StackPanel>
                         <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="#6b7280">
                           <Run Text="AppID: " /><Run Text="{Binding AppId, Mode=OneWay}" />
-                          <Run Text="   Age: " /><Run Text="{Binding AgeText}" />
+                          <Run Text="   Age: " /><Run Text="{Binding AgeText, Mode=OneWay}" />
                         </TextBlock>
                       </StackPanel>
                       <ui:Button Grid.Column="1" VerticalAlignment="Center" Appearance="Primary"

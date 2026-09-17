@@ -240,6 +240,9 @@ public class MultiplayerFixViewModel : ObservableObject
 	public ICommand SelectGameCmd => selectGameCommand ?? (selectGameCommand = new RelayCommand<GameInfo>(SelectGame));
 	private RelayCommand<GameInfo>? selectGameCommand;
 
+	public ICommand SearchGamesCmd => searchGamesCommand ?? (searchGamesCommand = new RelayCommand(() => RefreshGameSearchResults()));
+	private RelayCommand? searchGamesCommand;
+
 	public MultiplayerFixViewModel(MultiplayerFixService service, OnlineFixService onlineFix, GitHubFixService gitHubFix, SteamLibraryService library, ToastService toast, ConnectRelayService relay, LobbyBrowserService lobbyBrowser)
 	{
 		_service = service;
