@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -25,6 +24,7 @@ public class MultiplayerFixViewModel : ObservableObject
 	private readonly SteamLibraryService _library;
 	private readonly ToastService _toast;
 	private readonly ConnectRelayService _relay;
+	private readonly LobbyBrowserService _lobbyBrowser;
 
 	private string _searchText = "";
 	private bool _isBusy;
@@ -43,6 +43,10 @@ public class MultiplayerFixViewModel : ObservableObject
 	private int _joinedPort;
 	private string _hostGameName = "";
 	private string _hostPort = "";
+	private string _hostName = "";
+	private bool _isBrowsing;
+	private string _browseStatus = "";
+
 
 	public string SearchText
 	{
@@ -101,8 +105,10 @@ public class MultiplayerFixViewModel : ObservableObject
 	public bool IsHosting
 	{
 		get => _isHosting;
-		set { if (SetProperty(ref _isHosting, value)) OnPropertyChanged(nameof(CanShare)); }
+		set { if (SetProperty(ref _isHosting, value)) { OnPropertyChanged(nameof(CanShare)); OnPropertyChanged(nameof(IsNotHosting)); } }
 	}
+
+	public bool IsNotHosting => !IsHosting;
 
 	public bool IsJoining
 	{
@@ -146,6 +152,24 @@ public class MultiplayerFixViewModel : ObservableObject
 		set => SetProperty(ref _hostPort, value);
 	}
 
+	public string HostName
+	{
+		get => _hostName;
+		set => SetProperty(ref _hostName, value);
+	}
+
+	public bool IsBrowsing
+	{
+		get => _isBrowsing;
+		set => SetProperty(ref _isBrowsing, value);
+	}
+
+	public string BrowseStatus
+	{
+		get => _browseStatus;
+		set => SetProperty(ref _browseStatus, value);
+	}
+
 	public bool CanSearch => !IsBusy && !string.IsNullOrWhiteSpace(SearchText);
 	public bool CanShare => !IsHosting && !IsJoining && !string.IsNullOrWhiteSpace(HostGameName);
 	public bool CanJoin => !IsHosting && !IsJoining && !string.IsNullOrWhiteSpace(JoinCodeText);
@@ -153,6 +177,7 @@ public class MultiplayerFixViewModel : ObservableObject
 	public bool HasJoinedGame => !string.IsNullOrEmpty(JoinedGameName);
 
 	public ObservableCollection<OnlineFixEntry> Results { get; } = new ObservableCollection<OnlineFixEntry>();
+	public ObservableCollection<LobbyEntry> ActiveLobbies { get; } = new ObservableCollection<LobbyEntry>();
 
 	public ICommand SearchCmd => searchCommand ?? (searchCommand = new AsyncRelayCommand(Search));
 	private AsyncRelayCommand? searchCommand;
@@ -172,7 +197,16 @@ public class MultiplayerFixViewModel : ObservableObject
 	public ICommand CopyCodeCmd => copyCodeCommand ?? (copyCodeCommand = new RelayCommand(CopyCode));
 	private RelayCommand? copyCodeCommand;
 
-	public MultiplayerFixViewModel(MultiplayerFixService service, OnlineFixService onlineFix, GitHubFixService gitHubFix, SteamLibraryService library, ToastService toast, ConnectRelayService relay)
+	public ICommand StopHostingCmd => stopHostingCommand ?? (stopHostingCommand = new AsyncRelayCommand(StopHosting));
+	private AsyncRelayCommand? stopHostingCommand;
+
+	public ICommand RefreshLobbiesCmd => refreshLobbiesCommand ?? (refreshLobbiesCommand = new AsyncRelayCommand(RefreshLobbies));
+	private AsyncRelayCommand? refreshLobbiesCommand;
+
+	public ICommand JoinFromBrowserCmd => joinFromBrowserCommand ?? (joinFromBrowserCommand = new AsyncRelayCommand<LobbyEntry>(JoinFromBrowser));
+	private AsyncRelayCommand<LobbyEntry>? joinFromBrowserCommand;
+
+	public MultiplayerFixViewModel(MultiplayerFixService service, OnlineFixService onlineFix, GitHubFixService gitHubFix, SteamLibraryService library, ToastService toast, ConnectRelayService relay, LobbyBrowserService lobbyBrowser)
 	{
 		_service = service;
 		_onlineFix = onlineFix;
@@ -180,6 +214,7 @@ public class MultiplayerFixViewModel : ObservableObject
 		_library = library;
 		_toast = toast;
 		_relay = relay;
+		_lobbyBrowser = lobbyBrowser;
 	}
 
 	private async Task Search()
@@ -350,21 +385,27 @@ public class MultiplayerFixViewModel : ObservableObject
 		{
 			int port = 0;
 			int.TryParse(HostPort.Trim(), out port);
-			string code = await _relay.ShareLobbyAsync(HostGameName.Trim(), 0, port);
+			string hostDisplay = string.IsNullOrWhiteSpace(HostName) ? "Host" : HostName.Trim();
+			string code = await _relay.ShareLobbyAsync(HostGameName.Trim(), 0, port, hostDisplay);
 			LobbyCode = code;
-			LobbyStatus = "Share this code with your friend";
+			LobbyStatus = "Hosting — lobby visible in Browse tab";
 			Clipboard.SetText(code);
 			_toast.Show(Strings.MultiplayerFix_Title, "Lobby code copied to clipboard: " + code);
 		}
 		catch (Exception ex)
 		{
+			IsHosting = false;
 			LobbyStatus = "Failed: " + ex.Message;
 			_toast.Show(Strings.MultiplayerFix_Title, ex.Message, error: true);
 		}
-		finally
-		{
-			IsHosting = false;
-		}
+	}
+
+	private async Task StopHosting()
+	{
+		await _relay.StopHostingAsync();
+		IsHosting = false;
+		LobbyCode = "";
+		LobbyStatus = "Hosting stopped";
 	}
 
 	private async Task JoinLobby()
@@ -416,6 +457,73 @@ public class MultiplayerFixViewModel : ObservableObject
 		{
 			Clipboard.SetText(LobbyCode);
 			_toast.Show(Strings.MultiplayerFix_Title, "Code copied: " + LobbyCode);
+		}
+	}
+
+	private async Task RefreshLobbies()
+	{
+		IsBrowsing = true;
+		BrowseStatus = "Refreshing...";
+		try
+		{
+			List<LobbyEntry> lobbies = await _lobbyBrowser.FetchLobbiesAsync();
+			ActiveLobbies.Clear();
+			foreach (LobbyEntry lobby in lobbies)
+			{
+				ActiveLobbies.Add(lobby);
+			}
+			BrowseStatus = lobbies.Count == 0 ? "No active lobbies" : lobbies.Count + " lobby(s) found";
+		}
+		catch (Exception ex)
+		{
+			BrowseStatus = "Error: " + ex.Message;
+		}
+		finally
+		{
+			IsBrowsing = false;
+		}
+	}
+
+	private async Task JoinFromBrowser(LobbyEntry? entry)
+	{
+		if (entry == null || IsJoining)
+		{
+			return;
+		}
+		IsJoining = true;
+		LobbyStatus = "Connecting to " + entry.HostName + "'s lobby...";
+		JoinedGameName = "";
+		JoinedAppId = 0;
+		JoinedIp = "";
+		JoinedPort = 0;
+		try
+		{
+			LobbyInfo? lobby = await _relay.JoinLobbyAsync(entry.Code);
+			if (lobby == null)
+			{
+				LobbyStatus = "Lobby expired or unavailable";
+				_toast.Show(Strings.MultiplayerFix_Title, "Lobby expired or unavailable", error: true);
+			}
+			else
+			{
+				JoinedGameName = lobby.GameName;
+				JoinedAppId = lobby.AppId;
+				JoinedIp = lobby.Ip;
+				JoinedPort = lobby.Port;
+				string connectStr = lobby.Ip + ":" + lobby.Port;
+				Clipboard.SetText(connectStr);
+				LobbyStatus = lobby.GameName + " — IP copied to clipboard";
+				_toast.Show(Strings.MultiplayerFix_Title, "Connection info for " + lobby.GameName + " copied to clipboard");
+			}
+		}
+		catch (Exception ex)
+		{
+			LobbyStatus = "Failed: " + ex.Message;
+			_toast.Show(Strings.MultiplayerFix_Title, ex.Message, error: true);
+		}
+		finally
+		{
+			IsJoining = false;
 		}
 	}
 }

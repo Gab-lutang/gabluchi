@@ -26,7 +26,14 @@ public class ConnectRelayService
 		Timeout = TimeSpan.FromSeconds(5)
 	};
 
-	public async Task<string> ShareLobbyAsync(string gameName, long appId, int port, CancellationToken ct = default)
+	private WebSocket? _hostSocket;
+	private string? _hostCode;
+	private readonly object _hostLock = new object();
+
+	public bool IsHosting => _hostSocket != null && _hostSocket.State == WebSocketState.Open;
+	public string? CurrentHostCode => _hostCode;
+
+	public async Task<string> ShareLobbyAsync(string gameName, long appId, int port, string hostName = "Host", CancellationToken ct = default)
 	{
 		string ip = await DetectPublicIpAsync(ct);
 		if (string.IsNullOrEmpty(ip))
@@ -43,20 +50,79 @@ public class ConnectRelayService
 			action = "host",
 			gameName,
 			appId,
+			hostName,
 			ip,
 			port
 		};
 
-		using WebSocket ws = await ConnectAsync(ct);
+		WebSocket ws = await ConnectAsync(ct);
 		await SendJsonAsync(ws, request, ct);
 		var response = await RecvJsonAsync<RelayResponse>(ws, ct);
 
 		if (!response.Ok)
 		{
+			await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 			throw new InvalidOperationException(response.Error ?? "Failed to create lobby code");
 		}
 
+		lock (_hostLock)
+		{
+			_hostSocket = ws;
+			_hostCode = response.Code;
+		}
+
+		// keep connection alive in background — detect disconnect
+		_ = Task.Run(async () =>
+		{
+			try
+			{
+				byte[] buf = new byte[1];
+				while (ws.State == WebSocketState.Open)
+				{
+					var result = await ws.ReceiveAsync(new ArraySegment<byte>(buf), CancellationToken.None);
+					if (result.MessageType == WebSocketMessageType.Close || result.Count == 0)
+					{
+						break;
+					}
+				}
+			}
+			catch
+			{
+			}
+			finally
+			{
+				lock (_hostLock)
+				{
+					if (_hostSocket == ws)
+					{
+						_hostSocket = null;
+						_hostCode = null;
+					}
+				}
+			}
+		});
+
 		return response.Code ?? throw new InvalidOperationException("No code returned from relay");
+	}
+
+	public Task StopHostingAsync()
+	{
+		lock (_hostLock)
+		{
+			if (_hostSocket != null)
+			{
+				try
+				{
+					_hostSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).ConfigureAwait(false);
+				}
+				catch
+				{
+				}
+				_hostSocket = null;
+				_hostCode = null;
+			}
+		}
+		return Task.CompletedTask;
 	}
 
 	public async Task<LobbyInfo?> JoinLobbyAsync(string code, CancellationToken ct = default)
@@ -161,6 +227,7 @@ public class LobbyInfo
 {
 	public string GameName { get; set; } = "";
 	public long AppId { get; set; }
+	public string HostName { get; set; } = "";
 	public string Ip { get; set; } = "";
 	public int Port { get; set; }
 }

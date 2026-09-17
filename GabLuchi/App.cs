@@ -73,6 +73,7 @@ public partial class App : Application
 		services.AddSingleton<OnlineFixService>();
 		services.AddSingleton<GitHubFixService>();
 		services.AddSingleton<ConnectRelayService>();
+		services.AddSingleton<LobbyBrowserService>();
 			services.AddSingleton<CrackFixService>();
 			services.AddSingleton<SteamRipService>();
 		services.AddSingleton<SmokeApiUnlocker>();

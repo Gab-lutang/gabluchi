@@ -20,6 +20,8 @@
       <views:SmartDlcCountLabelConverter x:Key="SmartDlcCountLabel" />
       <local:SourceToBrushConverter x:Key="SourceToBrushConverter" />
       <BooleanToVisibilityConverter x:Key="BoolToVis" />
+      <local:InverseBoolConverter x:Key="InverseBoolConverter" />
+      <local:ZeroToVisibilityConverter x:Key="ZeroToVis" />
     </ResourceDictionary>
   </Application.Resources>
 </Application>
