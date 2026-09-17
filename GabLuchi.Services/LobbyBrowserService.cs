@@ -13,7 +13,7 @@ public class LobbyBrowserService
 
 	private static readonly HttpClient Http = new HttpClient
 	{
-		Timeout = TimeSpan.FromSeconds(8)
+		Timeout = TimeSpan.FromSeconds(10)
 	};
 
 	private static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions
@@ -25,9 +25,16 @@ public class LobbyBrowserService
 	{
 		try
 		{
-			string json = await Http.GetStringAsync(LobbiesUrl, ct);
-			List<Models.LobbyEntry>? lobbies = JsonSerializer.Deserialize<List<Models.LobbyEntry>>(json, JsonOpts);
-			return lobbies ?? new List<Models.LobbyEntry>();
+			return await Task.Run(async () =>
+			{
+				string json = await Http.GetStringAsync(LobbiesUrl, ct);
+				if (string.IsNullOrWhiteSpace(json) || json == "[]")
+				{
+					return new List<Models.LobbyEntry>();
+				}
+				List<Models.LobbyEntry>? lobbies = JsonSerializer.Deserialize<List<Models.LobbyEntry>>(json, JsonOpts);
+				return lobbies ?? new List<Models.LobbyEntry>();
+			}, ct);
 		}
 		catch
 		{
