@@ -37,7 +37,7 @@ public static class Program
 	[STAThread]
 	public static void Main(string[] args)
 	{
-		VelopackApp.Build().WithChannel("dev").OnFirstRun(delegate
+		VelopackApp.Build().OnFirstRun(delegate
 		{
 			FirstRun = true;
 		}).Run();

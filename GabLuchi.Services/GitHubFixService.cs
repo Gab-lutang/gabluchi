@@ -169,8 +169,31 @@ public class GitHubFixService
 		}
 	}
 
+	private static string ResolveGameDir(string gameDir)
+	{
+		if (File.Exists(Path.Combine(gameDir, "steam_api64.dll")) || File.Exists(Path.Combine(gameDir, "winmm.dll")))
+		{
+			return gameDir;
+		}
+		string[] exeFiles = Directory.GetFiles(gameDir, "*.exe", SearchOption.TopDirectoryOnly);
+		if (exeFiles.Length > 0)
+		{
+			return gameDir;
+		}
+		foreach (string sub in Directory.GetDirectories(gameDir))
+		{
+			string[] subExe = Directory.GetFiles(sub, "*.exe", SearchOption.TopDirectoryOnly);
+			if (subExe.Length > 0)
+			{
+				return sub;
+			}
+		}
+		return gameDir;
+	}
+
 	private static int ApplyToGame(string extractedDir, string gameDir, long expectedAppId)
 	{
+		gameDir = ResolveGameDir(gameDir);
 		int copied = 0;
 		string[] files = Directory.GetFiles(extractedDir, "*", SearchOption.AllDirectories);
 		foreach (string file in files)
