@@ -46,6 +46,9 @@ public class MultiplayerFixViewModel : ObservableObject
 	private string _hostName = "";
 	private bool _isBrowsing;
 	private string _browseStatus = "";
+	private string _gameSearchText = "";
+	private bool _isGamePickerOpen;
+	private string _portNote = "";
 
 
 	public string SearchText
@@ -170,6 +173,33 @@ public class MultiplayerFixViewModel : ObservableObject
 		set => SetProperty(ref _browseStatus, value);
 	}
 
+	public string GameSearchText
+	{
+		get => _gameSearchText;
+		set
+		{
+			if (SetProperty(ref _gameSearchText, value))
+			{
+				OnPropertyChanged(nameof(CanSearchGames));
+				RefreshGameSearchResults();
+			}
+		}
+	}
+
+	public bool IsGamePickerOpen
+	{
+		get => _isGamePickerOpen;
+		set => SetProperty(ref _isGamePickerOpen, value);
+	}
+
+	public string PortNote
+	{
+		get => _portNote;
+		set => SetProperty(ref _portNote, value);
+	}
+
+	public bool CanSearchGames => !string.IsNullOrWhiteSpace(GameSearchText);
+
 	public bool CanSearch => !IsBusy && !string.IsNullOrWhiteSpace(SearchText);
 	public bool CanShare => !IsHosting && !IsJoining && !string.IsNullOrWhiteSpace(HostGameName);
 	public bool CanJoin => !IsHosting && !IsJoining && !string.IsNullOrWhiteSpace(JoinCodeText);
@@ -178,6 +208,7 @@ public class MultiplayerFixViewModel : ObservableObject
 
 	public ObservableCollection<OnlineFixEntry> Results { get; } = new ObservableCollection<OnlineFixEntry>();
 	public ObservableCollection<LobbyEntry> ActiveLobbies { get; } = new ObservableCollection<LobbyEntry>();
+	public ObservableCollection<GameInfo> GameSearchResults { get; } = new ObservableCollection<GameInfo>();
 
 	public ICommand SearchCmd => searchCommand ?? (searchCommand = new AsyncRelayCommand(Search));
 	private AsyncRelayCommand? searchCommand;
@@ -205,6 +236,9 @@ public class MultiplayerFixViewModel : ObservableObject
 
 	public ICommand JoinFromBrowserCmd => joinFromBrowserCommand ?? (joinFromBrowserCommand = new AsyncRelayCommand<LobbyEntry>(JoinFromBrowser));
 	private AsyncRelayCommand<LobbyEntry>? joinFromBrowserCommand;
+
+	public ICommand SelectGameCmd => selectGameCommand ?? (selectGameCommand = new RelayCommand<GameInfo>(SelectGame));
+	private RelayCommand<GameInfo>? selectGameCommand;
 
 	public MultiplayerFixViewModel(MultiplayerFixService service, OnlineFixService onlineFix, GitHubFixService gitHubFix, SteamLibraryService library, ToastService toast, ConnectRelayService relay, LobbyBrowserService lobbyBrowser)
 	{
@@ -458,6 +492,28 @@ public class MultiplayerFixViewModel : ObservableObject
 			Clipboard.SetText(LobbyCode);
 			_toast.Show(Strings.MultiplayerFix_Title, "Code copied: " + LobbyCode);
 		}
+	}
+
+	private void RefreshGameSearchResults()
+	{
+		GameSearchResults.Clear();
+		List<GameInfo> results = GamePortLookup.Search(GameSearchText);
+		foreach (GameInfo game in results)
+		{
+			GameSearchResults.Add(game);
+		}
+		IsGamePickerOpen = results.Count > 0;
+	}
+
+	private void SelectGame(GameInfo? game)
+	{
+		if (game == null) return;
+		HostGameName = game.Name;
+		HostPort = game.DefaultPort > 0 ? game.DefaultPort.ToString() : "";
+		PortNote = game.PortNote;
+		IsGamePickerOpen = false;
+		GameSearchText = "";
+		GameSearchResults.Clear();
 	}
 
 	private async Task RefreshLobbies()
