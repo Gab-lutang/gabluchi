@@ -204,13 +204,17 @@ func handleHost(conn *websocket.Conn, req HostRequest) {
 
 	writeJSON(conn, Response{OK: true, Code: code})
 
-	// keep connection open — lobby alive while host is connected
+	// clear the read deadline from handleWS so the keepalive loop doesn't time out
+	conn.SetReadDeadline(time.Time{})
+
+	// keep connection alive — lobby alive while host is connected
 	// read until disconnect (ignore messages, just detect close)
 	for {
 		_, _, err := conn.ReadMessage()
 		if err != nil {
 			break
 		}
+	}
 	}
 
 	// host disconnected — remove lobby
@@ -277,13 +281,16 @@ func startKeepAlive(selfURL string) {
 		return
 	}
 	go func() {
-		ticker := time.NewTicker(4 * time.Minute)
+		ticker := time.NewTicker(5 * time.Minute)
 		defer ticker.Stop()
 		client := &http.Client{Timeout: 10 * time.Second}
 		for range ticker.C {
 			resp, err := client.Get(selfURL + "/health")
 			if err == nil {
 				resp.Body.Close()
+				log.Printf("keepalive: ping ok")
+			} else {
+				log.Printf("keepalive: ping failed: %v", err)
 			}
 		}
 	}()
@@ -307,7 +314,7 @@ func main() {
 	http.HandleFunc("/lobbies", handleLobbies)
 	http.HandleFunc("/health", healthHandler)
 
-	log.Printf("gabluchi-connect relay starting on :%s", port)
+	log.Printf("gabluchi-connect relay starting on :%s (selfURL=%s)", port, selfURL)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
