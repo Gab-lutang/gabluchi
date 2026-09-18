@@ -25,6 +25,8 @@ public class LicenseService
 		PropertyNameCaseInsensitive = true
 	};
 
+	public event Action? LicenseActivated;
+
 	public LicenseService(SettingsService settings)
 	{
 		_settings = settings;
@@ -122,6 +124,7 @@ public class LicenseService
 			}
 			_settings.LicenseMachineId = machineId;
 			_settings.LicenseToken = Encrypt(token);
+			LicenseActivated?.Invoke();
 			return LicenseActivateResult.Success(token);
 		}
 		catch (Exception)

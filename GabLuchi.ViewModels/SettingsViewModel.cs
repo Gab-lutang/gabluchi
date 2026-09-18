@@ -648,6 +648,7 @@ public class SettingsViewModel : ObservableObject
 		_autoUpdateApps = settings.AutoUpdateApps;
 		_fastFetch = settings.FastFetch;
 		_hubcapIsKeyConfigured = _license.IsActivated;
+		_license.LicenseActivated += OnLicenseActivated;
 		_suppressLanguagePrompt = true;
 		_selectedLanguage = LanguageOptions.FirstOrDefault((LanguageOption o) => o.Tag == settings.Language) ?? LanguageOptions[0];
 		_suppressLanguagePrompt = false;
@@ -856,6 +857,12 @@ public class SettingsViewModel : ObservableObject
 	{
 		HubcapKeyStatus = text;
 		HubcapKeyStatusColor = (isError ? "#f87171" : "#22c55e");
+	}
+
+	private void OnLicenseActivated()
+	{
+		HubcapIsKeyConfigured = true;
+		OnPropertyChanged(__KnownINotifyPropertyChangedArgs.HubcapStatsText);
 	}
 
 	private static string FormatHubcapStats(HubcapStats stats)
