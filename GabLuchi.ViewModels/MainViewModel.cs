@@ -22,6 +22,8 @@ public class MainViewModel : ObservableObject
 
 	public OnboardingViewModel Onboarding { get; }
 
+	public LicenseGateViewModel LicenseGate { get; }
+
 	public string VersionLabel { get; } = "v" + ReadVersion();
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
@@ -39,11 +41,12 @@ public class MainViewModel : ObservableObject
 		return text.Substring(0, num);
 	}
 
-	public MainViewModel(SteamService steam, AuthService auth, OnboardingViewModel onboarding)
+	public MainViewModel(SteamService steam, AuthService auth, OnboardingViewModel onboarding, LicenseGateViewModel licenseGate)
 	{
 		_steam = steam;
 		_auth = auth;
 		Onboarding = onboarding;
+		LicenseGate = licenseGate;
 	}
 
 	public async Task InitializeAsync()

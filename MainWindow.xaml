@@ -22,6 +22,13 @@
                   </Setter.Value>
                 </Setter>
               </DataTrigger>
+              <DataTrigger Value="True" Binding="{Binding LicenseGate.IsOpen}">
+                <Setter Property="UIElement.Effect">
+                  <Setter.Value>
+                    <BlurEffect KernelType="Gaussian" Radius="28" RenderingBias="Performance" />
+                  </Setter.Value>
+                </Setter>
+              </DataTrigger>
             </Style.Triggers>
           </Style>
         </FrameworkElement.Style>
@@ -32,17 +39,17 @@
                 <ui:SymbolIcon Symbol="Home24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Add}" TargetPageType="{x:Type views:DownloadView}">
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Add}" Click="NavAdd_Click">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="Add24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Manage}" TargetPageType="{x:Type views:ManageView}">
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Manage}" Click="NavManage_Click">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="Games24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Mode}" TargetPageType="{x:Type views:ModeView}">
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Mode}" Click="NavMode_Click">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="Options24" />
               </ui:NavigationViewItem.Icon>
@@ -61,22 +68,22 @@
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
             -->
-            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Fixes}" TargetPageType="{x:Type views:FixesView}">
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_Fixes}" Click="NavFixes_Click">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="ShieldTask24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_MultiplayerFix}" TargetPageType="{x:Type views:MultiplayerFixView}">
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_MultiplayerFix}" Click="NavMultiplayerFix_Click">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="People24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content="Plugin" TargetPageType="{x:Type views:PluginView}">
+            <ui:NavigationViewItem Content="Plugin" Click="NavPlugin_Click">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="PuzzlePiece24" />
               </ui:NavigationViewItem.Icon>
             </ui:NavigationViewItem>
-            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_DlcUnlocker}" TargetPageType="{x:Type views:DlcUnlockerView}">
+            <ui:NavigationViewItem Content="{x:Static res:Strings.Nav_DlcUnlocker}" Click="NavDlcUnlocker_Click">
               <ui:NavigationViewItem.Icon>
                 <ui:SymbolIcon Symbol="ShieldTask24" />
               </ui:NavigationViewItem.Icon>
@@ -103,6 +110,7 @@
         <ui:SnackbarPresenter Name="RootSnackbar" Margin="0,0,24,18" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
       </Grid>
       <views:OnboardingView DataContext="{Binding Onboarding}" Visibility="{Binding IsOpen, Converter={StaticResource BoolToVis}}" />
+      <views:LicenseGateView DataContext="{Binding LicenseGate}" Visibility="{Binding IsOpen, Converter={StaticResource BoolToVis}}" />
     </Grid>
   </Grid>
 </ui:FluentWindow>

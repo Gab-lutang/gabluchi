@@ -103,8 +103,9 @@ public partial class App : Application
 		services.AddSingleton<DlcUnlockerViewModel>();
 		services.AddSingleton<GameHealthViewModel>();
 		services.AddSingleton<SmartDlcViewModel>();
-		services.AddSingleton<OnboardingViewModel>();
-		services.AddSingleton<MainViewModel>();
+	services.AddSingleton<OnboardingViewModel>();
+	services.AddSingleton<LicenseGateViewModel>();
+	services.AddSingleton<MainViewModel>();
 			services.AddSingleton<HomeView>();
 			services.AddSingleton<DownloadView>();
 			services.AddSingleton<ManageView>();
@@ -118,8 +119,9 @@ public partial class App : Application
 		services.AddSingleton<DlcUnlockerView>();
 		services.AddSingleton<GameHealthView>();
 		services.AddSingleton<SmartDlcView>();
-		services.AddSingleton<SettingsView>();
-			services.AddSingleton<MainWindow>();
+	services.AddSingleton<SettingsView>();
+	services.AddSingleton<LicenseGateView>();
+		services.AddSingleton<MainWindow>();
 		}).Build();
 	}
 

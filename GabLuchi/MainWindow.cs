@@ -16,16 +16,26 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 {
 	private readonly SettingsService _settings;
 
-	public MainWindow(MainViewModel viewModel, IServiceProvider services, SettingsService settings)
+	private readonly LicenseService _license;
+
+	private readonly LicenseGateViewModel _licenseGate;
+
+	public MainWindow(MainViewModel viewModel, IServiceProvider services, SettingsService settings, LicenseService license)
 	{
 		MainWindow mainWindow = this;
 		_settings = settings;
+		_license = license;
+		_licenseGate = viewModel.LicenseGate;
 		InitializeComponent();
 		base.DataContext = viewModel;
 		RootNavigation.SetServiceProvider(services);
 		base.Loaded += async delegate
 		{
-			mainWindow.RootNavigation.Navigate(typeof(HomeView));
+			RootNavigation.Navigate(typeof(HomeView));
+			if (!_license.IsActivated)
+			{
+				_licenseGate.IsOpen = true;
+			}
 			try
 			{
 				await viewModel.InitializeAsync();
@@ -34,6 +44,17 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 			{
 			}
 		};
+	}
+
+	private bool NavigateOrGate(Type pageType)
+	{
+		if (_license.IsActivated)
+		{
+			RootNavigation.Navigate(pageType);
+			return true;
+		}
+		_licenseGate.IsOpen = true;
+		return false;
 	}
 
 	public void ShowAndActivate()
@@ -48,12 +69,12 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 
 	public void NavigateToAdd()
 	{
-		RootNavigation.Navigate(typeof(DownloadView));
+		NavigateOrGate(typeof(DownloadView));
 	}
 
 	public void NavigateToManage()
 	{
-		RootNavigation.Navigate(typeof(ManageView));
+		NavigateOrGate(typeof(ManageView));
 	}
 
 	public void NavigateToSettings()
@@ -63,30 +84,32 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 
 	public void NavigateToFixes()
 	{
-		RootNavigation.Navigate(typeof(FixesView));
+		NavigateOrGate(typeof(FixesView));
 	}
 
 	public void NavigateToPlugin()
 	{
-		RootNavigation.Navigate(typeof(PluginView));
+		NavigateOrGate(typeof(PluginView));
 	}
 
 	public void NavigateToMode()
 	{
-		RootNavigation.Navigate(typeof(ModeView));
+		NavigateOrGate(typeof(ModeView));
 	}
 
-	// GameHealth: hidden, feature not released yet
-	// public void NavigateToHealth()
-	// {
-	// 	RootNavigation.Navigate(typeof(GameHealthView));
-	// }
+	private void NavAdd_Click(object sender, RoutedEventArgs e) => NavigateToAdd();
 
-	// SmartDlc: hidden, feature not released yet
-	// public void NavigateToSmartDlc()
-	// {
-	// 	RootNavigation.Navigate(typeof(SmartDlcView));
-	// }
+	private void NavManage_Click(object sender, RoutedEventArgs e) => NavigateToManage();
+
+	private void NavMode_Click(object sender, RoutedEventArgs e) => NavigateToMode();
+
+	private void NavFixes_Click(object sender, RoutedEventArgs e) => NavigateToFixes();
+
+	private void NavMultiplayerFix_Click(object sender, RoutedEventArgs e) => NavigateOrGate(typeof(MultiplayerFixView));
+
+	private void NavPlugin_Click(object sender, RoutedEventArgs e) => NavigateToPlugin();
+
+	private void NavDlcUnlocker_Click(object sender, RoutedEventArgs e) => NavigateOrGate(typeof(DlcUnlockerView));
 
 	private void RestartSteam_Click(object sender, RoutedEventArgs e)
 	{
