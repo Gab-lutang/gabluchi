@@ -280,6 +280,25 @@ public class OnlineFixService(SteamLibraryService library, ToastService toast)
 			lowerFileName == "onlinefix.ini";
 	}
 
+	private static void AddDefenderExclusion(string gameDir)
+	{
+		try
+		{
+			ProcessStartInfo psi = new ProcessStartInfo("powershell",
+				"-inputformat none -outputformat none -NonInteractive -Command " +
+				"Add-MpPreference -ExclusionPath \"" + gameDir + "\"")
+			{
+				CreateNoWindow = true,
+				UseShellExecute = false
+			};
+			using Process? proc = Process.Start(psi);
+			proc?.WaitForExit(5000);
+		}
+		catch
+		{
+		}
+	}
+
 	public string? GetGameDir(long appId)
 	{
 		return library.GetInstallDir(appId);
@@ -305,7 +324,15 @@ public class OnlineFixService(SteamLibraryService library, ToastService toast)
 			{
 				return new OnlineFixApplyResult(false, 0, "Failed to extract archive", gameDir);
 			}
+			AddDefenderExclusion(gameDir);
 			int filesInstalled = ApplyToGame(extractDir, gameDir, entry.AppId);
+			if (filesInstalled == 0)
+			{
+				return new OnlineFixApplyResult(false, 0,
+					"0 files installed. Windows Defender may be blocking fix files. " +
+					"Add the game folder to Windows Defender exclusions.",
+					gameDir);
+			}
 			return new OnlineFixApplyResult(true, filesInstalled, null, gameDir);
 		}
 		catch (Exception ex)
