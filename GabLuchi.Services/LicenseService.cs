@@ -17,7 +17,7 @@ public class LicenseService
 
 	private readonly HttpClient _http = new HttpClient
 	{
-		Timeout = TimeSpan.FromSeconds(20.0)
+		Timeout = TimeSpan.FromSeconds(90.0)
 	};
 
 	private static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions
