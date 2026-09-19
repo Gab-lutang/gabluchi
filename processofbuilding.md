@@ -55,7 +55,7 @@ Remove-Item "Release" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item "Releases" -Recurse -Force -ErrorAction SilentlyContinue
 
 # Build
-dotnet publish -c Release -r win-x64 --self-contained -o Release/publish
+dotnet publish -c Release -o Release/publish
 ```
 
 **Verify the DLL** after building:
@@ -222,7 +222,7 @@ Remove-Item "Releases" -Recurse -Force -EA SilentlyContinue
 # Properties/AssemblyInfo.cs: AssemblyFileVersion, AssemblyInformationalVersion, AssemblyVersion
 
 # === BUILD ===
-dotnet publish -c Release -r win-x64 --self-contained -o Release/publish
+dotnet publish -c Release -o Release/publish
 
 # === PACK ===
 vpk pack --packId GabLuchi --packVersion $VER --packDir "Release\publish" --mainExe GabLuchi.exe
@@ -284,7 +284,7 @@ Remove-Item "Release" -Recurse -Force -EA SilentlyContinue
 Remove-Item "Releases" -Recurse -Force -EA SilentlyContinue
 
 # === BUILD ===
-dotnet publish -c Release -r win-x64 --self-contained -o Release/publish
+dotnet publish -c Release -o Release/publish
 
 # === PACK (note: --packId GabLuchi-Dev, NO --channel flag) ===
 # DO NOT use --channel dev — Velopack 1.2.0 doesn't support .WithChannel()

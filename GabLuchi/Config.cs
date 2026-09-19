@@ -51,9 +51,9 @@ public static class Config
 
 	public static string ApiBaseUrl => Get("ApiBaseUrl", "https://lua.tools");
 
-	public static string AuthBackendBase => Get("AuthBackendBase", "http://localhost:4567");
+	public static string AuthBackendBase => Get("AuthBackendBase", "https://gabluchi-auth.freestuffsyeah65.workers.dev");
 
-	public static string KeyCheckerBase => Get("KeyCheckerBase", "http://localhost:7890");
+	public static string KeyCheckerBase => Get("KeyCheckerBase", "https://gabluchi-proxy.freestuffsyeah65.workers.dev");
 
 	public static string DiscordInviteUrl => Get("DiscordInviteUrl", "");
 

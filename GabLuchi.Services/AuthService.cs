@@ -56,21 +56,24 @@ public class AuthService
 			AuthStateChanged?.Invoke();
 			return false;
 		}
-		_token = stored.Token;
-		_expiresAt = stored.ExpiresAt;
-		DisplayName = stored.DisplayName;
-		UserId = stored.UserId;
-		AvatarUrl = stored.AvatarUrl;
-		if (_expiresAt <= DateTimeOffset.UtcNow)
+		if (stored.ExpiresAt <= DateTimeOffset.UtcNow)
 		{
-			Log("restore: token expired " + _expiresAt.ToString("O") + " -> clear");
+			Log("restore: token expired " + stored.ExpiresAt.ToString("O") + " -> clear");
 			ClearSession();
 			AuthStateChanged?.Invoke();
 			return false;
 		}
-		Log("restore: token present, user=" + (UserId ?? "null") + ", validating...");
-		bool valid = await ValidateAsync();
+		Log("restore: token present, user=" + (stored.UserId ?? "null") + ", validating...");
+		bool valid = await ValidateAsync(stored.Token, stored.ExpiresAt);
 		Log("restore: validate=" + valid);
+		if (valid)
+		{
+			_token = stored.Token;
+			_expiresAt = stored.ExpiresAt;
+			DisplayName = stored.DisplayName;
+			UserId = stored.UserId;
+			AvatarUrl = stored.AvatarUrl;
+		}
 		AuthStateChanged?.Invoke();
 		return valid;
 	}
@@ -186,12 +189,12 @@ public class AuthService
 		return JsonSerializer.Deserialize<ExchangeResponse>(text, JsonOpts) ?? throw new ApiException("Token exchange returned an empty session.");
 	}
 
-	private async Task<bool> ValidateAsync()
+	private async Task<bool> ValidateAsync(string token, DateTimeOffset expiresAt)
 	{
 		try
 		{
 			HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.AuthBackendBase + "/api/auth/me");
-			request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+			request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 			HttpResponseMessage res = await _http.SendAsync(request);
 			if (!res.IsSuccessStatusCode)
 			{
@@ -205,13 +208,14 @@ public class AuthService
 				DisplayName = me.DisplayName;
 				UserId = me.UserId;
 				AvatarUrl = me.AvatarUrl;
-				SaveStored(new StoredAuth(_token, _expiresAt, DisplayName, UserId, AvatarUrl));
+				SaveStored(new StoredAuth(token, expiresAt, DisplayName, UserId, AvatarUrl));
 			}
 			return true;
 		}
 		catch
 		{
-			return _expiresAt > DateTimeOffset.UtcNow;
+			ClearSession();
+			return false;
 		}
 	}
 
