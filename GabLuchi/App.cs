@@ -82,6 +82,8 @@ public partial class App : Application
 		services.AddSingleton<UplayR2Unlocker>();
 		services.AddSingleton<DlcUnlockerManager>();
 		services.AddSingleton<GameHealthService>();
+		services.AddSingleton<BackgroundHealthScanner>();
+		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<BackgroundHealthScanner>());
 		services.AddSingleton<SmartDlcService>();
 		services.AddSingleton<QuickFixService>();
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<CompanionService>());

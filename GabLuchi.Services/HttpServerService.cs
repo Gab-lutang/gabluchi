@@ -250,13 +250,17 @@ public class HttpServerService : IHostedService
 			{
 				tuple = await HandleFixDownload(fixAppId, fixSlot);
 			}
-			else if (MatchGet(text2, "/health/{appid}", out id10))
+			else if (text2 == "/health/scan-status" && request.HttpMethod == "GET")
 			{
-				tuple = await HandleHealthCheck(long.Parse(id10));
+				tuple = HandleHealthScanStatus();
 			}
-			else if (MatchPost(text2, "/health/{appid}/repair", out id10))
+			else if (text2 == "/health/scan-all" && request.HttpMethod == "POST")
 			{
-				tuple = await HandleHealthRepair(long.Parse(id10));
+				tuple = await HandleHealthScanAll();
+			}
+			else if (text2 == "/health/av-status" && request.HttpMethod == "GET")
+			{
+				tuple = await HandleAvStatus();
 			}
 			else if (text2 == "/plugin/status" && request.HttpMethod == "GET")
 			{
@@ -269,6 +273,14 @@ public class HttpServerService : IHostedService
 			else if (text2 == "/plugin/uninstall" && request.HttpMethod == "POST")
 			{
 				tuple = await HandlePluginUninstall();
+			}
+			else if (MatchGet(text2, "/health/{appid}", out id10))
+			{
+				tuple = await HandleHealthCheck(long.Parse(id10));
+			}
+			else if (MatchPost(text2, "/health/{appid}/repair", out id10))
+			{
+				tuple = await HandleHealthRepair(long.Parse(id10));
 			}
 			else if (!MatchPost(text2, "/open/fix/{appid}", out id10))
 			{
@@ -1114,6 +1126,86 @@ public class HttpServerService : IHostedService
 				message = $"Fixed {fixedCount} issue(s), {failedCount} failed",
 				fixedCount = fixedCount,
 				failedCount = failedCount
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private (int, string) HandleHealthScanStatus()
+	{
+		try
+		{
+			BackgroundHealthScanner scanner = _services.GetRequiredService<BackgroundHealthScanner>();
+			return (200, Json(new
+			{
+				success = true,
+				scanning = scanner.IsScanning,
+				lastScanTime = scanner.LastScanTime,
+				totalIssuesFound = scanner.TotalIssuesFound,
+				gamesWithIssues = scanner.GamesWithIssues,
+				quarantinedDlls = scanner.QuarantinedDlls,
+				totalGamesScanned = scanner.LastResults.Count
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private async Task<(int, string)> HandleHealthScanAll()
+	{
+		try
+		{
+			BackgroundHealthScanner scanner = _services.GetRequiredService<BackgroundHealthScanner>();
+			if (scanner.IsScanning)
+			{
+				return (200, Json(new
+				{
+					success = true,
+					message = "Scan already in progress"
+				}));
+			}
+			_ = scanner.RunScanAsync();
+			return (200, Json(new
+			{
+				success = true,
+				message = "Background scan started"
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private async Task<(int, string)> HandleAvStatus()
+	{
+		try
+		{
+			DefenderService defender = _services.GetRequiredService<DefenderService>();
+			DefenderStatus status = await defender.GetStatusAsync();
+			return (200, Json(new
+			{
+				success = true,
+				realTimeProtection = status.RealTimeProtectionEnabled,
+				exclusionsSet = status.ExclusionsSet,
+				quarantinedDlls = status.QuarantinedDllCount
 			}));
 		}
 		catch (Exception ex)

@@ -7,11 +7,9 @@
     <UseWPF>True</UseWPF>
     <UseWindowsForms>True</UseWindowsForms>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <Version>1.0.28</Version>
-    <AssemblyVersion>1.0.28.0</AssemblyVersion>
-    <FileVersion>1.0.28.0</FileVersion>
+    <Version>1.0.29</Version>
+    <AssemblyVersion>1.0.29.0</AssemblyVersion>
+    <FileVersion>1.0.29.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>

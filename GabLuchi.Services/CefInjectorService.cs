@@ -280,9 +280,12 @@ public class CefInjectorService : IHostedService
 			["GetPluginStatus"] = ("GET", "/plugin/status"),
 			["InstallGabLuchiPlugin"] = ("POST", "/plugin/install"),
 			["UninstallGabLuchiPlugin"] = ("POST", "/plugin/uninstall"),
-			["CheckPluginUpdates"] = ("POST", "/plugin/check-updates"),
+			["CheckPluginUpdates"] = ("POST", "/check-updates"),
 			["HealthCheckForApp"] = ("GET", "/health/{appid}"),
-			["RepairFixForApp"] = ("POST", "/health/{appid}/repair")
+			["RepairFixForApp"] = ("POST", "/health/{appid}/repair"),
+			["GetHealthScanStatus"] = ("GET", "/health/scan-status"),
+			["TriggerHealthScanAll"] = ("POST", "/health/scan-all"),
+			["GetAvStatus"] = ("GET", "/health/av-status")
 		}.TryGetValue(method, out var value))
 		{
 			return "{\"success\":true}";
