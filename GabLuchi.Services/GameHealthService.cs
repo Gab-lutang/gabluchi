@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using GabLuchi.Models;
 
@@ -14,7 +15,8 @@ public class GameHealthService(
 	DlcUnlockerManager dlcManager,
 	GoldbergService goldberg,
 	SteamApiCheckBypassService bypass,
-	SteamlessService steamless
+	SteamlessService steamless,
+	PluginInstallerService pluginInstaller
 )
 {
 	private static readonly string[] DllDetectionPatterns = new[]
@@ -129,6 +131,33 @@ public class GameHealthService(
 				return true;
 			}));
 			score -= 5;
+		}
+
+		// Check: OnlineFix DLLs present (AV risk)
+		string? onlineFixDll = FindOnlineFixDll(installDir);
+		if (onlineFixDll != null)
+		{
+			issues.Add(new HealthIssue(HealthSeverity.Warning, "AV Risk", "OnlineFix DLL detected",
+				$"Found {Path.GetFileName(onlineFixDll)} — this file is frequently quarantined by Windows Defender. Ensure exclusion is set.",
+				async () =>
+				{
+					DefenderService defender = new DefenderService();
+					return await defender.ReExcludeGabLuchiAsync();
+				}));
+			score -= 5;
+		}
+
+		// Check: Loader DLL integrity (winmm.dll in Steam dir)
+		string? loaderIssue = await CheckLoaderIntegrityAsync();
+		if (loaderIssue != null)
+		{
+			issues.Add(new HealthIssue(HealthSeverity.Critical, "Loader", "Loader DLL issue",
+				loaderIssue, async () =>
+				{
+					(bool ok, _) = await pluginInstaller.InstallAsync(progress: null);
+					return ok;
+				}));
+			score -= 15;
 		}
 
 		// Check: Manifest pin files in Lua (stale pins cause lock to old depots)
@@ -258,6 +287,42 @@ public class GameHealthService(
 		catch
 		{
 			return $"App {appId}";
+		}
+	}
+
+	private static string? FindOnlineFixDll(string installDir)
+	{
+		string[] patterns = { "OnlineFix64.dll", "OnlineFix.dll" };
+		foreach (string p in patterns)
+		{
+			string path = Path.Combine(installDir, p);
+			if (File.Exists(path))
+				return path;
+		}
+		return null;
+	}
+
+	private async Task<string?> CheckLoaderIntegrityAsync()
+	{
+		try
+		{
+			string? steamDir = pluginInstaller.SteamDir;
+			if (steamDir == null || !Directory.Exists(steamDir))
+				return null;
+
+			string loaderPath = Path.Combine(steamDir, "winmm.dll");
+			if (!File.Exists(loaderPath))
+				return "winmm.dll (GabLuchi loader) is missing from the Steam directory. Reinstall the plugin.";
+
+			long size = new FileInfo(loaderPath).Length;
+			if (size < 1024 || size > 50_000_000)
+				return $"winmm.dll is {size} bytes — expected ~200-500KB. File may be corrupt.";
+
+			return null;
+		}
+		catch
+		{
+			return null;
 		}
 	}
 }

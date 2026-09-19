@@ -111,7 +111,7 @@ public class PluginInstallerService(SteamService steam, GithubProxy gh, CefInjec
 
 	private static string ManifestPath => Path.Combine(FrontendDir, "installed.json");
 
-	private string? SteamDir => steam.EffectivePath;
+	internal string? SteamDir => steam.EffectivePath;
 
 	private IEnumerable<string> LegacyDllPaths
 	{

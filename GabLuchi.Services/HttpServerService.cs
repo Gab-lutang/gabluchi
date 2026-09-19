@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using GabLuchi;
+using GabLuchi.Models;
 using GabLuchi.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -248,6 +249,38 @@ public class HttpServerService : IHostedService
 			else if (MatchFixGet(text2, "/fix/{appid}/{slot}", out var fixAppId, out var fixSlot))
 			{
 				tuple = await HandleFixDownload(fixAppId, fixSlot);
+			}
+			else if (text2 == "/health/scan-status" && request.HttpMethod == "GET")
+			{
+				tuple = HandleHealthScanStatus();
+			}
+			else if (text2 == "/health/scan-all" && request.HttpMethod == "POST")
+			{
+				tuple = await HandleHealthScanAll();
+			}
+			else if (text2 == "/health/av-status" && request.HttpMethod == "GET")
+			{
+				tuple = await HandleAvStatus();
+			}
+			else if (text2 == "/plugin/status" && request.HttpMethod == "GET")
+			{
+				tuple = await HandlePluginStatus();
+			}
+			else if (text2 == "/plugin/install" && request.HttpMethod == "POST")
+			{
+				tuple = await HandlePluginInstall();
+			}
+			else if (text2 == "/plugin/uninstall" && request.HttpMethod == "POST")
+			{
+				tuple = await HandlePluginUninstall();
+			}
+			else if (MatchGet(text2, "/health/{appid}", out id10))
+			{
+				tuple = await HandleHealthCheck(long.Parse(id10));
+			}
+			else if (MatchPost(text2, "/health/{appid}/repair", out id10))
+			{
+				tuple = await HandleHealthRepair(long.Parse(id10));
 			}
 			else if (!MatchPost(text2, "/open/fix/{appid}", out id10))
 			{
@@ -1027,5 +1060,235 @@ public class HttpServerService : IHostedService
 			success = false,
 			error = msg
 		});
+	}
+
+	private async Task<(int, string)> HandleHealthCheck(long appId)
+	{
+		try
+		{
+			GameHealthService health = _services.GetRequiredService<GameHealthService>();
+			GameHealthReport report = await health.ScanSingleAsync(appId);
+			List<object> issues = report.Issues.Select(i => (object)new
+			{
+				severity = i.Severity.ToString().ToLower(),
+				category = i.Category,
+				title = i.Title,
+				description = i.Description,
+				hasFix = i.HasFix
+			}).ToList();
+			return (200, Json(new
+			{
+				success = true,
+				appId = report.AppId,
+				gameName = report.GameName,
+				healthScore = report.HealthScore,
+				scoreLabel = report.ScoreLabel,
+				scoreColor = report.ScoreColor,
+				isHealthy = report.IsHealthy,
+				criticalCount = report.CriticalCount,
+				warningCount = report.WarningCount,
+				issues = issues,
+				scannedAt = report.ScannedAt
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private async Task<(int, string)> HandleHealthRepair(long appId)
+	{
+		try
+		{
+			GameHealthService health = _services.GetRequiredService<GameHealthService>();
+			GameHealthReport report = await health.ScanSingleAsync(appId);
+			int fixableCount = report.Issues.Count(i => i.HasFix);
+			if (fixableCount == 0)
+			{
+				return (200, Json(new
+				{
+					success = true,
+					message = "No fixable issues found",
+					fixedCount = 0,
+					failedCount = 0
+				}));
+			}
+			List<GameHealthReport> singleReport = new List<GameHealthReport> { report };
+			(int fixedCount, int failedCount) = await health.FixAllIssuesAsync(singleReport);
+			return (200, Json(new
+			{
+				success = true,
+				message = $"Fixed {fixedCount} issue(s), {failedCount} failed",
+				fixedCount = fixedCount,
+				failedCount = failedCount
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private (int, string) HandleHealthScanStatus()
+	{
+		try
+		{
+			BackgroundHealthScanner scanner = _services.GetRequiredService<BackgroundHealthScanner>();
+			return (200, Json(new
+			{
+				success = true,
+				scanning = scanner.IsScanning,
+				lastScanTime = scanner.LastScanTime,
+				totalIssuesFound = scanner.TotalIssuesFound,
+				gamesWithIssues = scanner.GamesWithIssues,
+				quarantinedDlls = scanner.QuarantinedDlls,
+				totalGamesScanned = scanner.LastResults.Count
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private async Task<(int, string)> HandleHealthScanAll()
+	{
+		try
+		{
+			BackgroundHealthScanner scanner = _services.GetRequiredService<BackgroundHealthScanner>();
+			if (scanner.IsScanning)
+			{
+				return (200, Json(new
+				{
+					success = true,
+					message = "Scan already in progress"
+				}));
+			}
+			_ = scanner.RunScanAsync();
+			return (200, Json(new
+			{
+				success = true,
+				message = "Background scan started"
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private async Task<(int, string)> HandleAvStatus()
+	{
+		try
+		{
+			DefenderService defender = _services.GetRequiredService<DefenderService>();
+			DefenderStatus status = await defender.GetStatusAsync();
+			return (200, Json(new
+			{
+				success = true,
+				realTimeProtection = status.RealTimeProtectionEnabled,
+				exclusionsSet = status.ExclusionsSet,
+				quarantinedDlls = status.QuarantinedDllCount
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private async Task<(int, string)> HandlePluginStatus()
+	{
+		try
+		{
+			PluginInstallerService installer = _services.GetRequiredService<PluginInstallerService>();
+			PluginStatus status = await installer.GetStatusAsync(force: false);
+			return (200, Json(new
+			{
+				success = true,
+				frontendInstalled = status.FrontendInstalled,
+				dllInstalled = status.DllInstalled,
+				dllMatches = status.DllMatches,
+				installedTag = status.InstalledTag,
+				latestTag = status.LatestTag,
+				updateAvailable = status.UpdateAvailable,
+				millenniumPresent = status.MillenniumPresent,
+				offline = status.Offline,
+				port8080Busy = status.Port8080Busy
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private async Task<(int, string)> HandlePluginInstall()
+	{
+		try
+		{
+			PluginInstallerService installer = _services.GetRequiredService<PluginInstallerService>();
+			(bool ok, string? error) = await installer.InstallAsync(progress: null);
+			return (200, Json(new
+			{
+				success = ok,
+				error = error
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
+	}
+
+	private async Task<(int, string)> HandlePluginUninstall()
+	{
+		try
+		{
+			PluginInstallerService installer = _services.GetRequiredService<PluginInstallerService>();
+			(bool ok, string? error) = await installer.UninstallAsync();
+			return (200, Json(new
+			{
+				success = ok,
+				error = error
+			}));
+		}
+		catch (Exception ex)
+		{
+			return (200, Json(new
+			{
+				success = false,
+				error = ex.Message
+			}));
+		}
 	}
 }
