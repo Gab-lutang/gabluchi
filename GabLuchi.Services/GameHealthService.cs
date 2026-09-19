@@ -133,18 +133,36 @@ public class GameHealthService(
 			score -= 5;
 		}
 
-		// Check: OnlineFix DLLs present (AV risk)
+		// Check: OnlineFix DLLs present (AV risk) — only warn if exclusions NOT already set
 		string? onlineFixDll = FindOnlineFixDll(installDir);
 		if (onlineFixDll != null)
 		{
-			issues.Add(new HealthIssue(HealthSeverity.Warning, "AV Risk", "OnlineFix DLL detected",
-				$"Found {Path.GetFileName(onlineFixDll)} — this file is frequently quarantined by Windows Defender. Ensure exclusion is set.",
+			DefenderService defender = new DefenderService();
+			DefenderStatus avStatus = await defender.GetStatusAsync();
+			if (!avStatus.ExclusionsSet)
+			{
+				issues.Add(new HealthIssue(HealthSeverity.Warning, "AV Risk", "OnlineFix DLL detected — no exclusions set",
+					$"Found {Path.GetFileName(onlineFixDll)} — Windows Defender will quarantine this file. Add exclusions now to prevent it.",
+					async () =>
+					{
+						return await defender.ReExcludeGabLuchiAsync();
+					}));
+				score -= 5;
+			}
+		}
+
+		// Check: OnlineFix DLL quarantined (indicators present but DLL missing)
+		bool hasOnlineFixIni = File.Exists(Path.Combine(installDir, "OnlineFix.ini"));
+		if (hasOnlineFixIni && onlineFixDll == null)
+		{
+			issues.Add(new HealthIssue(HealthSeverity.Critical, "AV Risk", "OnlineFix DLL quarantined by Defender",
+				"OnlineFix.ini found but OnlineFix64.dll is missing — likely quarantined. Re-exclude and re-apply the fix to restore it.",
 				async () =>
 				{
 					DefenderService defender = new DefenderService();
 					return await defender.ReExcludeGabLuchiAsync();
 				}));
-			score -= 5;
+			score -= 25;
 		}
 
 		// Check: Loader DLL integrity (winmm.dll in Steam dir)
