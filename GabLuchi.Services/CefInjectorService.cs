@@ -277,8 +277,12 @@ public class CefInjectorService : IHostedService
 			["DismissLoadedApps"] = ("POST", "/loaded-apps"),
 			["GetApiList"] = ("GET", "/api-list"),
 			["GetIconDataUrl"] = ("GET", "/icon"),
-			["GetGamesDatabase"] = ("GET", "/games-database"),
-			["Logger"] = ("POST", "/log")
+			["GetPluginStatus"] = ("GET", "/plugin/status"),
+			["InstallGabLuchiPlugin"] = ("POST", "/plugin/install"),
+			["UninstallGabLuchiPlugin"] = ("POST", "/plugin/uninstall"),
+			["CheckPluginUpdates"] = ("POST", "/plugin/check-updates"),
+			["HealthCheckForApp"] = ("GET", "/health/{appid}"),
+			["RepairFixForApp"] = ("POST", "/health/{appid}/repair")
 		}.TryGetValue(method, out var value))
 		{
 			return "{\"success\":true}";
@@ -464,6 +468,6 @@ public class CefInjectorService : IHostedService
 
 	private string BuildInlinePolyfill()
 	{
-		return "\n(function(){\nvar real=window.Millennium;\nvar pending={},ready={},reqId=0;\nfunction ltCall(p,m,a){\n  var i='_ltr_'+(++reqId);\n  pending[i]={method:m,args:a,ts:Date.now()};\n  return new Promise(function(rv,rj){\n    var mx=100;\n    function ck(){\n      var r=ready[i];\n      if(r!==undefined){delete ready[i];if(r.e){rj(new Error(r.e))}else{rv(r.v)}return}\n      if(--mx>0){setTimeout(ck,50)}else{delete pending[i];rv({success:true})}\n    }\n    ck();\n  });\n}\nif(real&&typeof real.callServerMethod==='function'){\n  var realCall=real.callServerMethod.bind(real);\n  real.callServerMethod=function(p,m,a){return p==='gabluchi'?ltCall(p,m,a):realCall(p,m,a)};\n  real._pending=pending;\n  real._readyResponses=ready;\n  window.Millennium=real;\n}else{\n  window.Millennium={_pending:pending,_readyResponses:ready,callServerMethod:function(p,m,a){return ltCall(p,m,a)}};\n}\n})();\n";
+		return "\n(function(){\nvar real=window.Millennium;\nvar pending={},ready={},reqId=0;\nfunction ltCall(p,m,a){\n  var i='_ltr_'+(++reqId);\n  pending[i]={method:m,args:a,ts:Date.now()};\n  return new Promise(function(rv,rj){\n    var mx=300;\n    function ck(){\n      var r=ready[i];\n      if(r!==undefined){delete ready[i];if(r.e){rj(new Error(r.e))}else{rv(r.v)}return}\n      if(--mx>0){setTimeout(ck,50)}else{delete pending[i];rv({success:false,error:'Timeout'})}\n    }\n    ck();\n  });\n}\nif(real&&typeof real.callServerMethod==='function'){\n  var realCall=real.callServerMethod.bind(real);\n  real.callServerMethod=function(p,m,a){return p==='gabluchi'?ltCall(p,m,a):realCall(p,m,a)};\n  real._pending=pending;\n  real._readyResponses=ready;\n  window.Millennium=real;\n}else{\n  window.Millennium={_pending:pending,_readyResponses:ready,callServerMethod:function(p,m,a){return ltCall(p,m,a)}};\n}\n})();\n";
 	}
 }
