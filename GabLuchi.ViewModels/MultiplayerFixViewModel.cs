@@ -301,7 +301,7 @@ public class MultiplayerFixViewModel : ObservableObject
 			await Task.WhenAll(peronTask, githubTask);
 
 			List<OnlineFixEntry> merged = peronResults
-				.Concat(githubResults.Where(g => !peronResults.Any(p => p.AppId == g.AppId)))
+				.Concat(githubResults)
 				.ToList();
 
 			if (merged.Count == 0)

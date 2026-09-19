@@ -8,7 +8,7 @@ using System.Windows;
 [assembly: AssemblyCompany("GabLuchi")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyFileVersion("1.0.29.0")]
-[assembly: AssemblyInformationalVersion("1.0.29-dev.1")]
+[assembly: AssemblyInformationalVersion("1.0.29-dev.2")]
 [assembly: AssemblyProduct("GabLuchi")]
 [assembly: AssemblyTitle("GabLuchi")]
 [assembly: InternalsVisibleTo("GabLuchi.Tests")]
