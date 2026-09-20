@@ -436,11 +436,11 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="OlderVersion_BrowseDest" xml:space="preserve"><value>Choose download folder</value></data>
   <data name="Nav_MultiplayerFix" xml:space="preserve"><value>Multiplayer Fix</value></data>
   <data name="MultiplayerFix_Title" xml:space="preserve"><value>Multiplayer Fix</value></data>
-  <data name="MultiplayerFix_Subtitle" xml:space="preserve"><value>Find multiplayer fixes and bypasses from online-fix.me</value></data>
+  <data name="MultiplayerFix_Subtitle" xml:space="preserve"><value>Find multiplayer fixes and bypasses for your games</value></data>
   <data name="MultiplayerFix_SearchLabel" xml:space="preserve"><value>Search for a game</value></data>
   <data name="MultiplayerFix_SearchPlaceholder" xml:space="preserve"><value>Enter game name...</value></data>
   <data name="MultiplayerFix_Search" xml:space="preserve"><value>Search</value></data>
-  <data name="MultiplayerFix_Searching" xml:space="preserve"><value>Searching online-fix.me...</value></data>
+  <data name="MultiplayerFix_Searching" xml:space="preserve"><value>Searching...</value></data>
   <data name="MultiplayerFix_NoResults" xml:space="preserve"><value>No results found</value></data>
   <data name="MultiplayerFix_Found" xml:space="preserve"><value>{0} results found</value></data>
   <data name="MultiplayerFix_Open" xml:space="preserve"><value>Open</value></data>
