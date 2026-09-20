@@ -15,8 +15,8 @@
     <!-- Tabs -->
     <TabControl Grid.Row="1" Margin="8,12,8,8" Background="Transparent" BorderThickness="0">
 
-      <!-- Tab 1: Search -->
-      <TabItem Header="  Search Fixes  ">
+      <!-- Tab 1: Search Fixes (hidden) -->
+      <TabItem Header="  Search Fixes  " Visibility="Collapsed">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel MaxWidth="760" Margin="8,8,16,8">
             <!-- Search Box -->
@@ -35,10 +35,6 @@
                              Command="{Binding SearchCmd}"
                              Icon="{ui:SymbolIcon Search24}"
                              IsEnabled="{Binding CanSearch}" />
-                  <ui:Button Grid.Column="2" Margin="4,0,0,0" VerticalAlignment="Center"
-                             Content="{x:Static res:Strings.MultiplayerFix_OpenOnSite}"
-                             Command="{Binding SearchOnSiteCmd}"
-                             Icon="{ui:SymbolIcon Globe24}" />
                 </Grid>
                 <TextBlock Margin="0,8,0,0" FontSize="12" Foreground="#9ca3af" Text="{Binding StatusMessage}" />
               </StackPanel>
