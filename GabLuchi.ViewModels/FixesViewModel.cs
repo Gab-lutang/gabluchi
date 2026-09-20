@@ -34,6 +34,8 @@ public class FixesViewModel : PagedListViewModel<FixGameCardVm>
 
 	private readonly SettingsService settings;
 
+	private readonly AnalyticsService _analytics;
+
 	private List<FixGameCardVm> _allGames = new List<FixGameCardVm>();
 
 	[ObservableProperty]
@@ -288,7 +290,7 @@ public class FixesViewModel : PagedListViewModel<FixGameCardVm>
 	[ExcludeFromCodeCoverage]
 	public IAsyncRelayCommand<FixItemVm> DownloadFixCommand => downloadFixCommand ?? (downloadFixCommand = new AsyncRelayCommand<FixItemVm>(DownloadFix));
 
-	public FixesViewModel(GabLuchiApiClient api, ManifestDownloader manifestDownloader, LuaInstaller installer, SteamService steam, SteamLibraryService library, CoverCache covers, ToastService toast, SettingsService settings)
+	public FixesViewModel(GabLuchiApiClient api, ManifestDownloader manifestDownloader, LuaInstaller installer, SteamService steam, SteamLibraryService library, CoverCache covers, ToastService toast, SettingsService settings, AnalyticsService analytics)
 	{
 		this.api = api;
 		this.manifestDownloader = manifestDownloader;
@@ -298,6 +300,7 @@ public class FixesViewModel : PagedListViewModel<FixGameCardVm>
 		this.covers = covers;
 		this.toast = toast;
 		this.settings = settings;
+		_analytics = analytics;
 		InitPageSize(settings.FixesPageSize);
 	}
 
@@ -532,6 +535,7 @@ public class FixesViewModel : PagedListViewModel<FixGameCardVm>
 			else
 			{
 				file = await manifestDownloader.DownloadManifestAsync(game.AppId, "Ryuu", game.Name, progress);
+				if (long.TryParse(game.AppId, out long fixesAppId)) _ = _analytics.TrackGameFetchAsync(fixesAppId, game.Name ?? "", "Ryuu");
 			}
 			if (slot == "manifest")
 			{

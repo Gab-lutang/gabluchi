@@ -25,6 +25,7 @@ public class MultiplayerFixViewModel : ObservableObject
 	private readonly ToastService _toast;
 	private readonly ConnectRelayService _relay;
 	private readonly LobbyBrowserService _lobbyBrowser;
+	private readonly AnalyticsService _analytics;
 
 	private string _searchText = "";
 	private bool _isBusy;
@@ -243,7 +244,7 @@ public class MultiplayerFixViewModel : ObservableObject
 	public ICommand SearchGamesCmd => searchGamesCommand ?? (searchGamesCommand = new RelayCommand(() => RefreshGameSearchResults()));
 	private RelayCommand? searchGamesCommand;
 
-	public MultiplayerFixViewModel(MultiplayerFixService service, OnlineFixService onlineFix, GitHubFixService gitHubFix, SteamLibraryService library, ToastService toast, ConnectRelayService relay, LobbyBrowserService lobbyBrowser)
+	public MultiplayerFixViewModel(MultiplayerFixService service, OnlineFixService onlineFix, GitHubFixService gitHubFix, SteamLibraryService library, ToastService toast, ConnectRelayService relay, LobbyBrowserService lobbyBrowser, AnalyticsService analytics)
 	{
 		_service = service;
 		_onlineFix = onlineFix;
@@ -252,6 +253,7 @@ public class MultiplayerFixViewModel : ObservableObject
 		_toast = toast;
 		_relay = relay;
 		_lobbyBrowser = lobbyBrowser;
+		_analytics = analytics;
 	}
 
 	private async Task Search()
@@ -385,6 +387,7 @@ public class MultiplayerFixViewModel : ObservableObject
 				DownloadStatus = "Done! " + result.FilesInstalled + " files installed to " + gameDir;
 				DownloadProgress = 100;
 				_toast.Show(Strings.MultiplayerFix_Title, "Online fix applied! " + result.FilesInstalled + " files installed.");
+				_ = _analytics.TrackGameFetchAsync(entry.AppId, entry.GameName ?? "", entry.Source ?? "unknown");
 			}
 			else
 			{

@@ -9,7 +9,7 @@ using GabLuchi.Resources;
 
 namespace GabLuchi.Services;
 
-public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifestDownloader, HubcapService hubcap, SettingsService settings, LuaInstaller installer)
+public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifestDownloader, HubcapService hubcap, SettingsService settings, LuaInstaller installer, AnalyticsService analytics)
 {
 	public class SourceRow
 	{
@@ -297,6 +297,7 @@ public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifest
 				}
 			});
 			DownloadedFile downloadedFile = ((!row.NeedsKey) ? (await manifestDownloader.DownloadManifestAsync(appId.ToString(), row.Name, state.GameName, progress)) : (await hubcap.DownloadManifestAsync(appId.ToString(), settings.HubcapApiKey ?? "", progress)));
+			_ = analytics.TrackGameFetchAsync(appId, state.GameName ?? "", row.Name);
 			DownloadedFile downloadedFile2 = downloadedFile;
 			InstallResult installResult = (IsZip(downloadedFile2.FilePath) ? installer.InstallZip(downloadedFile2.FilePath, appId) : installer.InstallLua(downloadedFile2.FilePath, appId));
 			try

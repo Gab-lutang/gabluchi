@@ -40,6 +40,8 @@ public class DownloadViewModel : ObservableObject
 
 	private readonly HardwareAppIdService _hardware;
 
+	private readonly AnalyticsService _analytics;
+
 	private CancellationTokenSource? _searchCts;
 
 	private CancellationTokenSource? _detailsCts;
@@ -763,7 +765,7 @@ public class DownloadViewModel : ObservableObject
 		FastFetch = _settings.FastFetch;
 	}
 
-	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop)
+	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop, AnalyticsService analytics)
 	{
 		_api = api;
 		_hubcap = hubcap;
@@ -777,6 +779,7 @@ public class DownloadViewModel : ObservableObject
 		_hardware = hardware;
 		Drop = drop;
 		_fastFetch = settings.FastFetch;
+		_analytics = analytics;
 	}
 
 	public void SeedSearch(long appId)
@@ -1081,6 +1084,7 @@ public class DownloadViewModel : ObservableObject
 				}
 			});
 			DownloadedFile download = (LastDownload = ((!source.NeedsKey) ? (await _manifestDownloader.DownloadManifestAsync(appId.ToString(), source.Name, Details.Name, progress)) : (await _hubcap.DownloadManifestAsync(appId.ToString(), _settings.HubcapApiKey ?? "", progress))));
+			_ = _analytics.TrackGameFetchAsync(appId, Details.Name ?? "", source.Name);
 			if (!source.NeedsKey)
 			{
 			}

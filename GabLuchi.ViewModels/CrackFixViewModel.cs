@@ -20,6 +20,7 @@ public class CrackFixViewModel : ObservableObject
 	private readonly CrackFixService _crackFix;
 	private readonly SteamService _steam;
 	private readonly ToastService _toast;
+	private readonly AnalyticsService _analytics;
 
 	private List<CrackFixEntry> _allFixes = new List<CrackFixEntry>();
 	private CancellationTokenSource? _downloadCts;
@@ -87,11 +88,12 @@ public class CrackFixViewModel : ObservableObject
 
 	public ObservableCollection<CrackFixEntry> Results { get; } = new ObservableCollection<CrackFixEntry>();
 
-	public CrackFixViewModel(CrackFixService crackFix, SteamService steam, ToastService toast)
+	public CrackFixViewModel(CrackFixService crackFix, SteamService steam, ToastService toast, AnalyticsService analytics)
 	{
 		_crackFix = crackFix;
 		_steam = steam;
 		_toast = toast;
+		_analytics = analytics;
 		Is7ZipAvailable = crackFix.Is7ZipAvailable;
 	}
 
@@ -208,6 +210,8 @@ public class CrackFixViewModel : ObservableObject
 			int copied = _crackFix.ApplyToGame(extractDir, GameDir);
 			StatusMessage = string.Format(Strings.CrackFix_Done, copied);
 			_toast.Show(Strings.CrackFix_Title, string.Format(Strings.CrackFix_Done, copied));
+			long.TryParse(entry.BuildId, out long crackAppId);
+			if (crackAppId > 0) _ = _analytics.TrackGameFetchAsync(crackAppId, entry.Name ?? "", "crackfix");
 		}
 		catch (OperationCanceledException)
 		{
