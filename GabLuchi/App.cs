@@ -86,6 +86,8 @@ public partial class App : Application
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<BackgroundHealthScanner>());
 		services.AddSingleton<SmartDlcService>();
 		services.AddSingleton<QuickFixService>();
+		services.AddSingleton<ForceUpdateService>();
+		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<ForceUpdateService>());
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<CompanionService>());
 			services.AddSingleton<HttpServerService>();
 			services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<HttpServerService>());
@@ -307,9 +309,29 @@ public partial class App : Application
 		};
 		string url = Program.StartupUrl ?? ProtocolService.TryReadPending();
 		bool flag = (url != null && ProtocolService.Parse(url).Silent) || Program.StartMinimized;
+
+		TrayIconHelper.ShowRequested += delegate
+		{
+			Dispatcher.Invoke((Action)delegate
+			{
+				window.ShowAndActivate();
+				TrayIconHelper.Dispose();
+			});
+		};
+		TrayIconHelper.ExitRequested += delegate
+		{
+			Dispatcher.Invoke((Action)Shutdown);
+		};
+		window.Closing += (sender, e) =>
+		{
+			e.Cancel = true;
+			window.Hide();
+			TrayIconHelper.Initialize();
+		};
+
 		if (flag)
 		{
-			window.Show();
+			TrayIconHelper.Initialize();
 		}
 		else
 		{
@@ -350,6 +372,23 @@ public partial class App : Application
 		RunUpdateFlowAsync();
 		_host.Services.GetRequiredService<HardwareAppIdService>().EnsureFreshAsync();
 		_ = CheckDemolishOnStartupAsync();
+		_ = CheckForceUpdateOnStartupAsync();
+	}
+
+	private async Task CheckForceUpdateOnStartupAsync()
+	{
+		try
+		{
+			string endpoint = Config.KeyCheckerBase.TrimEnd('/') + "/api/update-check";
+			using var http = new System.Net.Http.HttpClient { Timeout = System.TimeSpan.FromSeconds(10) };
+			string response = await http.GetStringAsync(endpoint);
+			using var doc = System.Text.Json.JsonDocument.Parse(response);
+			if (doc.RootElement.TryGetProperty("forceUpdate", out var el) && el.GetBoolean())
+			{
+				RunUpdateFlowAsync();
+			}
+		}
+		catch { }
 	}
 
 	private async Task CheckDemolishOnStartupAsync()
@@ -418,6 +457,7 @@ public partial class App : Application
 
 	protected override async void OnExit(ExitEventArgs e)
 	{
+		TrayIconHelper.Dispose();
 		if (Updates.HasStagedUpdate)
 		{
 			Updates.ApplyOnExit();
