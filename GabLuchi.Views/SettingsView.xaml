@@ -115,6 +115,18 @@
           <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_Language}" />
           <ComboBox Margin="0,8,0,0" MinWidth="220" HorizontalAlignment="Left" DisplayMemberPath="Display" ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding SelectedLanguage}" />
           <TextBlock Margin="0,8,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_Language_Hint}" TextWrapping="Wrap" />
+          <Border Style="{StaticResource RowDivider}" />
+          <Grid Margin="14,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Settings_StartWithWindows}" />
+              <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{x:Static res:Strings.Settings_StartWithWindows_Hint}" TextWrapping="Wrap" />
+            </StackPanel>
+            <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding StartWithWindows, Mode=TwoWay}" />
+          </Grid>
         </StackPanel>
       </Border>
       <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_Steam}" />

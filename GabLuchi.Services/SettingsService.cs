@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Win32;
 
 namespace GabLuchi.Services;
 
@@ -146,6 +148,47 @@ public class SettingsService
 		}
 	}
 
+	private const string AppName = "GabLuchi";
+
+	private static string? ExePath => Environment.ProcessPath;
+
+	public bool StartWithWindows
+	{
+		get
+		{
+			try
+			{
+				using RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", writable: false);
+				return key?.GetValue(AppName) != null;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+		set
+		{
+			try
+			{
+				using RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
+				if (value)
+				{
+					if (ExePath != null)
+					{
+						key.SetValue(AppName, "\"" + ExePath + "\" --minimized");
+					}
+				}
+				else
+				{
+					key.DeleteValue(AppName, throwOnMissingValue: false);
+				}
+			}
+			catch
+			{
+			}
+		}
+	}
+
 	public SettingsService()
 	{
 		Load();
@@ -200,7 +243,7 @@ public class SettingsService
 
 	private void Save()
 	{
-		if (_settings.SteamPathOverride == null && _settings.SelectedMode == null && !_settings.AutoUpdateApps.HasValue && !_settings.ManagePageSize.HasValue && _settings.Language == null && _settings.HubcapApiKey == null && _settings.LicenseToken == null && _settings.LicenseMachineId == null && !_settings.FastFetch.HasValue)
+		if (_settings.SteamPathOverride == null && _settings.SelectedMode == null && !_settings.AutoUpdateApps.HasValue && !_settings.ManagePageSize.HasValue && _settings.Language == null && _settings.HubcapApiKey == null && _settings.LicenseToken == null && _settings.LicenseMachineId == null && !_settings.FastFetch.HasValue && !_settings.StartWithWindows.HasValue)
 		{
 			string[] array = new string[3] { FilePath, BakPath, TmpPath };
 			foreach (string path in array)

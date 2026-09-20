@@ -22,5 +22,5 @@ public class AppSettings
 
 	public bool? FastFetch { get; set; }
 
-
+	public bool? StartWithWindows { get; set; }
 }
