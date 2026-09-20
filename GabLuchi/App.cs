@@ -372,8 +372,8 @@ public partial class App : Application
 			{
 				foreach (long appId in status.DemolishedApps)
 				{
-					lua.DeleteLua(appId);
 					lua.DeleteManifestsForApp(appId);
+					lua.DeleteLua(appId);
 				}
 			}
 		}
