@@ -127,11 +127,17 @@ gh release create vX.X.X --repo Gab-lutang/gabluchi --title "vX.X.X" --notes "..
 
 ## 7. Auto-Update Architecture
 
+There are **two update paths**: startup check and force update polling.
+
+### Path 1: Startup Check
+
 ```
 Startup (App.cs)
+  ├─ CheckForceUpdateOnStartupAsync()    ← checks /api/update-check on launch
+  │    └─ if forceUpdate=true → RunUpdateFlowAsync()
   └─ RunUpdateFlowAsync()
        └─ UpdateService.CheckAndStageAsync()
-            ├─ GithubSource checks Gab-lutang/gabluchi releases
+            ├─ GithubSource uses GitHub PAT from %AppData%\GabLuchi\github_token.txt
             ├─ ProxiedFileDownloader tries: direct GitHub → ghproxy.net → ghfast.top → gh.ddlc.top
             ├─ Downloads GabLuchi-X.X.X-full.nupkg
             └─ Stages the update
@@ -140,23 +146,80 @@ Startup (App.cs)
             └─ Restarts the app with new version
 ```
 
-**Key files:**
+### Path 2: Force Update (while running)
+
+```
+ForceUpdateService (IHostedService, polls every 5 min)
+  └─ GET /api/update-check
+       ├─ forceUpdate=false → no-op
+       └─ forceUpdate=true → RunUpdateFlowAsync() (same flow as above)
+```
+
+Triggered by admin running `/force-update` on Discord → sets `force_update=true` in `heartbeat` table.
+
+### GitHub Token (Rate Limit Fix)
+
+Unauthenticated GitHub API calls are limited to **60/hour per IP**. The app uses a Personal Access Token to raise this to **5,000/hour**.
+
+- **Token location**: `%AppData%\GabLuchi\github_token.txt`
+- **NEVER commit the token to git** — GitHub push protection will block the push
+- `AppConfig.GithubToken` reads from this file at runtime (cached after first read)
+- `GithubSource` in `UpdateService.cs` passes the token as the second constructor argument
+
+### System Tray Mode
+
+The app runs as a background process with a system tray icon:
+
+- `ShutdownMode="OnExplicitShutdown"` in `App.xaml` — app doesn't exit when window closes
+- Closing the window hides it to tray (`TrayIconHelper.cs`)
+- Tray context menu: "Show GabLuchi" / "Exit"
+- `--minimized` flag starts directly in tray (no window flash)
+- All `IHostedService`s keep running in tray mode (HTTP server, Companion, CefInjector, HealthScanner, ForceUpdate)
+
+### Mandatory Windows Startup
+
+On every launch, `EnsureStartupRegistered()` writes to:
+```
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run\GabLuchi
+  = "C:\...\GabLuchi.exe" --minimized
+```
+This is mandatory — no toggle. If the user removes it from Task Manager, next launch re-registers it.
+
+### Key files:
+
 | File | Purpose |
 |------|---------|
-| `GabLuchi/AppConfig.cs` | GitHub repo URL (`GithubReleasesRepos`), mirror URLs (`GithubDownloadMirrors`) |
-| `GabLuchi.Services/UpdateService.cs` | Velopack `UpdateManager` setup, `CheckAndStageAsync()`, `ApplyAndRestart()` |
+| `GabLuchi/AppConfig.cs` | GitHub repo URL (`GithubReleasesRepos`), GitHub token (`GithubToken` from file), mirror URLs (`GithubDownloadMirrors`) |
+| `GabLuchi.Services/UpdateService.cs` | Velopack `UpdateManager` with token, `CheckAndStageAsync()`, `ApplyAndRestart()`, `InstalledVersion` |
+| `GabLuchi.Services/ForceUpdateService.cs` | `IHostedService` polling `/api/update-check` every 5 min |
 | `GabLuchi.Services/ProxiedFileDownloader.cs` | `IFileDownloader` with mirror fallback via `GithubProxy.Candidates()` |
 | `GabLuchi.Services/GithubProxy.cs` | Yields candidate URLs (original + mirrors) for any GitHub URL |
-| `GabLuchi/App.cs` | Calls `RunUpdateFlowAsync()` on startup |
+| `GabLuchi.Services/TrayIconHelper.cs` | System tray `NotifyIcon` with Show/Exit menu |
+| `GabLuchi/App.cs` | `RunUpdateFlowAsync()`, `CheckForceUpdateOnStartupAsync()`, `EnsureStartupRegistered()`, tray wiring |
 | `GabLuchi/Program.cs` | CLI args (`--minimized`), single-instance mutex, named events |
 
 ---
 
 ## 8. How Users Receive Updates
 
-- **v1.0.17+**: Auto-update works. Close and reopen GabLuchi → Velopack checks GitHub → downloads → applies on next restart.
-- **v1.0.15 or older**: Update checker was broken (the "chicken-and-egg" bug). Users must manually install v1.0.17+ once. After that, all future updates are automatic.
-- **After auto-update**: Velopack stages the download, then calls `ApplyAndRestart(["--minimized"])`. The app restarts with the new version.
+There are three ways updates are delivered:
+
+### Startup auto-update (all users)
+- Every launch → `RunUpdateFlowAsync()` → Velopack checks GitHub releases → if newer version found → downloads, stages, applies on next restart.
+- v1.0.17+ works automatically. Older versions have the "chicken-and-egg" bug — users must manually install once.
+
+### Force update (admin-triggered)
+- Admin runs `/force-update` on Discord → sets `force_update=true` in `heartbeat` table
+- Client's `ForceUpdateService` polls `/api/update-check` every 5 minutes
+- When detected → same update flow as startup → auto-restarts with new version
+- Useful for pushing critical fixes without waiting for users to restart
+
+### Manual install
+- Download Setup.exe from GitHub releases
+- Used for first-time installs or when auto-update is broken (e.g., GitHub rate limiting before v1.2.7)
+
+### After auto-update
+Velopack stages the download, then calls `ApplyAndRestart(["--minimized"])`. The app restarts with the new version.
 
 ---
 
@@ -197,7 +260,13 @@ If you reuse the file path without regenerating, it contains the OLD version dat
 `csproj` and `AssemblyInfo.cs` MUST match. If they don't, the built DLL reports the wrong version and Velopack won't detect the update as newer.
 
 ### Tray-locked flag
-`ApplyAndRestart` passes `["--minimized"]`. Do NOT add `"--tray-locked"` — the tray icon has been removed. The `--minimized` flag just prevents the window from showing during the update restart.
+`ApplyAndRestart` passes `["--minimized"]`. The `--minimized` flag starts the app in tray mode (no window shown).
+
+### GitHub rate limits
+Unauthenticated GitHub API calls are limited to 60/hour per IP. The app loads a PAT from `%AppData%\GabLuchi\github_token.txt` (5,000/hour). If the token file is missing, the app falls back to unauthenticated — fine for occasional checks, but will hit rate limits if the app restarts frequently. **Never commit the token to git.**
+
+### GitHub push protection
+GitHub blocks pushes containing Personal Access Tokens. If your push is rejected with `GH013: Push cannot contain secrets`, the token is hardcoded in the commit. Always load tokens from external files, never embed them in source code.
 
 ### GitHub release missing files
 Velopack iterates releases looking for `releases.win.json`. If it's missing from a release, Velopack skips that release entirely and keeps searching older ones. If no release has it, auto-update fails with "No remote full releases found."
