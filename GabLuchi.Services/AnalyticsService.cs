@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
@@ -18,7 +19,22 @@ public class AnalyticsService(SteamService steam, AuthService auth, LicenseServi
 
 	private static readonly string Version;
 
+	private static readonly string LogPath = Path.Combine(
+		Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+		"GabLuchi", "analytics-error.log");
+
 	private string Endpoint => Config.KeyCheckerBase.TrimEnd('/') + "/api/analytics";
+
+	private static void LogError(string method, Exception ex)
+	{
+		try
+		{
+			string dir = Path.GetDirectoryName(LogPath)!;
+			if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+			File.AppendAllText(LogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {method} FAILED: {ex}\n");
+		}
+		catch { }
+	}
 
 	public async Task TrackAppLaunchAsync(CancellationToken ct = default)
 	{
@@ -45,8 +61,9 @@ public class AnalyticsService(SteamService steam, AuthService auth, LicenseServi
 
 			await _http.PostAsJsonAsync(Endpoint + "/track", payload, ct);
 		}
-		catch
+		catch (Exception ex)
 		{
+			LogError("TrackAppLaunch", ex);
 		}
 	}
 
@@ -70,8 +87,9 @@ public class AnalyticsService(SteamService steam, AuthService auth, LicenseServi
 
 			await _http.PostAsJsonAsync(Endpoint + "/game-fetch", payload, ct);
 		}
-		catch
+		catch (Exception ex)
 		{
+			LogError("TrackGameFetch", ex);
 		}
 	}
 
