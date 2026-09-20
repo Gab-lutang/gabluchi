@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GabLuchi.Services;
 
-public class AnalyticsService(SteamService steam, AuthService auth, LicenseService license, UnlockerService unlocker)
+public class AnalyticsService(SteamService steam, AuthService auth, LicenseService license, UnlockerService unlocker, SteamAppListCache appList)
 {
 	private readonly HttpClient _http = new HttpClient
 	{
@@ -92,6 +93,47 @@ public class AnalyticsService(SteamService steam, AuthService auth, LicenseServi
 		catch (Exception ex)
 		{
 			LogError("TrackGameFetch", ex);
+		}
+	}
+
+	public async Task TrackInstalledGamesAsync(CancellationToken ct = default)
+	{
+		try
+		{
+			string? luaDir = steam.LuaDir;
+			if (luaDir == null || !Directory.Exists(luaDir)) return;
+
+			string[] luaFiles = Directory.GetFiles(luaDir, "*.lua");
+			if (luaFiles.Length == 0) return;
+
+			string machineId = LicenseService.ComputeMachineId();
+			string? discordUserId = auth.IsSignedIn ? auth.UserId : null;
+			string? discordTag = auth.IsSignedIn ? auth.DisplayName : null;
+
+			var games = new List<object>();
+			foreach (string file in luaFiles)
+			{
+				long? appId = LuaInstaller.AppIdFromFileName(file);
+				if (appId == null || appId.Value <= 0) continue;
+				string? name = appList.GetName(appId.Value);
+				games.Add(new { appId = appId.Value, gameName = name ?? "App " + appId.Value, source = "library" });
+			}
+
+			if (games.Count == 0) return;
+
+			object payload = new
+			{
+				machineId,
+				discordUserId,
+				discordTag,
+				games
+			};
+
+			await _http.PostAsJsonAsync(Endpoint + "/game-sync", payload, ct);
+		}
+		catch (Exception ex)
+		{
+			LogError("TrackInstalledGames", ex);
 		}
 	}
 

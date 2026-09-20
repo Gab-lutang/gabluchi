@@ -56,6 +56,7 @@ public class MainViewModel : ObservableObject
 	{
 		await _auth.InitializeAsync();
 		_ = _analytics.TrackAppLaunchAsync();
+		_ = _analytics.TrackInstalledGamesAsync();
 	}
 
 	[RelayCommand]
