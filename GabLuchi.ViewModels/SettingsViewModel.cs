@@ -63,9 +63,6 @@ public class SettingsViewModel : ObservableObject
 	private bool _fastFetch;
 
 	[ObservableProperty]
-	private bool _startWithWindows;
-
-	[ObservableProperty]
 	private LanguageOption _selectedLanguage;
 
 	private bool _suppressLanguagePrompt;
@@ -650,7 +647,6 @@ public class SettingsViewModel : ObservableObject
 		RefreshSteam();
 		_autoUpdateApps = settings.AutoUpdateApps;
 		_fastFetch = settings.FastFetch;
-		_startWithWindows = settings.StartWithWindows;
 		_hubcapIsKeyConfigured = _license.IsActivated;
 		_license.LicenseActivated += OnLicenseActivated;
 		_suppressLanguagePrompt = true;
@@ -889,12 +885,6 @@ public class SettingsViewModel : ObservableObject
 	private void OnFastFetchChanged(bool value)
 	{
 		_settings.FastFetch = value;
-	}
-
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
-	private void OnStartWithWindowsChanged(bool value)
-	{
-		_settings.StartWithWindows = value;
 	}
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]

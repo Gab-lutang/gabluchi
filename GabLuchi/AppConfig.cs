@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace GabLuchi;
 
 public static class AppConfig
@@ -19,6 +22,29 @@ public static class AppConfig
 	public static string ManifestBackendUserAgent => Config.ManifestBackendUserAgent;
 
 	public static readonly string[] GithubReleasesRepos = new string[1] { "https://github.com/Gab-lutang/gabluchi" };
+
+	private static string? _cachedToken;
+
+	public static string? GithubToken
+	{
+		get
+		{
+			if (_cachedToken != null) return _cachedToken;
+			try
+			{
+				string tokenPath = Path.Combine(
+					Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+					"GabLuchi", "github_token.txt");
+				if (File.Exists(tokenPath))
+				{
+					_cachedToken = File.ReadAllText(tokenPath).Trim();
+					return _cachedToken;
+				}
+			}
+			catch { }
+			return null;
+		}
+	}
 
 	public const string PluginReleasesOwner = "Gab-lutang";
 

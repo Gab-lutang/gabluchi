@@ -373,6 +373,19 @@ public partial class App : Application
 		_host.Services.GetRequiredService<HardwareAppIdService>().EnsureFreshAsync();
 		_ = CheckDemolishOnStartupAsync();
 		_ = CheckForceUpdateOnStartupAsync();
+		EnsureStartupRegistered();
+	}
+
+	private static void EnsureStartupRegistered()
+	{
+		try
+		{
+			string? exePath = Environment.ProcessPath;
+			if (exePath == null) return;
+			using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
+			key.SetValue("GabLuchi", "\"" + exePath + "\" --minimized");
+		}
+		catch { }
 	}
 
 	private async Task CheckForceUpdateOnStartupAsync()

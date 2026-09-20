@@ -360,8 +360,6 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="Manage_Content_HideAdult" xml:space="preserve"><value>Hide adult (18+)</value></data>
   <data name="Drop_Result_Failed" xml:space="preserve"><value> {0} file(s) failed — close Steam and retry.</value></data>
   <data name="Settings_Language_Hint" xml:space="preserve"><value>Choose the app's display language. Applies after a restart.</value></data>
-  <data name="Settings_StartWithWindows" xml:space="preserve"><value>Start with Windows</value></data>
-  <data name="Settings_StartWithWindows_Hint" xml:space="preserve"><value>Launch GabLuchi minimized to tray when Windows starts.</value></data>
   <data name="Manage_Action_Update" xml:space="preserve"><value>Update / re-download</value></data>
   <data name="Settings_SteamNotFound" xml:space="preserve"><value>Steam not found</value></data>
   <data name="Home_LastAdded" xml:space="preserve"><value>LAST ADDED</value></data>

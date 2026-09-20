@@ -137,10 +137,6 @@ public static class Strings
 
 	public static string Settings_Language_Hint => Get("Settings_Language_Hint");
 
-	public static string Settings_StartWithWindows => Get("Settings_StartWithWindows");
-
-	public static string Settings_StartWithWindows_Hint => Get("Settings_StartWithWindows_Hint");
-
 	public static string Settings_Language_SystemDefault => Get("Settings_Language_SystemDefault");
 
 	public static string Settings_SteamLocation => Get("Settings_SteamLocation");
