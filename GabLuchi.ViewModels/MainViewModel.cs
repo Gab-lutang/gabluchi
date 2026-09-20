@@ -17,6 +17,8 @@ public class MainViewModel : ObservableObject
 
 	private readonly AuthService _auth;
 
+	private readonly AnalyticsService _analytics;
+
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	private RelayCommand? restartSteamCommand;
 
@@ -41,10 +43,11 @@ public class MainViewModel : ObservableObject
 		return text.Substring(0, num);
 	}
 
-	public MainViewModel(SteamService steam, AuthService auth, OnboardingViewModel onboarding, LicenseGateViewModel licenseGate)
+	public MainViewModel(SteamService steam, AuthService auth, AnalyticsService analytics, OnboardingViewModel onboarding, LicenseGateViewModel licenseGate)
 	{
 		_steam = steam;
 		_auth = auth;
+		_analytics = analytics;
 		Onboarding = onboarding;
 		LicenseGate = licenseGate;
 	}
@@ -52,6 +55,7 @@ public class MainViewModel : ObservableObject
 	public async Task InitializeAsync()
 	{
 		await _auth.InitializeAsync();
+		_ = _analytics.TrackAppLaunchAsync();
 	}
 
 	[RelayCommand]

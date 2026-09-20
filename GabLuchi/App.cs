@@ -348,7 +348,6 @@ public partial class App : Application
 			HandleProtocolUrl(url);
 		}
 		RunUpdateFlowAsync();
-		_host.Services.GetRequiredService<AnalyticsService>().TrackAppLaunchAsync();
 		_host.Services.GetRequiredService<HardwareAppIdService>().EnsureFreshAsync();
 		_ = CheckDemolishOnStartupAsync();
 	}

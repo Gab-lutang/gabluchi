@@ -44,6 +44,7 @@ public class AnalyticsService(SteamService steam, AuthService auth, LicenseServi
 			string os = RuntimeInformation.OSDescription;
 			string arch = RuntimeInformation.OSArchitecture.ToString();
 			string? discordUserId = auth.IsSignedIn ? auth.UserId : null;
+			string? discordTag = auth.IsSignedIn ? auth.DisplayName : null;
 			string? selectedMode = unlocker.SelectedMode?.ToString();
 			bool steamDetected = steam.IsValid;
 
@@ -54,6 +55,7 @@ public class AnalyticsService(SteamService steam, AuthService auth, LicenseServi
 				os,
 				arch,
 				discordUserId,
+				discordTag,
 				selectedMode,
 				steamDetected,
 				timestamp = DateTimeOffset.UtcNow
