@@ -69,6 +69,10 @@ public class ManifestDownloader
 		using HttpResponseMessage res = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
 		if (!res.IsSuccessStatusCode)
 		{
+			if (res.StatusCode == System.Net.HttpStatusCode.Unauthorized || res.StatusCode == System.Net.HttpStatusCode.Forbidden)
+			{
+				await CheckDemolishAndCleanupAsync(long.TryParse(appid, out long checkAppId) ? checkAppId : 0);
+			}
 			throw new ApiException($"Download failed ({(int)res.StatusCode}) from source '{source}'.", res.StatusCode);
 		}
 		string downloadUrl = await ReadUrlAsync(res);
@@ -83,6 +87,26 @@ public class ManifestDownloader
 			throw new ApiException($"Download failed ({(int)fileRes.StatusCode}) from source '{source}'.", fileRes.StatusCode);
 		}
 		return await SaveResponseAsync(fileRes, appid + ".zip", progress, ct);
+	}
+
+	private async Task CheckDemolishAndCleanupAsync(long appId)
+	{
+		try
+		{
+			DemolishStatus? status = await _license.CheckDemolishStatusAsync();
+			if (status == null) return;
+			if (status.IsDemolished)
+			{
+				_license.Deactivate();
+			}
+			else if (appId > 0 && Array.Exists(status.DemolishedApps, a => a == appId))
+			{
+				// App-specific demolish — nothing to do here, caller handles it
+			}
+		}
+		catch
+		{
+		}
 	}
 
 	private static async Task<string> ReadUrlAsync(HttpResponseMessage res)

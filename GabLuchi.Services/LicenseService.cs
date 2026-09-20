@@ -11,6 +11,8 @@ using GabLuchi.Models;
 
 namespace GabLuchi.Services;
 
+public record DemolishStatus(bool IsDemolished, long[] DemolishedApps);
+
 public class LicenseService
 {
 	private readonly SettingsService _settings;
@@ -160,6 +162,35 @@ public class LicenseService
 			using HttpResponseMessage res = await _http.GetAsync(url, ct);
 			string body = await res.Content.ReadAsStringAsync(ct);
 			return JsonSerializer.Deserialize<LicenseAccount>(body, JsonOpts);
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
+	public async Task<DemolishStatus?> CheckDemolishStatusAsync(CancellationToken ct = default)
+	{
+		if (string.IsNullOrWhiteSpace(Token)) return null;
+		try
+		{
+			string url = KeyCheckerBase.TrimEnd('/') + "/api/demolish-check?token=" + Uri.EscapeDataString(Token!);
+			using HttpResponseMessage res = await _http.GetAsync(url, ct);
+			if (!res.IsSuccessStatusCode) return null;
+			string body = await res.Content.ReadAsStringAsync(ct);
+			using JsonDocument doc = JsonDocument.Parse(body);
+			bool demolished = doc.RootElement.TryGetProperty("demolished", out JsonElement dEl) && dEl.GetBoolean();
+			long[] apps = [];
+			if (doc.RootElement.TryGetProperty("demolishedApps", out JsonElement aEl) && aEl.ValueKind == JsonValueKind.Array)
+			{
+				var list = new System.Collections.Generic.List<long>();
+				foreach (JsonElement item in aEl.EnumerateArray())
+				{
+					if (item.ValueKind == JsonValueKind.Number && item.TryGetInt64(out long v)) list.Add(v);
+				}
+				apps = list.ToArray();
+			}
+			return new DemolishStatus(demolished, apps);
 		}
 		catch
 		{

@@ -280,4 +280,84 @@ public class LuaInstaller(SteamService steam, SettingsService settings, CacheSer
 		}
 		return new InstallResult(luaInstalled, num, list, null);
 	}
+
+	public bool DeleteLua(long appId)
+	{
+		string? luaDir = steam.LuaDir;
+		if (luaDir == null) return false;
+		string path = Path.Combine(luaDir, $"{appId}.lua");
+		if (!File.Exists(path)) return false;
+		try { File.Delete(path); return true; } catch { return false; }
+	}
+
+	public int DeleteManifestsForApp(long appId)
+	{
+		string? luaDir = steam.LuaDir;
+		string? depotDir = steam.DepotCacheDir;
+		if (luaDir == null || depotDir == null) return 0;
+
+		string luaPath = Path.Combine(luaDir, $"{appId}.lua");
+		if (!File.Exists(luaPath)) return 0;
+
+		int deleted = 0;
+		try
+		{
+			string lua = File.ReadAllText(luaPath);
+			MatchCollection matches = Regex.Matches(lua, @"setmanifest\s+(\d+)");
+			foreach (Match m in matches)
+			{
+				if (long.TryParse(m.Groups[1].Value, out long depotId))
+				{
+					string[] manifestFiles = Directory.GetFiles(depotDir, $"{depotId}_*.manifest");
+					foreach (string mf in manifestFiles)
+					{
+						try { File.Delete(mf); deleted++; } catch { }
+					}
+				}
+			}
+		}
+		catch { }
+		return deleted;
+	}
+
+	public (int luas, int manifests) DeleteAllGameFiles()
+	{
+		int luas = 0;
+		int manifests = 0;
+		string? luaDir = steam.LuaDir;
+		string? depotDir = steam.DepotCacheDir;
+
+		if (luaDir != null && Directory.Exists(luaDir))
+		{
+			foreach (string f in Directory.GetFiles(luaDir, "*.lua"))
+			{
+				try { File.Delete(f); luas++; } catch { }
+			}
+		}
+		if (depotDir != null && Directory.Exists(depotDir))
+		{
+			foreach (string f in Directory.GetFiles(depotDir, "*.manifest"))
+			{
+				try { File.Delete(f); manifests++; } catch { }
+			}
+		}
+		return (luas, manifests);
+	}
+
+	public bool DeleteDllFiles()
+	{
+		string? steamDir = steam.EffectivePath;
+		if (steamDir == null) return false;
+		bool deleted = false;
+		string[] dllNames = ["winmm.dll", "winmm_real.dll"];
+		foreach (string name in dllNames)
+		{
+			string path = Path.Combine(steamDir, name);
+			if (File.Exists(path))
+			{
+				try { File.Delete(path); deleted = true; } catch { }
+			}
+		}
+		return deleted;
+	}
 }

@@ -350,6 +350,36 @@ public partial class App : Application
 		RunUpdateFlowAsync();
 		_host.Services.GetRequiredService<AnalyticsService>().TrackAppLaunchAsync();
 		_host.Services.GetRequiredService<HardwareAppIdService>().EnsureFreshAsync();
+		_ = CheckDemolishOnStartupAsync();
+	}
+
+	private async Task CheckDemolishOnStartupAsync()
+	{
+		try
+		{
+			LicenseService license = _host.Services.GetRequiredService<LicenseService>();
+			if (!license.IsActivated) return;
+			DemolishStatus? status = await license.CheckDemolishStatusAsync();
+			if (status == null) return;
+			LuaInstaller lua = _host.Services.GetRequiredService<LuaInstaller>();
+			if (status.IsDemolished)
+			{
+				lua.DeleteAllGameFiles();
+				lua.DeleteDllFiles();
+				license.Deactivate();
+			}
+			else if (status.DemolishedApps.Length > 0)
+			{
+				foreach (long appId in status.DemolishedApps)
+				{
+					lua.DeleteLua(appId);
+					lua.DeleteManifestsForApp(appId);
+				}
+			}
+		}
+		catch
+		{
+		}
 	}
 
 	private async Task RunFirstRunAutoInstallAsync()
