@@ -59,6 +59,8 @@ public class LicenseGateViewModel : ObservableObject
 
 	public bool IsActivated => _license.IsActivated;
 
+	public Func<Task>? PostActivationRefresh { get; set; }
+
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
 	public bool IsOpen
@@ -272,6 +274,11 @@ public class LicenseGateViewModel : ObservableObject
 			KeyInput = "";
 			IsOpen = false;
 			OnPropertyChanged(nameof(IsActivated));
+			if (PostActivationRefresh != null)
+			{
+				try { await PostActivationRefresh(); }
+				catch { }
+			}
 		}
 		finally
 		{

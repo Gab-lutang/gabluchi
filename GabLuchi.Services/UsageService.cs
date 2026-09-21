@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -9,7 +10,7 @@ namespace GabLuchi.Services;
 
 public record UsageCheckResult(bool Allowed, string Tier, bool Expired, int DownloadsUsed, int DownloadsLimit, int MultiplayerUsed, int MultiplayerLimit);
 
-public class UsageService
+public class UsageService : INotifyPropertyChanged
 {
 	private readonly LicenseService _license;
 	private readonly AuthService _auth;
@@ -22,6 +23,10 @@ public class UsageService
 
 	private string KeyCheckerBase => Config.KeyCheckerBase;
 
+	public event PropertyChangedEventHandler? PropertyChanged;
+
+	private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
 	public UsageService(LicenseService license, AuthService auth, SettingsService settings, ToastService toast)
 	{
 		_license = license;
@@ -30,15 +35,50 @@ public class UsageService
 		_toast = toast;
 	}
 
-	public string CurrentTier { get; private set; } = "paid";
-	public DateTime? ExpiresAt { get; private set; }
+	private string _currentTier = "paid";
+	public string CurrentTier
+	{
+		get => _currentTier;
+		private set { _currentTier = value; OnPropertyChanged(nameof(CurrentTier)); OnPropertyChanged(nameof(IsFreeTier)); OnPropertyChanged(nameof(UsageText)); }
+	}
+
+	private DateTime? _expiresAt;
+	public DateTime? ExpiresAt
+	{
+		get => _expiresAt;
+		private set { _expiresAt = value; OnPropertyChanged(nameof(ExpiresAt)); OnPropertyChanged(nameof(IsExpired)); OnPropertyChanged(nameof(UsageText)); }
+	}
+
 	public bool IsExpired => ExpiresAt.HasValue && ExpiresAt.Value < DateTime.UtcNow;
 	public bool IsFreeTier => CurrentTier == "free";
 
-	public int DownloadsUsed { get; private set; }
-	public int DownloadsLimit { get; private set; }
-	public int MultiplayerUsed { get; private set; }
-	public int MultiplayerLimit { get; private set; }
+	private int _downloadsUsed;
+	public int DownloadsUsed
+	{
+		get => _downloadsUsed;
+		private set { _downloadsUsed = value; OnPropertyChanged(nameof(DownloadsUsed)); OnPropertyChanged(nameof(UsageText)); }
+	}
+
+	private int _downloadsLimit;
+	public int DownloadsLimit
+	{
+		get => _downloadsLimit;
+		private set { _downloadsLimit = value; OnPropertyChanged(nameof(DownloadsLimit)); OnPropertyChanged(nameof(UsageText)); }
+	}
+
+	private int _multiplayerUsed;
+	public int MultiplayerUsed
+	{
+		get => _multiplayerUsed;
+		private set { _multiplayerUsed = value; OnPropertyChanged(nameof(MultiplayerUsed)); OnPropertyChanged(nameof(UsageText)); }
+	}
+
+	private int _multiplayerLimit;
+	public int MultiplayerLimit
+	{
+		get => _multiplayerLimit;
+		private set { _multiplayerLimit = value; OnPropertyChanged(nameof(MultiplayerLimit)); OnPropertyChanged(nameof(UsageText)); }
+	}
 
 	public string UsageText
 	{

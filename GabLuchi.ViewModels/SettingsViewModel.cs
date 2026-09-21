@@ -648,6 +648,13 @@ public class SettingsViewModel : ObservableObject
 		_auth = auth;
 		_updates = updates;
 		_usage = usage;
+		_usage.PropertyChanged += (_, _) =>
+		{
+			OnPropertyChanged(nameof(IsFreeTier));
+			OnPropertyChanged(nameof(DownloadsUsageText));
+			OnPropertyChanged(nameof(MultiplayerUsageText));
+			OnPropertyChanged(nameof(ExpiryText));
+		};
 		_auth.AuthStateChanged += RefreshAccount;
 		RefreshAccount();
 		RefreshSteam();

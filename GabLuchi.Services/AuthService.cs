@@ -191,32 +191,42 @@ public class AuthService
 
 	private async Task<bool> ValidateAsync(string token, DateTimeOffset expiresAt)
 	{
-		try
+		for (int attempt = 0; attempt < 3; attempt++)
 		{
-			HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.AuthBackendBase + "/api/auth/me");
-			request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-			HttpResponseMessage res = await _http.SendAsync(request);
-			if (!res.IsSuccessStatusCode)
+			try
 			{
-				ClearSession();
-				return false;
+				HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Config.AuthBackendBase + "/api/auth/me");
+				request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+				HttpResponseMessage res = await _http.SendAsync(request);
+
+				if (res.IsSuccessStatusCode)
+				{
+					string text = await res.Content.ReadAsStringAsync();
+					MeResponse? me = JsonSerializer.Deserialize<MeResponse>(text, JsonOpts);
+					if (me != null)
+					{
+						DisplayName = me.DisplayName;
+						UserId = me.UserId;
+						AvatarUrl = me.AvatarUrl;
+						SaveStored(new StoredAuth(token, expiresAt, DisplayName, UserId, AvatarUrl));
+					}
+					return true;
+				}
+
+				if (res.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
+				{
+					ClearSession();
+					return false;
+				}
 			}
-			string text = await res.Content.ReadAsStringAsync();
-			MeResponse? me = JsonSerializer.Deserialize<MeResponse>(text, JsonOpts);
-			if (me != null)
+			catch
 			{
-				DisplayName = me.DisplayName;
-				UserId = me.UserId;
-				AvatarUrl = me.AvatarUrl;
-				SaveStored(new StoredAuth(token, expiresAt, DisplayName, UserId, AvatarUrl));
 			}
-			return true;
+
+			if (attempt < 2) await Task.Delay(1000 * (attempt + 1));
 		}
-		catch
-		{
-			ClearSession();
-			return false;
-		}
+
+		return false;
 	}
 
 	public async Task<string> GetValidAccessTokenAsync()

@@ -304,6 +304,7 @@ public partial class App : Application
 		};
 		home.RequestSignIn = () => main.Onboarding.SignInCommand.ExecuteAsync(null);
 		main.Onboarding.RefreshHome = () => ((DispatcherObject)this).Dispatcher.Invoke<Task>((Func<Task>)(() => home.LoadAsync()));
+		main.LicenseGate.PostActivationRefresh = () => ((DispatcherObject)this).Dispatcher.Invoke<Task>((Func<Task>)(() => home.LoadAsync()));
 		LuaInstaller requiredService = _host.Services.GetRequiredService<LuaInstaller>();
 		SteamAppInfoCache appInfo = _host.Services.GetRequiredService<SteamAppInfoCache>();
 		requiredService.Installed += delegate(long appId)
@@ -428,6 +429,7 @@ public partial class App : Application
 			if (account?.Ok != true) return;
 			string tier = account.Tier ?? "paid";
 			usage.SetTier(tier, account.ExpiresAt);
+			await usage.CheckUsageAsync("init");
 			if (usage.IsFreeTier && usage.IsExpired)
 			{
 				ToastService toast = _host.Services.GetRequiredService<ToastService>();
