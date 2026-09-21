@@ -1,9 +1,11 @@
 using System;
 using System.CodeDom.Compiler;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GabLuchi.Resources;
@@ -19,8 +21,11 @@ public class MainViewModel : ObservableObject
 
 	private readonly AnalyticsService _analytics;
 
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
+	private readonly AnnouncementService _announcement;
+
 	private RelayCommand? restartSteamCommand;
+
+	private RelayCommand? dismissAnnouncementCommand;
 
 	public OnboardingViewModel Onboarding { get; }
 
@@ -28,9 +33,25 @@ public class MainViewModel : ObservableObject
 
 	public string VersionLabel { get; } = "v" + ReadVersion();
 
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
+	private string? _announcementText;
+	public string? AnnouncementText
+	{
+		get => _announcementText;
+		set => SetProperty(ref _announcementText, value);
+	}
+
+	private Visibility _announcementVisibility = Visibility.Collapsed;
+	public Visibility AnnouncementVisibility
+	{
+		get => _announcementVisibility;
+		set => SetProperty(ref _announcementVisibility, value);
+	}
+
+	public bool HasAnnouncement => !string.IsNullOrWhiteSpace(AnnouncementText) && AnnouncementVisibility == Visibility.Visible;
+
 	public IRelayCommand RestartSteamCommand => restartSteamCommand ?? (restartSteamCommand = new RelayCommand(RestartSteam));
+
+	public IRelayCommand DismissAnnouncementCommand => dismissAnnouncementCommand ?? (dismissAnnouncementCommand = new RelayCommand(DismissAnnouncement));
 
 	private static string ReadVersion()
 	{
@@ -43,13 +64,28 @@ public class MainViewModel : ObservableObject
 		return text.Substring(0, num);
 	}
 
-	public MainViewModel(SteamService steam, AuthService auth, AnalyticsService analytics, OnboardingViewModel onboarding, LicenseGateViewModel licenseGate)
+	public MainViewModel(SteamService steam, AuthService auth, AnalyticsService analytics, OnboardingViewModel onboarding, LicenseGateViewModel licenseGate, AnnouncementService announcement)
 	{
 		_steam = steam;
 		_auth = auth;
 		_analytics = analytics;
 		Onboarding = onboarding;
 		LicenseGate = licenseGate;
+		_announcement = announcement;
+		_announcement.PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName == nameof(AnnouncementService.Announcement))
+			{
+				AnnouncementText = _announcement.Announcement;
+				AnnouncementVisibility = string.IsNullOrWhiteSpace(_announcement.Announcement) || _announcement.IsDismissed ? Visibility.Collapsed : Visibility.Visible;
+				OnPropertyChanged(nameof(HasAnnouncement));
+			}
+			if (e.PropertyName == nameof(AnnouncementService.IsDismissed))
+			{
+				AnnouncementVisibility = _announcement.IsDismissed ? Visibility.Collapsed : Visibility.Visible;
+				OnPropertyChanged(nameof(HasAnnouncement));
+			}
+		};
 	}
 
 	public async Task InitializeAsync()
@@ -59,7 +95,13 @@ public class MainViewModel : ObservableObject
 		_ = _analytics.TrackInstalledGamesAsync();
 	}
 
-	[RelayCommand]
+	private void DismissAnnouncement()
+	{
+		_announcement.Dismiss();
+		AnnouncementVisibility = Visibility.Collapsed;
+		OnPropertyChanged(nameof(HasAnnouncement));
+	}
+
 	private void RestartSteam()
 	{
 		if (MessageBox.Show(Strings.Main_RestartSteam_Ask, Strings.Manage_RestartSteam_Title, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK && !_steam.RestartSteam())

@@ -107,6 +107,40 @@
             </StackPanel>
             <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" IsChecked="{Binding FastFetch, Mode=TwoWay}" />
           </Grid>
+          <Border Style="{StaticResource RowDivider}" />
+          <Grid Margin="14,12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock FontSize="13" FontWeight="Medium" Text="Check for Updates" />
+              <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#6b7280" Text="{Binding UpdateStatus}" TextWrapping="Wrap" />
+            </StackPanel>
+            <ui:Button Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Content="Check" Command="{Binding CheckForUpdatesCommand}" Icon="{ui:SymbolIcon ArrowSync24}" IsEnabled="{Binding NotChecking}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+      <Border Style="{StaticResource SettingsCard}" Visibility="{Binding IsFreeTier, Converter={StaticResource BoolToVis}}">
+        <StackPanel Margin="14,12">
+          <TextBlock FontSize="13" FontWeight="Medium" Text="Usage This Week" />
+          <TextBlock Margin="0,4,0,8" FontSize="12" Foreground="#6b7280" Text="{Binding ExpiryText}" />
+          <Grid Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock FontSize="13" Text="Downloads" />
+            <TextBlock Grid.Column="1" FontSize="13" FontWeight="SemiBold" Text="{Binding DownloadsUsageText}" />
+          </Grid>
+          <Grid Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock FontSize="13" Text="Multiplayer" />
+            <TextBlock Grid.Column="1" FontSize="13" FontWeight="SemiBold" Text="{Binding MultiplayerUsageText}" />
+          </Grid>
         </StackPanel>
       </Border>
       <TextBlock Style="{StaticResource SectionHeader}" Text="{x:Static res:Strings.Settings_Section_General}" />

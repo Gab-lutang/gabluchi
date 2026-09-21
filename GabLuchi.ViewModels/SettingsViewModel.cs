@@ -28,6 +28,10 @@ public class SettingsViewModel : ObservableObject
 
 	private readonly AuthService _auth;
 
+	private readonly UpdateService _updates;
+
+	private readonly UsageService _usage;
+
 	[ObservableProperty]
 	private string? _displayName;
 
@@ -636,12 +640,14 @@ public class SettingsViewModel : ObservableObject
 		LoginRequiredMessage = null;
 	}
 
-	public SettingsViewModel(SettingsService settings, SteamService steam, LicenseService license, AuthService auth)
+	public SettingsViewModel(SettingsService settings, SteamService steam, LicenseService license, AuthService auth, UpdateService updates, UsageService usage)
 	{
 		_settings = settings;
 		_steam = steam;
 		_license = license;
 		_auth = auth;
+		_updates = updates;
+		_usage = usage;
 		_auth.AuthStateChanged += RefreshAccount;
 		RefreshAccount();
 		RefreshSteam();
@@ -894,6 +900,64 @@ public class SettingsViewModel : ObservableObject
 		{
 			_settings.Language = value.Tag;
 			RequestRestartPrompt?.Invoke();
+		}
+	}
+
+	private string? _updateStatus = "Up to date";
+	public string UpdateStatus
+	{
+		get => _updateStatus;
+		set => SetProperty(ref _updateStatus, value);
+	}
+
+	private bool _notChecking = true;
+	public bool NotChecking
+	{
+		get => _notChecking;
+		set => SetProperty(ref _notChecking, value);
+	}
+
+	public bool IsFreeTier => _usage.IsFreeTier;
+
+	public string DownloadsUsageText => $"{_usage.DownloadsUsed}/{_usage.DownloadsLimit}";
+
+	public string MultiplayerUsageText => $"{_usage.MultiplayerUsed}/{_usage.MultiplayerLimit}";
+
+	public string ExpiryText => _usage.ExpiresAt.HasValue ? $"Expires: {_usage.ExpiresAt.Value:MMM dd, yyyy}" : "";
+
+	private RelayCommand? checkForUpdatesCommand;
+	public IRelayCommand CheckForUpdatesCommand => checkForUpdatesCommand ?? (checkForUpdatesCommand = new RelayCommand(async () => await CheckForUpdatesAsync()));
+
+	private async Task CheckForUpdatesAsync()
+	{
+		NotChecking = false;
+		UpdateStatus = "Checking...";
+		try
+		{
+			await _updates.CheckAndStageAsync();
+			if (_updates.HasStagedUpdate)
+			{
+				UpdateStatus = "Update found — restarting...";
+				await Task.Delay(500);
+				_updates.ApplyAndRestart(new[] { "--minimized" });
+				return;
+			}
+			if (_updates.BackendSaysUpdateAvailable)
+			{
+				UpdateStatus = $"Update available: v{_updates.BackendLatestVersion}";
+			}
+			else
+			{
+				UpdateStatus = $"Up to date (v{_updates.InstalledVersion})";
+			}
+		}
+		catch (Exception ex)
+		{
+			UpdateStatus = "Update check failed: " + ex.Message;
+		}
+		finally
+		{
+			NotChecking = true;
 		}
 	}
 }

@@ -89,6 +89,7 @@ public partial class App : Application
 		services.AddSingleton<ForceUpdateService>();
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<ForceUpdateService>());
 		services.AddSingleton<UsageService>();
+		services.AddSingleton<AnnouncementService>();
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<CompanionService>());
 			services.AddSingleton<HttpServerService>();
 			services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<HttpServerService>());
@@ -384,6 +385,7 @@ public partial class App : Application
 		_ = CheckDemolishOnStartupAsync();
 		_ = CheckForceUpdateOnStartupAsync();
 		_ = ValidateTierOnStartupAsync();
+		_ = _host.Services.GetRequiredService<AnnouncementService>().FetchAsync();
 		EnsureStartupRegistered();
 	}
 
