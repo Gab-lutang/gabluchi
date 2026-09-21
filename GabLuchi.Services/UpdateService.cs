@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Velopack;
 using Velopack.Sources;
@@ -10,6 +12,8 @@ namespace GabLuchi.Services;
 public class UpdateService
 {
 	private readonly UpdateManager[] _managers = AppConfig.GithubReleasesRepos.Select((string repo) => new UpdateManager(new GithubSource(repo, AppConfig.GithubToken, prerelease: true, new ProxiedFileDownloader()))).ToArray();
+
+	private readonly HttpClient _http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 
 	private UpdateManager? _stagedMgr;
 
@@ -36,6 +40,15 @@ public class UpdateService
 
 	public string InstalledVersion { get; private set; } = "unknown";
 
+	public string? BackendLatestVersion { get; private set; }
+
+	public bool BackendSaysUpdateAvailable =>
+		BackendLatestVersion != null &&
+		InstalledVersion != "unknown" &&
+		Version.TryParse(InstalledVersion, out var installed) &&
+		Version.TryParse(BackendLatestVersion, out var latest) &&
+		latest > installed;
+
 	public async Task CheckAndStageAsync()
 	{
 		Log("Update check started");
@@ -50,6 +63,8 @@ public class UpdateService
 			Log("Current installed version: " + InstalledVersion);
 		}
 		catch (Exception ex) { Log("Could not read current version: " + ex.Message); }
+
+		bool velopackFound = false;
 		UpdateManager[] managers = _managers;
 		foreach (UpdateManager mgr in managers)
 		{
@@ -59,22 +74,51 @@ public class UpdateService
 				UpdateInfo info = await mgr.CheckForUpdatesAsync();
 				if (info != null)
 				{
-				Log("Update found: " + info.TargetFullRelease.Version + " — downloading...");
-				await mgr.DownloadUpdatesAsync(info);
-				_stagedMgr = mgr;
-				_staged = info;
-				Log("Update staged: " + info.TargetFullRelease.Version);
+					Log("Update found: " + info.TargetFullRelease.Version + " — downloading...");
+					await mgr.DownloadUpdatesAsync(info);
+					_stagedMgr = mgr;
+					_staged = info;
+					Log("Update staged: " + info.TargetFullRelease.Version);
+					velopackFound = true;
 					this.UpdateReady?.Invoke();
 				}
 				else
 				{
-					Log("No update available");
+					Log("Velopack: no update available");
 				}
 				break;
 			}
 			catch (Exception ex)
 			{
-				Log("Update check failed: " + ex);
+				Log("Velopack check failed: " + ex.Message);
+			}
+		}
+
+		if (!velopackFound)
+		{
+			try
+			{
+				Log("Checking backend for latest version...");
+				string endpoint = Config.KeyCheckerBase.TrimEnd('/') + "/api/update-check";
+				string json = await _http.GetStringAsync(endpoint);
+				using JsonDocument doc = JsonDocument.Parse(json);
+				if (doc.RootElement.TryGetProperty("latestVersion", out JsonElement verEl) && verEl.ValueKind == JsonValueKind.String)
+				{
+					BackendLatestVersion = verEl.GetString();
+					Log("Backend reports latest version: " + BackendLatestVersion);
+					if (BackendSaysUpdateAvailable)
+					{
+						Log("Backend says update available: v" + BackendLatestVersion + " (installed: " + InstalledVersion + ")");
+					}
+				}
+				else
+				{
+					Log("Backend response missing latestVersion");
+				}
+			}
+			catch (Exception ex)
+			{
+				Log("Backend fallback check failed: " + ex.Message);
 			}
 		}
 	}

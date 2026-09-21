@@ -50,7 +50,12 @@ public static class AppConfig
 
 	public const string PluginReleasesRepo = "gabluchi-plugin";
 
-	public static readonly string[] GithubApiMirrors = new string[0];
+	public static readonly string[] GithubApiMirrors = new string[]
+	{
+		"https://gabluchi-proxy.freestuffsyeah65.workers.dev/gh/",
+		"https://ghfast.top/",
+		"https://ghproxy.net/"
+	};
 
 	public static readonly string[] GithubDownloadMirrors = new string[3] { "https://ghproxy.net/", "https://ghfast.top/", "https://gh.ddlc.top/" };
 

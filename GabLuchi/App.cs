@@ -153,6 +153,15 @@ public partial class App : Application
 				});
 				return;
 			}
+			if (Updates.BackendSaysUpdateAvailable)
+			{
+				ToastService t = _host.Services.GetRequiredService<ToastService>();
+				string ver = Updates.BackendLatestVersion;
+				((DispatcherObject)this).Dispatcher.Invoke((Action)delegate
+				{
+					t.Show("GabLuchi", "Update available: v" + ver + " — check GitHub or Discord for download.");
+				});
+			}
 			try
 			{
 				PluginInstallerService installer = _host.Services.GetRequiredService<PluginInstallerService>();
