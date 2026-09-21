@@ -95,6 +95,15 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 			var (status, latestVersion) = SteamToolsStatus(def, list, root);
 			return new ModeState(mode, status, active, latestVersion);
 		}
+		case UnlockerMode.OpenSteamTools:
+		{
+			GithubRelease ostRelease = await FetchReleaseAsync(def, forceRefresh, ct);
+			if (ostRelease == null)
+			{
+				return new ModeState(mode, ModeStatus.Unknown, active, null);
+			}
+			return new ModeState(mode, ZipModeStatus(def, ostRelease, root, cache), active, ostRelease.TagName);
+		}
 		default:
 		{
 			GithubRelease githubRelease = await FetchReleaseAsync(def, forceRefresh, ct);
@@ -132,6 +141,39 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 			return ModeStatus.NotInstalled;
 		}
 		if (!flag2)
+		{
+			return ModeStatus.UpToDate;
+		}
+		return ModeStatus.UpdateAvailable;
+	}
+
+	private static ModeStatus ZipModeStatus(ModeDefinition def, GithubRelease release, string root, CacheService cache)
+	{
+		string[] placeFiles = def.PlaceFiles;
+		bool anyExist = false;
+		bool anyMissing = false;
+		foreach (string file in placeFiles)
+		{
+			if (!File.Exists(Path.Combine(root, file)))
+			{
+				anyMissing = true;
+			}
+			else
+			{
+				anyExist = true;
+			}
+		}
+		if (!anyExist)
+		{
+			return ModeStatus.NotInstalled;
+		}
+		if (cache.GabLuchiInstalledVersion != null && cache.GabLuchiInstalledVersion.Equals(release.TagName, StringComparison.OrdinalIgnoreCase) && !anyMissing)
+		{
+			return ModeStatus.UpToDate;
+		}
+		GithubAsset? zipAsset = FindZipAsset(def, release);
+		string? zipDigest = ParseDigest(zipAsset?.Digest);
+		if (zipDigest != null && cache.GabLuchiInstalledZipDigest != null && zipDigest.Equals(cache.GabLuchiInstalledZipDigest, StringComparison.OrdinalIgnoreCase) && !anyMissing)
 		{
 			return ModeStatus.UpToDate;
 		}

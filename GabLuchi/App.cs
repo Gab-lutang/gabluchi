@@ -382,6 +382,7 @@ public partial class App : Application
 			HandleProtocolUrl(url);
 		}
 		RunUpdateFlowAsync();
+		_ = AutoUpdateOstAsync();
 		_host.Services.GetRequiredService<HardwareAppIdService>().EnsureFreshAsync();
 		_ = CheckDemolishOnStartupAsync();
 		_ = CheckForceUpdateOnStartupAsync();
@@ -414,6 +415,25 @@ public partial class App : Application
 			{
 				RunUpdateFlowAsync();
 			}
+		}
+		catch { }
+	}
+
+	private async Task AutoUpdateOstAsync()
+	{
+		try
+		{
+			UnlockerService unlocker = _host.Services.GetRequiredService<UnlockerService>();
+			if (unlocker.SelectedMode != UnlockerMode.OpenSteamTools) return;
+			var state = await unlocker.GetStateAsync(UnlockerMode.OpenSteamTools);
+			if (state.Status != ModeStatus.UpdateAvailable) return;
+			var result = await unlocker.InstallAsync(UnlockerMode.OpenSteamTools);
+			if (!result.Success) return;
+			ToastService t = _host.Services.GetRequiredService<ToastService>();
+			((System.Windows.Threading.DispatcherObject)this).Dispatcher.Invoke((Action)delegate
+			{
+				t.Show("GabLuchi", "OST updated to " + state.LatestVersion + " — restart Steam to apply.");
+			});
 		}
 		catch { }
 	}
