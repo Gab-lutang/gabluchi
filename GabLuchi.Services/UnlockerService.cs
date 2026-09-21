@@ -39,7 +39,7 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 	public IReadOnlyList<ModeDefinition> Modes { get; } = Array.AsReadOnly(new ModeDefinition[3]
 	{
 		new ModeDefinition(UnlockerMode.SteamTools, "SteamTools", Strings.Mode_Desc_SteamTools, ModeKind.Loose, "mendy-tools", "verynotsusdllsthataredefnotstrelated", null, new string[2] { "dwmapi.dll", "xinput1_4.dll" }, null, null, null, null),
-		new ModeDefinition(UnlockerMode.OpenSteamTools, "GabLuchi Unlocker", Strings.Mode_Desc_OpenSteamTools, ModeKind.Zip, "OpenSteam001", "OpenSteamTool", null, new string[3] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll" }, "OpenSteamTool-{version}-Release.zip", null, null, null),
+		new ModeDefinition(UnlockerMode.OpenSteamTools, "GabLuchi Unlocker", Strings.Mode_Desc_OpenSteamTools, ModeKind.Zip, "madoiscool", "BetterSteamTools", null, new string[3] { "dwmapi.dll", "xinput1_4.dll", "OpenSteamTool.dll" }, "OpenSteamTool-{version}-Release.zip", null, null, null),
 		new ModeDefinition(UnlockerMode.CloudRedirect, "CloudRedirect (SteamTools Fix)", Strings.Mode_Desc_CloudRedirect, ModeKind.Cli, "Selectively11", "CloudRedirect", null, new string[1] { "cloud_redirect.dll" }, null, "CloudRedirectCLI.exe", "/stfixer", "cloud_redirect.dll")
 	});
 
@@ -516,11 +516,11 @@ public class UnlockerService(SteamService steam, SettingsService settings, Cache
 		string path = Path.Combine(steamRoot, "opensteamtool.toml");
 		if (!File.Exists(path))
 		{
-			File.WriteAllText(path, "[manifest]\r\nurl = \"wudrm\"\r\n\r\n[lua]\r\npaths = [\"config\\\\lua\"]");
+			File.WriteAllText(path, "[manifest]\r\nurl = \"opensteamtool\"\r\n\r\n[lua]\r\npaths = [\"config\\\\lua\"]");
 			return;
 		}
 		List<string> list = File.ReadAllLines(path).ToList();
-		EnsureSectionHasKey(list, "manifest", "url", "\"wudrm\"");
+		EnsureSectionHasKey(list, "manifest", "url", "\"opensteamtool\"");
 		EnsureLuaPath(list);
 		File.WriteAllLines(path, list);
 	}
