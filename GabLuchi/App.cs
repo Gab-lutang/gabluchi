@@ -88,6 +88,7 @@ public partial class App : Application
 		services.AddSingleton<QuickFixService>();
 		services.AddSingleton<ForceUpdateService>();
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<ForceUpdateService>());
+		services.AddSingleton<UsageService>();
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<CompanionService>());
 			services.AddSingleton<HttpServerService>();
 			services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<HttpServerService>());
@@ -373,6 +374,7 @@ public partial class App : Application
 		_host.Services.GetRequiredService<HardwareAppIdService>().EnsureFreshAsync();
 		_ = CheckDemolishOnStartupAsync();
 		_ = CheckForceUpdateOnStartupAsync();
+		_ = ValidateTierOnStartupAsync();
 		EnsureStartupRegistered();
 	}
 
@@ -399,6 +401,29 @@ public partial class App : Application
 			if (doc.RootElement.TryGetProperty("forceUpdate", out var el) && el.GetBoolean())
 			{
 				RunUpdateFlowAsync();
+			}
+		}
+		catch { }
+	}
+
+	private async Task ValidateTierOnStartupAsync()
+	{
+		try
+		{
+			LicenseService license = _host.Services.GetRequiredService<LicenseService>();
+			if (!license.IsActivated) return;
+			UsageService usage = _host.Services.GetRequiredService<UsageService>();
+			LicenseAccount? account = await license.GetAccountAsync();
+			if (account?.Ok != true) return;
+			string tier = account.Tier ?? "paid";
+			usage.SetTier(tier, account.ExpiresAt);
+			if (usage.IsFreeTier && usage.IsExpired)
+			{
+				ToastService toast = _host.Services.GetRequiredService<ToastService>();
+				((DispatcherObject)this).Dispatcher.Invoke((Action)delegate
+				{
+					toast.Show("Key Expired", "Your free key expired. Run /freekey on Discord for a new one.", error: true);
+				});
 			}
 		}
 		catch { }

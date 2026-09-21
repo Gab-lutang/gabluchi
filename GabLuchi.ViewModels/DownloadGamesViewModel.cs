@@ -18,6 +18,7 @@ public class DownloadGamesViewModel : ObservableObject
 {
 	private readonly SteamRipService _steamRip;
 	private readonly ToastService _toast;
+	private readonly UsageService _usage;
 	private List<SteamRipEntry> _allGames = new List<SteamRipEntry>();
 
 	private string _searchText = "";
@@ -51,12 +52,17 @@ public class DownloadGamesViewModel : ObservableObject
 
 	public bool CanSearch => !IsBusy;
 
+	public bool IsFreeTier => _usage.IsFreeTier && !_usage.IsExpired;
+
+	public string UsageText => _usage.UsageText;
+
 	public ObservableCollection<SteamRipEntry> Results { get; } = new ObservableCollection<SteamRipEntry>();
 
-	public DownloadGamesViewModel(SteamRipService steamRip, ToastService toast)
+	public DownloadGamesViewModel(SteamRipService steamRip, ToastService toast, UsageService usage)
 	{
 		_steamRip = steamRip;
 		_toast = toast;
+		_usage = usage;
 	}
 
 	public async Task Search()

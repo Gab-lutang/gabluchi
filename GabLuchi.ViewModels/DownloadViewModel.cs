@@ -42,6 +42,8 @@ public class DownloadViewModel : ObservableObject
 
 	private readonly AnalyticsService _analytics;
 
+	private readonly UsageService _usage;
+
 	private CancellationTokenSource? _searchCts;
 
 	private CancellationTokenSource? _detailsCts;
@@ -765,7 +767,7 @@ public class DownloadViewModel : ObservableObject
 		FastFetch = _settings.FastFetch;
 	}
 
-	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop, AnalyticsService analytics)
+	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop, AnalyticsService analytics, UsageService usage)
 	{
 		_api = api;
 		_hubcap = hubcap;
@@ -780,6 +782,7 @@ public class DownloadViewModel : ObservableObject
 		Drop = drop;
 		_fastFetch = settings.FastFetch;
 		_analytics = analytics;
+		_usage = usage;
 	}
 
 	public void SeedSearch(long appId)
@@ -1067,6 +1070,20 @@ public class DownloadViewModel : ObservableObject
 		{
 			return;
 		}
+		var usageResult = await _usage.CheckUsageAsync("download", Details.AppId);
+		if (usageResult != null && !usageResult.Allowed)
+		{
+			if (usageResult.Expired)
+			{
+				Error = "Your free key has expired. Run /freekey on Discord for a new one.";
+			}
+			else
+			{
+				_usage.ShowLimitToast("download");
+				Error = $"Weekly download limit reached ({usageResult.DownloadsUsed}/{usageResult.DownloadsLimit}). Upgrade to paid for unlimited.";
+			}
+			return;
+		}
 		Error = null;
 		LastDownload = null;
 		InstallStatus = null;
@@ -1124,6 +1141,15 @@ public class DownloadViewModel : ObservableObject
 	{
 		if (Details?.BaseAppId == null || IsGenerating)
 		{
+			return;
+		}
+		var usageResult = await _usage.CheckUsageAsync("download", Details.AppId);
+		if (usageResult != null && !usageResult.Allowed)
+		{
+			if (usageResult.Expired)
+				Error = "Your free key has expired. Run /freekey on Discord for a new one.";
+			else
+				Error = $"Free tier cannot use DLC Unlocker. Upgrade to paid for full access.";
 			return;
 		}
 		Error = null;

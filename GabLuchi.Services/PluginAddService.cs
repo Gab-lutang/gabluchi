@@ -9,7 +9,7 @@ using GabLuchi.Resources;
 
 namespace GabLuchi.Services;
 
-public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifestDownloader, HubcapService hubcap, SettingsService settings, LuaInstaller installer, AnalyticsService analytics)
+public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifestDownloader, HubcapService hubcap, SettingsService settings, LuaInstaller installer, AnalyticsService analytics, UsageService usage)
 {
 	public class SourceRow
 	{
@@ -277,6 +277,17 @@ public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifest
 	{
 		if (state.Busy)
 		{
+			return;
+		}
+		var usageResult = await usage.CheckUsageAsync("download", appId);
+		if (usageResult != null && !usageResult.Allowed)
+		{
+			if (usageResult.Expired)
+				state.Error = "Your free key has expired. Run /freekey on Discord for a new one.";
+			else
+				state.Error = $"Weekly download limit reached ({usageResult.DownloadsUsed}/{usageResult.DownloadsLimit}). Upgrade to paid for unlimited.";
+			state.Checking = false;
+			state.Busy = false;
 			return;
 		}
 		state.Busy = true;

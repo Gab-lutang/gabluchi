@@ -472,3 +472,78 @@ docker run -p 8080:8080 gabluchi-connect
 - Relay does NOT see: Steam credentials, game files, personal data
 - All data is ephemeral — codes expire in 5 minutes, no logging
 - Open source — fully auditable
+
+---
+
+## Tiered Key System (v1.3.0)
+
+### Key Types
+
+| Type | Prefix | Limits | Expiry | DLC/Fixes |
+|------|--------|--------|--------|-----------|
+| **Paid** | `GABL-XXXX-XXXX-XXXX` | Unlimited | None | Full access |
+| **Free** | `FREE-XXXX-XXXX-XXXX` | 2 downloads + 2 multiplayer/week | 7 days | Blocked |
+
+### Backend Changes
+
+| File | What Changed |
+|------|-------------|
+| `init.js` | `keys.tier` (default 'paid'), `keys.expires_at`, `usage_log` table, `machine_keys` table |
+| `store.js` | `getWeeklyUsageCount()`, `logUsage()`, `saveMachineKey()`, `getAltUsers()`, `getFreeKeyForUser()` |
+| `bot.js` | `/freekey` command, `POST /api/usage/track`, `/activate` returns tier+expiresAt + alt detection |
+
+### Client Changes
+
+| File | What Changed |
+|------|-------------|
+| `GabLuchi.Services/UsageService.cs` | **NEW** — tracks tier, expiry, weekly usage counts, `CheckUsageAsync()` calls `/api/usage/track` |
+| `GabLuchi.Services/LicenseService.cs` | `IsValidKeyFormat()` accepts `FREE-` prefix, `ActivateAsync()` parses tier+expiresAt |
+| `GabLuchi.Models/LicenseActivateResult.cs` | Added `Tier`, `ExpiresAt` properties |
+| `GabLuchi.Models/LicenseAccount.cs` | Added `Tier`, `ExpiresAt`, `Keys[]` for account response |
+| `GabLuchi.ViewModels/DownloadViewModel.cs` | Usage gate in `DownloadFromSourceAsync()` + `GenerateDlcAsync()` |
+| `GabLuchi.Services/PluginAddService.cs` | Usage gate in `DownloadAsync()` |
+| `GabLuchi.ViewModels/MultiplayerFixViewModel.cs` | Usage gate in `DownloadAndApply()` |
+| `GabLuchi/MainWindow.cs` | DLC Unlocker + Fixes navigation wall for free users, ToastService injected |
+| `GabLuchi.ViewModels/DownloadGamesViewModel.cs` | Exposes `IsFreeTier`, `UsageText` for usage counter |
+| `GabLuchi.Views/DownloadGamesView.xaml` | Usage counter badge (bottom-right, free tier only) |
+| `GabLuchi.ViewModels/LicenseGateViewModel.cs` | New error messages: `free-key-expired`, `alt-detected` |
+| `GabLuchi/App.cs` | Registers `UsageService`, `ValidateTierOnStartupAsync()` checks tier on launch |
+
+### Free Tier Behavior
+
+1. User runs `/freekey` on Discord → gets `FREE-XXXX-XXXX-XXXX` key, expires in 7 days
+2. Client activates key → backend returns `tier: "free"`, `expiresAt`
+3. Client stores tier info in `UsageService`
+4. On download: `UsageService.CheckUsageAsync("download")` → backend checks `usage_log` for current week
+5. If limit hit (2/week): download blocked, toast shown
+6. DLC Unlocker + Fixes: nav items visible but clicking shows "Paid Feature" toast
+7. Multiplayer: gated at `DownloadAndApply()`
+8. On startup: `ValidateTierOnStartupAsync()` checks expiry → toast if expired
+9. Alt detection: if same machine activated by different Discord ID → block + alert modlog
+
+### Database (Supabase)
+
+Run these SQL commands:
+```sql
+ALTER TABLE keys ADD COLUMN IF NOT EXISTS tier text NOT NULL DEFAULT 'paid';
+ALTER TABLE keys ADD COLUMN IF NOT EXISTS expires_at timestamptz;
+
+CREATE TABLE IF NOT EXISTS usage_log (
+  id bigserial primary key,
+  machine_id text not null,
+  discord_user_id text not null,
+  action text not null,
+  app_id bigint,
+  used_at timestamptz not null default now()
+);
+CREATE INDEX IF NOT EXISTS idx_usage_log_user_week ON usage_log (discord_user_id, used_at);
+
+CREATE TABLE IF NOT EXISTS machine_keys (
+  id bigserial primary key,
+  machine_id text not null,
+  discord_user_id text not null,
+  discord_tag text,
+  activated_at timestamptz not null default now()
+);
+CREATE INDEX IF NOT EXISTS idx_machine_keys_machine ON machine_keys (machine_id);
+```

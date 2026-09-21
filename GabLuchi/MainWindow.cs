@@ -20,11 +20,17 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 
 	private readonly LicenseGateViewModel _licenseGate;
 
-	public MainWindow(MainViewModel viewModel, IServiceProvider services, SettingsService settings, LicenseService license)
+	private readonly UsageService _usage;
+
+	private readonly ToastService _toast;
+
+	public MainWindow(MainViewModel viewModel, IServiceProvider services, SettingsService settings, LicenseService license, UsageService usage, ToastService toast)
 	{
 		MainWindow mainWindow = this;
 		_settings = settings;
 		_license = license;
+		_usage = usage;
+		_toast = toast;
 		_licenseGate = viewModel.LicenseGate;
 		InitializeComponent();
 		base.DataContext = viewModel;
@@ -103,13 +109,29 @@ public partial class MainWindow : FluentWindow, IComponentConnector
 
 	private void NavMode_Click(object sender, RoutedEventArgs e) => NavigateToMode();
 
-	private void NavFixes_Click(object sender, RoutedEventArgs e) => NavigateToFixes();
+	private void NavFixes_Click(object sender, RoutedEventArgs e)
+	{
+		if (_usage.IsFreeTier && !_usage.IsExpired)
+		{
+			_toast.Show("Paid Feature", "Fixes require a paid key. Upgrade for full access.", error: true);
+			return;
+		}
+		NavigateToFixes();
+	}
 
 	private void NavMultiplayerFix_Click(object sender, RoutedEventArgs e) => NavigateOrGate(typeof(MultiplayerFixView));
 
 	private void NavPlugin_Click(object sender, RoutedEventArgs e) => NavigateToPlugin();
 
-	private void NavDlcUnlocker_Click(object sender, RoutedEventArgs e) => NavigateOrGate(typeof(DlcUnlockerView));
+	private void NavDlcUnlocker_Click(object sender, RoutedEventArgs e)
+	{
+		if (_usage.IsFreeTier && !_usage.IsExpired)
+		{
+			_toast.Show("Paid Feature", "DLC Unlocker requires a paid key. Upgrade for full access.", error: true);
+			return;
+		}
+		NavigateOrGate(typeof(DlcUnlockerView));
+	}
 
 	private void RestartSteam_Click(object sender, RoutedEventArgs e)
 	{

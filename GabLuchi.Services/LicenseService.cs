@@ -48,8 +48,12 @@ public class LicenseService
 		{
 			return false;
 		}
-		string text = key.Trim();
+		string text = key.Trim().ToUpperInvariant();
 		if (text.Length != 19)
+		{
+			return false;
+		}
+		if (!text.StartsWith("GABL-") && !text.StartsWith("FREE-"))
 		{
 			return false;
 		}
@@ -93,12 +97,22 @@ public class LicenseService
 			using HttpResponseMessage res = await _http.PostAsync(url, content);
 			string body = await res.Content.ReadAsStringAsync();
 			string? error = null;
+			string? tier = null;
+			string? expiresAt = null;
 			try
 			{
 				using JsonDocument doc = JsonDocument.Parse(body);
 				if (doc.RootElement.TryGetProperty("error", out JsonElement e))
 				{
 					error = e.GetString();
+				}
+				if (doc.RootElement.TryGetProperty("tier", out JsonElement tEl))
+				{
+					tier = tEl.GetString();
+				}
+				if (doc.RootElement.TryGetProperty("expiresAt", out JsonElement expEl) && expEl.ValueKind != JsonValueKind.Null)
+				{
+					expiresAt = expEl.GetString();
 				}
 			}
 			catch
@@ -127,7 +141,7 @@ public class LicenseService
 			_settings.LicenseMachineId = machineId;
 			_settings.LicenseToken = Encrypt(token);
 			LicenseActivated?.Invoke();
-			return LicenseActivateResult.Success(token);
+			return LicenseActivateResult.Success(token, tier, expiresAt);
 		}
 		catch (Exception)
 		{

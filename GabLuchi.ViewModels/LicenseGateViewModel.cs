@@ -312,6 +312,10 @@ public class LicenseGateViewModel : ObservableObject
 				return Strings.Settings_LicenseKeyRevoked;
 			case "unreachable":
 				return Strings.Settings_LicenseKeyUnreachable;
+			case "free-key-expired":
+				return "Your free key has expired. Run /freekey on Discord for a new one.";
+			case "alt-detected":
+				return "Alt detected — this machine was used by another account. Contact support.";
 			default:
 				return Strings.Settings_LicenseKeyError;
 		}

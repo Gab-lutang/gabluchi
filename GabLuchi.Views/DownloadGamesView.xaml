@@ -123,5 +123,16 @@
         </ItemsControl>
       </StackPanel>
     </ScrollViewer>
+
+    <!-- Usage Counter (free tier only) -->
+    <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,16"
+            Padding="12,8" Background="#CC1a1a2e" BorderBrush="#33ffffff" BorderThickness="1" CornerRadius="8"
+            Visibility="{Binding IsFreeTier, Converter={StaticResource BoolToVis}}">
+      <StackPanel Orientation="Horizontal">
+        <ui:SymbolIcon Symbol="PersonAvailable24" Margin="0,0,8,0" VerticalAlignment="Center" />
+        <TextBlock VerticalAlignment="Center" FontSize="12" Foreground="#9ca3af"
+                   Text="{Binding UsageText}" />
+      </StackPanel>
+    </Border>
   </Grid>
 </UserControl>
