@@ -21,6 +21,8 @@ public class LicenseGateViewModel : ObservableObject
 
 	private readonly SettingsService _settings;
 
+	private readonly UsageService _usage;
+
 	[ObservableProperty]
 	private bool _isOpen;
 
@@ -211,11 +213,12 @@ public class LicenseGateViewModel : ObservableObject
 	[ExcludeFromCodeCoverage]
 	public IRelayCommand OpenDiscordCommand => openDiscordCommand ?? (openDiscordCommand = new RelayCommand(OpenDiscord));
 
-	public LicenseGateViewModel(LicenseService license, AuthService auth, SettingsService settings)
+	public LicenseGateViewModel(LicenseService license, AuthService auth, SettingsService settings, UsageService usage)
 	{
 		_license = license;
 		_auth = auth;
 		_settings = settings;
+		_usage = usage;
 		_auth.AuthStateChanged += delegate
 		{
 			IsSignedIn = _auth.IsSignedIn;
@@ -272,6 +275,7 @@ public class LicenseGateViewModel : ObservableObject
 				return;
 			}
 			KeyInput = "";
+			_usage.SetTier(result.Tier, result.ExpiresAt);
 			IsOpen = false;
 			OnPropertyChanged(nameof(IsActivated));
 			if (PostActivationRefresh != null)

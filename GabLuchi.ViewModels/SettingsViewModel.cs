@@ -830,6 +830,7 @@ public class SettingsViewModel : ObservableObject
 			HubcapIsKeyConfigured = true;
 			HubcapKeyInput = "";
 			HubcapKeyStatus = null;
+			_usage.SetTier(result.Tier, result.ExpiresAt);
 		}
 		finally
 		{
