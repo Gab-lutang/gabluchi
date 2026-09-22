@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Threading;
 using System.Windows;
@@ -34,9 +36,37 @@ public static class Program
 		"ro", "el", "bg", "th", "vi", "id", "da", "fi", "nb", "sv"
 	};
 
+	private static bool IsRunAsAdmin()
+	{
+		WindowsIdentity identity = WindowsIdentity.GetCurrent();
+		WindowsPrincipal principal = new WindowsPrincipal(identity);
+		return principal.IsInRole(WindowsBuiltInRole.Administrator);
+	}
+
 	[STAThread]
 	public static void Main(string[] args)
 	{
+		if (!IsRunAsAdmin())
+		{
+			try
+			{
+				string processPath = Environment.ProcessPath;
+				if (processPath != null)
+				{
+					Process.Start(new ProcessStartInfo(processPath, string.Join(" ", args))
+					{
+						Verb = "runas",
+						UseShellExecute = true
+					});
+					return;
+				}
+			}
+			catch
+			{
+				return;
+			}
+		}
+
 		VelopackApp.Build().OnFirstRun(delegate
 		{
 			FirstRun = true;

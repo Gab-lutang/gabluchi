@@ -25,6 +25,8 @@ public partial class App : Application
 
 	internal static Func<Task>? RunUpdateFlow;
 
+	private bool _isShuttingDown;
+
 	private UpdateService Updates => _host.Services.GetRequiredService<UpdateService>();
 
 	public App()
@@ -193,6 +195,11 @@ public partial class App : Application
 
 	protected override async void OnStartup(StartupEventArgs e)
 	{
+		SessionEnding += (_, _) =>
+		{
+			_isShuttingDown = true;
+			Shutdown();
+		};
 		base.OnStartup(e);
 		Task.Run(delegate
 		{
@@ -336,6 +343,11 @@ public partial class App : Application
 		};
 		window.Closing += (sender, e) =>
 		{
+			if (_isShuttingDown)
+			{
+				TrayIconHelper.Dispose();
+				return;
+			}
 			e.Cancel = true;
 			window.Hide();
 			TrayIconHelper.Initialize();
@@ -528,13 +540,19 @@ public partial class App : Application
 
 	protected override async void OnExit(ExitEventArgs e)
 	{
-		TrayIconHelper.Dispose();
-		if (Updates.HasStagedUpdate)
+		try
 		{
-			Updates.ApplyOnExit();
+			TrayIconHelper.Dispose();
+			if (Updates.HasStagedUpdate)
+			{
+				Updates.ApplyOnExit();
+			}
+			await _host.StopAsync();
+			_host.Dispose();
 		}
-		await _host.StopAsync();
-		_host.Dispose();
+		catch
+		{
+		}
 		base.OnExit(e);
 	}
 
