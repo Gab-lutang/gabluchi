@@ -121,7 +121,22 @@ gh release create vX.X.X --repo Gab-lutang/gabluchi --title "vX.X.X" --notes "..
   "Releases\assets.win.json"
 ```
 
-**How Velopack finds updates**: It iterates through GitHub releases (newest → oldest), looking for `releases.win.json` in each. If found, it parses the version and compares to the installed version. If the release asset is missing `releases.win.json`, Velopack skips it.
+**CRITICAL: Verify the release is visible BEFORE announcing.** GitHub's REST index is eventually consistent — a freshly published release can serve `assets: []` to the list/tag endpoints for a long time even though the files are uploaded and the HTML page shows them. Velopack reads the embedded `assets` array on each release; an empty one means **nobody auto-updates**. See Section 10. Wait for the index to populate before telling users:
+
+```powershell
+$expected = 6   # must equal the number of files you uploaded
+$scanStart = Get-Date
+$count = 0
+until ($count -ge $expected) {
+    Start-Sleep -Seconds 30
+    $count = [int](gh api "/repos/Gab-lutang/gabluchi/releases/tags/v$VER" --jq '.assets | length')
+    Write-Host "embedded assets: $count / $expected"
+    if ((Get-Date) - $scanStart -gt (New-TimeSpan -Minutes 30)) { Write-Host "TIMEOUT — DO NOT ANNOUNCE!"; break }
+}
+if ($count -ge $expected) { Write-Host "RELEASE VISIBLE — safe to announce." }
+```
+
+**How Velopack finds updates**: It iterates through GitHub releases (newest → oldest), looking for `releases.win.json` in each. If found, it parses the version and compares to the installed version. If the release asset is missing `releases.win.json` — **or the release's embedded `assets` array is empty because the index hasn't caught up** — Velopack skips it.
 
 ---
 
@@ -156,6 +171,8 @@ ForceUpdateService (IHostedService, polls every 5 min)
 ```
 
 Triggered by admin running `/force-update` on Discord → sets `force_update=true` in `heartbeat` table.
+
+**The flag is never cleared — by design.** The client never calls `/api/update-clear`. Once `/force-update` is run, every client polls it every 5 minutes forever (and on every GUI restart via `CheckForceUpdateOnStartupAsync`), guaranteeing any future release is picked up even if a client misses a launch or GitHub's index lags behind (see Section 10). This acts as a permanent safety net, not a one-shot broadcast. If a critical release ever needs a nudge, `/force-update` is the hammer.
 
 ### GitHub Token (Rate Limit Fix)
 
@@ -271,6 +288,14 @@ GitHub blocks pushes containing Personal Access Tokens. If your push is rejected
 ### GitHub release missing files
 Velopack iterates releases looking for `releases.win.json`. If it's missing from a release, Velopack skips that release entirely and keeps searching older ones. If no release has it, auto-update fails with "No remote full releases found."
 
+### Fresh release shows "no update available" (empty embedded assets)
+Even when all 6 files upload successfully, the GitHub REST index is **eventually consistent**: the list/tag endpoints can serve `"assets": []` for a release that was just published, for a long time. The HTML release page and `GET /releases/{id}/assets` show the files, but the `releases` list (which Velopack parses) has an empty `assets` array → Velopack skips the release → clients report "no update available." The paused-tag case (v1.3.9, Sep 2026) stayed empty for hours across multiple recreate attempts, including a fresh probe tag with inline-uploaded assets.
+
+**Mitigations (all shipped 2026-09-23):**
+- The **visibility gate** in Sections 6/11/`release.ps1` polls `releases/tags/v$VER --jq '.assets | length'` after upload and only reports "safe to announce" once the index embeds them. Never announce a release that hasn't passed the gate.
+- The **force-update flag is never cleared** by design. Clients poll it every 5 minutes, so even if a release rides the empty-array window, the next poll picks it up the moment the index self-heals. Do not "fix" this by adding a clear call.
+- Do not treat `gh release view`/HTML page/GraphQL as proof of visibility — only the REST list/tag `assets` array is what Velopack sees.
+
 ---
 
 ## 11. Quick Reference — Full Release Script
@@ -318,6 +343,18 @@ gh release create v$VER --repo Gab-lutang/gabluchi --title "v$VER" --notes "..."
   "Releases\RELEASES" `
   "Releases\releases.win.json" `
   "Releases\assets.win.json"
+
+# === VISIBILITY GATE (wait until REST index embeds the assets) ===
+$expected = 6
+$scanStart = Get-Date
+$count = 0
+until ($count -ge $expected) {
+    Start-Sleep -Seconds 30
+    $count = [int](gh api "/repos/Gab-lutang/gabluchi/releases/tags/v$VER" --jq '.assets | length')
+    Write-Host "embedded assets: $count / $expected"
+    if ((Get-Date) - $scanStart -gt (New-TimeSpan -Minutes 30)) { Write-Host "TIMEOUT — DO NOT ANNOUNCE!"; break }
+}
+if ($count -ge $expected) { Write-Host "RELEASE VISIBLE — safe to announce." }
 ```
 
 ---
