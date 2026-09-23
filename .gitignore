@@ -2,6 +2,7 @@
 **/bin/
 **/obj/
 Release/publish/
+Release/updater/
 Release/*.exe
 Release/*.nupkg
 Releases/
@@ -12,3 +13,9 @@ Releases/
 .vs/
 
 GabLuchi/ConnectRelay/relay.exe
+
+# Stray tools / foreign downloads (not part of GabLuchi source)
+BetterSteamTools/
+Surses/
+fixes_multi/
+opencode.json

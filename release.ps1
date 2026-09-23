@@ -86,7 +86,14 @@ if ($asm -notmatch $patInfoVer) {
 if ($asm -notmatch $patVer) {
     Fail-Script "AssemblyInfo.cs AssemblyVersion is not '$expected0'"
 }
-Write-Host "OK: csproj and AssemblyInfo.cs both on $Version" -ForegroundColor Green
+$upd = Get-Content "GabLuchiUpdater\GabLuchiUpdater.csproj" -Raw
+if ($upd -notmatch "<Version>$([regex]::Escape($Version))</Version>") {
+    Fail-Script "GabLuchiUpdater.csproj <Version> is not '$Version'"
+}
+if ($upd -notmatch "<AssemblyVersion>$([regex]::Escape($expected0))</AssemblyVersion>" -or $upd -notmatch "<FileVersion>$([regex]::Escape($expected0))</FileVersion>") {
+    Fail-Script "GabLuchiUpdater.csproj AssemblyVersion/FileVersion is not '$expected0'"
+}
+Write-Host "OK: csproj, AssemblyInfo.cs and GabLuchiUpdater.csproj all on $Version" -ForegroundColor Green
 
 # --- Clean ------------------------------------------------------
 Step-Host "Cleaning build artifacts"
@@ -103,6 +110,18 @@ if ($LASTEXITCODE -ne 0) { Fail-Script "dotnet publish failed (exit $LASTEXITCOD
 if (-not (Test-Path "Release\publish\GabLuchi.exe")) {
     Fail-Script "GabLuchi.exe missing after publish"
 }
+
+# --- Updater -----------------------------------------------------
+Step-Host "dotnet publish GabLuchiUpdater + bundle into app"
+dotnet publish -c Release -o Release/updater GabLuchiUpdater/GabLuchiUpdater.csproj
+if ($LASTEXITCODE -ne 0) { Fail-Script "GabLuchiUpdater publish failed (exit $LASTEXITCODE)" }
+if (-not (Test-Path "Release\updater\GabLuchiUpdater.exe")) {
+    Fail-Script "GabLuchiUpdater.exe missing after publish"
+}
+Copy-Item "Release\updater\*" "Release\publish\" -Recurse -Force
+$v = Get-Item "Release\publish\GabLuchiUpdater.exe"
+$vam = $v.VersionInfo.FileVersion
+Write-Host "GabLuchiUpdater.exe bundled ($vam) at $($v.Length) bytes" -ForegroundColor Green
 
 # --- Pack -------------------------------------------------------
 Step-Host "vpk pack"
@@ -126,7 +145,11 @@ Step-Host "Verify releases.win.json"
 $feed = Get-Content "Releases\releases.win.json" -Raw | ConvertFrom-Json
 $assets = $feed.Assets
 if (-not $assets) { Fail-Script "releases.win.json has no Assets" }
-$mismatch = $assets | Where-Object { "$($_.Package.Id)-$($_.Package.Version)" -ne "GabLuchi-$Version" }
+$mismatch = $assets | Where-Object {
+    $id = if ($_.Package) { $_.Package.Id } else { $_.PackageId }
+    $ver = if ($_.Package) { $_.Package.Version } else { $_.Version }
+    "$id-$ver" -ne "GabLuchi-$Version"
+}
 if ($mismatch) {
     Fail-Script "releases.win.json contains a non-GabLuchi-$Version entry: $($mismatch.Package.Id)-$($mismatch.Package.Version)"
 }
@@ -140,20 +163,24 @@ if ($NoPush) {
 
 # --- Commit & push ----------------------------------------------
 Step-Host "git commit + push ($repoUrl)"
+$prevEAP = $ErrorActionPreference
+$ErrorActionPreference = "Continue"  # git stderr (LF/CRLF warnings) isn't fatal
 if (-not $CommitMessage) {
     $firstLine = ($Notes -split "`n")[0]
     $CommitMessage = "v$Version - $firstLine"
 }
-git add -A
+git add -A 2>$null
 if ($LASTEXITCODE -ne 0) { Fail-Script "git add failed" }
-git commit -m $CommitMessage
+git add -f "Releases\GabLuchi-$Version-full.nupkg" 2>$null
+git commit -m $CommitMessage 2>$null
 if ($LASTEXITCODE -ne 0) { Fail-Script "git commit failed" }
-git push origin main
+git push origin main 2>$null
 if ($LASTEXITCODE -ne 0) { Fail-Script "git push origin main failed" }
-git tag "v$Version"
+git tag "v$Version" 2>$null
 if ($LASTEXITCODE -ne 0) { Fail-Script "git tag v$Version failed" }
-git push origin "v$Version"
+git push origin "v$Version" 2>$null
 if ($LASTEXITCODE -ne 0) { Fail-Script "git push origin v$Version failed" }
+$ErrorActionPreference = $prevEAP
 
 # --- gh release create ------------------------------------------
 Step-Host "gh release create v$Version"

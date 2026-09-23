@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>GabLuchiUpdater</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>GabLuchiUpdater</RootNamespace>
+    <Version>1.4.0</Version>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <FileVersion>1.4.0.0</FileVersion>
+    <ApplicationManifest>..\GabLuchi\app.manifest</ApplicationManifest>
+    <GabLuchiRuntimeDir>$(LOCALAPPDATA)\GabLuchi\current</GabLuchiRuntimeDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\GabLuchi.Services\UpdateService.cs" Link="UpdateService.cs" />
+    <Compile Include="..\GabLuchi.Services\ProxiedFileDownloader.cs" Link="ProxiedFileDownloader.cs" />
+    <Compile Include="..\GabLuchi.Services\GithubProxy.cs" Link="GithubProxy.cs" />
+    <Compile Include="..\GabLuchi.Services\UpdaterSchedulerService.cs" Link="UpdaterSchedulerService.cs" />
+    <Compile Include="..\GabLuchi\AppConfig.cs" Link="AppConfig.cs" />
+    <Compile Include="..\GabLuchi\Config.cs" Link="Config.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Velopack">
+      <HintPath>$(GabLuchiRuntimeDir)\Velopack.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
