@@ -497,6 +497,7 @@ public partial class App : Application
 					lua.DeleteLua(appId);
 				}
 			}
+			_ = license.ClearDemolishedAppsAsync();
 		}
 		catch
 		{
