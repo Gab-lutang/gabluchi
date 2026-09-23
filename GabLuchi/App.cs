@@ -401,6 +401,7 @@ public partial class App : Application
 		_ = ValidateTierOnStartupAsync();
 		_ = _host.Services.GetRequiredService<AnnouncementService>().FetchAsync();
 		EnsureStartupRegistered();
+		AgentSchedulerService.Register();
 	}
 
 	private static void EnsureStartupRegistered()

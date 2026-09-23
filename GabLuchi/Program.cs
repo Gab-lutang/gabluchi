@@ -70,7 +70,17 @@ public static class Program
 		VelopackApp.Build().OnFirstRun(delegate
 		{
 			FirstRun = true;
+		}).OnBeforeUninstallFastCallback(delegate
+		{
+			AgentSchedulerService.Unregister();
 		}).Run();
+
+		if (args != null && args.Any((string a) => a.Equals("--agent", StringComparison.OrdinalIgnoreCase)))
+		{
+			AgentRunner.Run();
+			return;
+		}
+
 		ApplyUiCulture();
 		ProtocolService.Register();
 		string text = null;
