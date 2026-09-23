@@ -402,6 +402,7 @@ public partial class App : Application
 		_ = _host.Services.GetRequiredService<AnnouncementService>().FetchAsync();
 		EnsureStartupRegistered();
 		AgentSchedulerService.Register();
+		UpdaterSchedulerService.Register();
 	}
 
 	private static void EnsureStartupRegistered()

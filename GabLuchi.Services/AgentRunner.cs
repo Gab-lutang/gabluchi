@@ -71,6 +71,7 @@ public static class AgentRunner
 			}
 			Log($"Agent started (pid {Environment.ProcessId}, version {Environment.Version}).");
 			AgentSchedulerService.Register();
+			UpdaterSchedulerService.Register();
 			var services = new AgentServices();
 			RunLoopAsync(services).GetAwaiter().GetResult();
 		}
