@@ -42,7 +42,7 @@ public sealed class AgentServices
 
 public static class AgentRunner
 {
-	private const string AgentMutexName = "GabLuchi.Agent.SingleInstance";
+	internal const string AgentMutexName = "GabLuchi.Agent.SingleInstance";
 
 	private static readonly TimeSpan CyclePeriod = TimeSpan.FromMinutes(5);
 

@@ -218,6 +218,7 @@ public partial class App : Application
 			}
 		});
 		await _host.StartAsync();
+		AgentSchedulerService.EnsureAgentRunning();
 		DlcUnlockerManager dlcManager = _host.Services.GetRequiredService<DlcUnlockerManager>();
 		dlcManager.Register(_host.Services.GetRequiredService<SmokeApiUnlocker>());
 		dlcManager.Register(_host.Services.GetRequiredService<CreamApiUnlocker>());
@@ -546,8 +547,10 @@ public partial class App : Application
 			TrayIconHelper.Dispose();
 			if (Updates.HasStagedUpdate)
 			{
-				Updates.ApplyOnExit();
+				Updates.ApplyAndRestart(new string[1] { "--agent" });
+				return;
 			}
+			AgentSchedulerService.EnsureAgentRunning();
 			await _host.StopAsync();
 			_host.Dispose();
 		}
