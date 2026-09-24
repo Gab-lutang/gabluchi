@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>GabLuchiUpdater</AssemblyName>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <LangVersion>latest</LangVersion>
     <RootNamespace>GabLuchiUpdater</RootNamespace>
-    <Version>1.4.5</Version>
-    <AssemblyVersion>1.4.5.0</AssemblyVersion>
-    <FileVersion>1.4.5.0</FileVersion>
+    <Version>1.4.6</Version>
+    <AssemblyVersion>1.4.6.0</AssemblyVersion>
+    <FileVersion>1.4.6.0</FileVersion>
     <ApplicationManifest>..\GabLuchi\app.manifest</ApplicationManifest>
     <GabLuchiRuntimeDir>$(LOCALAPPDATA)\GabLuchi\current</GabLuchiRuntimeDir>
   </PropertyGroup>
