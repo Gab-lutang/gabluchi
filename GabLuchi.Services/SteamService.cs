@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
@@ -68,6 +69,75 @@ public class SteamService(SettingsService settings)
 			}
 			return Path.Combine(effectivePath, "config", "lua");
 		}
+	}
+
+	public string? PlugInDir
+	{
+		get
+		{
+			string effectivePath = EffectivePath;
+			if (effectivePath == null)
+			{
+				return null;
+			}
+			return Path.Combine(effectivePath, "config", "stplug-in");
+		}
+	}
+
+	public string? AppCacheDir
+	{
+		get
+		{
+			string effectivePath = EffectivePath;
+			if (effectivePath == null)
+			{
+				return null;
+			}
+			return Path.Combine(effectivePath, "appcache");
+		}
+	}
+
+	public string? AppCacheLibraryCacheDir
+	{
+		get
+		{
+			string effectivePath = EffectivePath;
+			if (effectivePath == null)
+			{
+				return null;
+			}
+			return Path.Combine(effectivePath, "appcache", "librarycache");
+		}
+	}
+
+	public List<string> GetUserDataConfigDirs()
+	{
+		List<string> configs = new List<string>();
+		string effectivePath = EffectivePath;
+		if (effectivePath == null)
+		{
+			return configs;
+		}
+		string userDataRoot = Path.Combine(effectivePath, "userdata");
+		if (!Directory.Exists(userDataRoot))
+		{
+			return configs;
+		}
+		try
+		{
+			foreach (string userDir in Directory.GetDirectories(userDataRoot))
+			{
+				string cfg = Path.Combine(userDir, "config");
+				if (Directory.Exists(cfg))
+				{
+					configs.Add(cfg);
+				}
+			}
+		}
+		catch
+		{
+		}
+		return configs;
 	}
 
 	public string? DepotCacheDir
