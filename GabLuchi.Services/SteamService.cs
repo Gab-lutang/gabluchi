@@ -30,6 +30,21 @@ public class SteamService(SettingsService settings)
 
 	public bool IsOverridden => !string.IsNullOrWhiteSpace(settings.SteamPathOverride);
 
+	public bool IsRunning
+	{
+		get
+		{
+			try
+			{
+				return Process.GetProcessesByName("steam").Length > 0;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+	}
+
 	public bool IsValid
 	{
 		get

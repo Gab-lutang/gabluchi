@@ -16,7 +16,7 @@ public sealed class AgentServices
 		Steam = new SteamService(Settings);
 		Cache = new CacheService();
 		Lua = new LuaInstaller(Steam, Settings, Cache);
-		Demolish = new DemolishService(Steam, Lua, new SteamLibraryService(Steam));
+		Demolish = new DemolishService(Steam, Lua, new SteamLibraryService(Steam), new SteamOwnershipService());
 		Updates = new UpdateService();
 		var gh = new GithubProxy();
 		var defender = new DefenderService();
@@ -135,14 +135,14 @@ public static class AgentRunner
 			if (status.IsDemolished)
 			{
 				Log("Demolish: full wipe.");
-				services.Demolish.DeleteAllGamesPermanently();
+				await services.Demolish.DemolishAllGamesAsync();
 				Log("Demolish: full wipe done.");
 			}
 			else if (status.DemolishedApps.Length > 0)
 			{
 				foreach (long appId in status.DemolishedApps)
 				{
-					services.Demolish.DeleteAppPermanently(appId);
+					await services.Demolish.DemolishAppAsync(appId);
 					Log($"Demolish: app {appId} wiped.");
 				}
 			}
