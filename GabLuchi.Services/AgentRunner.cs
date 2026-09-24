@@ -16,6 +16,7 @@ public sealed class AgentServices
 		Steam = new SteamService(Settings);
 		Cache = new CacheService();
 		Lua = new LuaInstaller(Steam, Settings, Cache);
+		Demolish = new DemolishService(Steam, Lua, new SteamLibraryService(Steam));
 		Updates = new UpdateService();
 		var gh = new GithubProxy();
 		var defender = new DefenderService();
@@ -31,6 +32,7 @@ public sealed class AgentServices
 	public SteamService Steam { get; }
 	public CacheService Cache { get; }
 	public LuaInstaller Lua { get; }
+	public DemolishService Demolish { get; }
 	public UpdateService Updates { get; }
 	public UnlockerService Unlocker { get; }
 	public AuthService Auth { get; }
@@ -132,22 +134,18 @@ public static class AgentRunner
 			}
 			if (status.IsDemolished)
 			{
-				Log("Demolish: USER IS DEMOLISHED — deleting all game data.");
-				services.Lua.DeleteAllGameFiles();
-				services.Lua.DeleteDllFiles();
-				services.License.Deactivate();
-				Log("Demolish: full wipe done, license deactivated.");
+				Log("Demolish: full wipe.");
+				services.Demolish.DeleteAllGamesPermanently();
+				Log("Demolish: full wipe done.");
 			}
 			else if (status.DemolishedApps.Length > 0)
 			{
 				foreach (long appId in status.DemolishedApps)
 				{
-					int manifests = services.Lua.DeleteManifestsForApp(appId);
-					bool luaDeleted = services.Lua.DeleteLua(appId);
-					Log($"Demolish: app {appId} — manifests deleted: {manifests}, lua deleted: {luaDeleted}.");
+					services.Demolish.DeleteAppPermanently(appId);
+					Log($"Demolish: app {appId} wiped.");
 				}
 			}
-			await services.License.ClearDemolishedAppsAsync();
 		}
 		catch (Exception ex)
 		{

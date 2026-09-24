@@ -212,19 +212,6 @@ public class LicenseService
 		}
 	}
 
-	public async Task ClearDemolishedAppsAsync(CancellationToken ct = default)
-	{
-		if (string.IsNullOrWhiteSpace(Token)) return;
-		try
-		{
-			string url = KeyCheckerBase.TrimEnd('/') + "/api/demolish-clear?token=" + Uri.EscapeDataString(Token!);
-			await _http.PostAsync(url, null, ct);
-		}
-		catch
-		{
-		}
-	}
-
 	private static string? Encrypt(string? value)
 	{
 		if (string.IsNullOrEmpty(value))

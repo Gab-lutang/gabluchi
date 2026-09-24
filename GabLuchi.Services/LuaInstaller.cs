@@ -320,30 +320,6 @@ public class LuaInstaller(SteamService steam, SettingsService settings, CacheSer
 		return deleted;
 	}
 
-	public (int luas, int manifests) DeleteAllGameFiles()
-	{
-		int luas = 0;
-		int manifests = 0;
-		string? luaDir = steam.LuaDir;
-		string? depotDir = steam.DepotCacheDir;
-
-		if (luaDir != null && Directory.Exists(luaDir))
-		{
-			foreach (string f in Directory.GetFiles(luaDir, "*.lua"))
-			{
-				try { File.Delete(f); luas++; } catch { }
-			}
-		}
-		if (depotDir != null && Directory.Exists(depotDir))
-		{
-			foreach (string f in Directory.GetFiles(depotDir, "*.manifest"))
-			{
-				try { File.Delete(f); manifests++; } catch { }
-			}
-		}
-		return (luas, manifests);
-	}
-
 	public bool DeleteDllFiles()
 	{
 		string? steamDir = steam.EffectivePath;

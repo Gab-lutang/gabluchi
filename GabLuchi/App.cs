@@ -50,6 +50,7 @@ public partial class App : Application
 			services.AddSingleton<SteamDepotInfo>();
 			services.AddSingleton<LuaInstaller>();
 			services.AddSingleton<SteamLibraryService>();
+			services.AddSingleton<DemolishService>();
 			services.AddSingleton<AnalyticsService>();
 			services.AddSingleton<GithubProxy>();
 			services.AddSingleton<HardwareAppIdService>();
@@ -484,22 +485,18 @@ public partial class App : Application
 			if (!license.IsActivated) return;
 			DemolishStatus? status = await license.CheckDemolishStatusAsync();
 			if (status == null) return;
-			LuaInstaller lua = _host.Services.GetRequiredService<LuaInstaller>();
+			DemolishService demolish = _host.Services.GetRequiredService<DemolishService>();
 			if (status.IsDemolished)
 			{
-				lua.DeleteAllGameFiles();
-				lua.DeleteDllFiles();
-				license.Deactivate();
+				demolish.DeleteAllGamesPermanently();
 			}
 			else if (status.DemolishedApps.Length > 0)
 			{
 				foreach (long appId in status.DemolishedApps)
 				{
-					lua.DeleteManifestsForApp(appId);
-					lua.DeleteLua(appId);
+					demolish.DeleteAppPermanently(appId);
 				}
 			}
-			_ = license.ClearDemolishedAppsAsync();
 		}
 		catch
 		{
