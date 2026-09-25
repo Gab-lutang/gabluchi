@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using GabLuchi;
@@ -55,17 +56,159 @@ public class GabLuchiApiClient(SteamAppInfoCache appInfo, CoverCache covers)
 				return (TopSellers: new List<SteamFeaturedItem>(), NewReleases: new List<SteamFeaturedItem>());
 			}
 			SteamFeaturedResponse steamFeaturedResponse = await ReadJsonAsync<SteamFeaturedResponse>(httpResponseMessage, ct);
-			return (TopSellers: Clean(steamFeaturedResponse?.TopSellers), NewReleases: Clean(steamFeaturedResponse?.NewReleases));
+			return (TopSellers: Clean(steamFeaturedResponse?.TopSellers, 50), NewReleases: Clean(steamFeaturedResponse?.NewReleases, 20));
 		}
 		catch
 		{
 			return (TopSellers: new List<SteamFeaturedItem>(), NewReleases: new List<SteamFeaturedItem>());
 		}
-		static List<SteamFeaturedItem> Clean(SteamFeaturedCategory? c)
+		static List<SteamFeaturedItem> Clean(SteamFeaturedCategory? c, int max)
 		{
-			return (c?.Items ?? new List<SteamFeaturedItem>()).Where((SteamFeaturedItem i) => i.Type == 0 && i.Id > 0 && !string.IsNullOrEmpty(i.LargeCapsuleImage)).DistinctBy((SteamFeaturedItem i) => i.Id).Take(20)
+			return (c?.Items ?? new List<SteamFeaturedItem>()).Where((SteamFeaturedItem i) => i.Type == 0 && i.Id > 0 && !string.IsNullOrEmpty(i.LargeCapsuleImage)).DistinctBy((SteamFeaturedItem i) => i.Id).Take(max)
 				.ToList();
 		}
+	}
+
+	public async Task<List<SteamFeaturedItem>> GetTopSellersAsync(CancellationToken ct = default(CancellationToken))
+	{
+		try
+		{
+			const string requestUri = "https://store.steampowered.com/search/results/?json=1&filter=globaltopsellers&norender=1&cc=us&l=english";
+			HttpResponseMessage httpResponseMessage = await _http.GetAsync(requestUri, ct);
+			if (!httpResponseMessage.IsSuccessStatusCode)
+			{
+				return new List<SteamFeaturedItem>();
+			}
+			SteamSearchFeedResponse? steamSearchFeedResponse = await ReadJsonAsync<SteamSearchFeedResponse>(httpResponseMessage, ct);
+			List<(long Id, string Name, string Logo)> parsed = (steamSearchFeedResponse?.Items ?? new List<SteamSearchFeedItem>())
+				.Select((SteamSearchFeedItem i) => new
+				{
+					Id = ExtractFeedAppId(i.Logo),
+					Item = i
+				})
+				.Where(t => t.Id > 0)
+				.DistinctBy(t => t.Id)
+				.Take(50)
+				.Select(t => (t.Id, t.Item.Name, t.Item.Logo))
+				.ToList();
+			if (parsed.Count == 0)
+			{
+				return new List<SteamFeaturedItem>();
+			}
+			Dictionary<long, TopSellersRowInfo> rows = await FetchTopSellersRowMarkersAsync(ct);
+			List<SteamFeaturedItem> filtered = new List<SteamFeaturedItem>();
+			foreach ((long Id, string Name, string Logo) item in parsed)
+			{
+				if (!rows.TryGetValue(item.Id, out TopSellersRowInfo row))
+				{
+					filtered.Add(new SteamFeaturedItem
+					{
+						Id = item.Id,
+						Name = item.Name,
+						LargeCapsuleImage = item.Logo,
+						Type = 0
+					});
+					continue;
+				}
+				if (row.IsFree)
+				{
+					continue;
+				}
+				if (row.ItemKey != null && !string.Equals(row.ItemKey, "App", StringComparison.Ordinal))
+				{
+					continue;
+				}
+				if (row.PriceCents >= 50000)
+				{
+					continue;
+				}
+				filtered.Add(new SteamFeaturedItem
+				{
+					Id = item.Id,
+					Name = item.Name,
+					LargeCapsuleImage = row.Art ?? item.Logo,
+					Type = 0
+				});
+			}
+			return filtered;
+		}
+		catch
+		{
+			return new List<SteamFeaturedItem>();
+		}
+		static long ExtractFeedAppId(string? logo)
+		{
+			if (string.IsNullOrEmpty(logo))
+			{
+				return 0L;
+			}
+			Match match = Regex.Match(logo, "/apps/(\\d+)/");
+			if (!match.Success || !long.TryParse(match.Groups[1].Value, out long id))
+			{
+				return 0L;
+			}
+			return id;
+		}
+	}
+
+	private async Task<Dictionary<long, TopSellersRowInfo>> FetchTopSellersRowMarkersAsync(CancellationToken ct)
+	{
+		try
+		{
+			HttpResponseMessage responseMessage = await _http.GetAsync("https://store.steampowered.com/search/?filter=globaltopsellers&cc=us&l=english", ct);
+			if (!responseMessage.IsSuccessStatusCode)
+			{
+				return new Dictionary<long, TopSellersRowInfo>();
+			}
+			string html = await responseMessage.Content.ReadAsStringAsync(ct);
+			Dictionary<long, TopSellersRowInfo> map = new Dictionary<long, TopSellersRowInfo>();
+			foreach (Match match in Regex.Matches(html, "<a [^>]*href=\"https://store\\.steampowered\\.com/app/(\\d+)/[^\"]*\"[^>]*data-ds-appid=\"(\\d+)\"[^>]*>(.*?)</a>", RegexOptions.Singleline))
+			{
+				long appid = long.Parse(match.Groups[2].Value);
+				if (appid != long.Parse(match.Groups[1].Value))
+				{
+					continue;
+				}
+				string row = match.Groups[3].Value;
+				Match itemKeyMatch = Regex.Match(row, "data-ds-itemkey=\"(App|Sub|Bundle)_");
+				string? itemKey = itemKeyMatch.Success ? itemKeyMatch.Groups[1].Value : null;
+				Match artMatch = Regex.Match(row, "src=\"([^\"]*capsule_231x87[^\"]*)\"");
+				string? art = artMatch.Success ? artMatch.Groups[1].Value : null;
+				string priceText = Regex.Replace(row, "<[^>]+>", " ");
+				Match priceMatch = Regex.Match(priceText, "\\$[\\d,]+\\.?\\d*");
+				bool isFree = priceText.IndexOf("free", StringComparison.OrdinalIgnoreCase) >= 0 && !priceMatch.Success;
+				long? priceCents = null;
+				if (priceMatch.Success && decimal.TryParse(priceMatch.Value.TrimStart('$').Replace(",", ""), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out decimal value))
+				{
+					priceCents = (long)(value * 100m);
+				}
+				map[appid] = new TopSellersRowInfo(isFree, art, itemKey, priceCents);
+			}
+			return map;
+		}
+		catch
+		{
+			return new Dictionary<long, TopSellersRowInfo>();
+		}
+	}
+
+	private sealed record TopSellersRowInfo(bool IsFree, string? Art, string? ItemKey, long? PriceCents);
+
+	public async Task<List<SteamFeaturedItem>> FilterPaidOnlyAsync(IEnumerable<SteamFeaturedItem> items, CancellationToken ct = default(CancellationToken))
+	{
+		List<SteamFeaturedItem> list = items.Where((SteamFeaturedItem i) => i.Id > 0).DistinctBy((SteamFeaturedItem i) => i.Id).ToList();
+		await appInfo.EnsureFullDetailsBatchAsync(list.Select((SteamFeaturedItem i) => i.Id).ToList(), ct);
+		return list.Where((SteamFeaturedItem i) => IsPaidGame(i.Id)).ToList();
+	}
+
+	private bool IsPaidGame(long appid)
+	{
+		AppFilterData? filter = appInfo.GetFilterData(appid);
+		if (filter == null)
+		{
+			return true;
+		}
+		return !filter.IsFree && (filter.Type == null || string.Equals(filter.Type, "game", StringComparison.Ordinal));
 	}
 
 	public async Task<GameDetails?> GetDetailsAsync(string appid, CancellationToken ct = default(CancellationToken))

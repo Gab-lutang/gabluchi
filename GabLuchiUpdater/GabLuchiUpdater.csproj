@@ -5,9 +5,14 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <LangVersion>latest</LangVersion>
     <RootNamespace>GabLuchiUpdater</RootNamespace>
-    <Version>1.4.7</Version>
-    <AssemblyVersion>1.4.7.0</AssemblyVersion>
-    <FileVersion>1.4.7.0</FileVersion>
+    <Version>1.4.8</Version>
+    <AssemblyVersion>1.4.8.0</AssemblyVersion>
+    <FileVersion>1.4.8.0</FileVersion>
+    <Company>GabLuchi</Company>
+    <Product>GabLuchiUpdater</Product>
+    <Description>GabLuchi update agent.</Description>
+    <Copyright>Copyright © 2026 GabLuchi</Copyright>
+    <ApplicationIcon>..\app.ico</ApplicationIcon>
     <ApplicationManifest>..\GabLuchi\app.manifest</ApplicationManifest>
     <GabLuchiRuntimeDir>$(LOCALAPPDATA)\GabLuchi\current</GabLuchiRuntimeDir>
   </PropertyGroup>

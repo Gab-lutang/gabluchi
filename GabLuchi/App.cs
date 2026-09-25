@@ -545,11 +545,6 @@ public partial class App : Application
 		try
 		{
 			TrayIconHelper.Dispose();
-			if (Updates.HasStagedUpdate)
-			{
-				Updates.ApplyAndRestart(new string[1] { "--agent" });
-				return;
-			}
 			AgentSchedulerService.EnsureAgentRunning();
 			await _host.StopAsync();
 			_host.Dispose();

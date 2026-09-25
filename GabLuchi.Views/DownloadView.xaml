@@ -33,199 +33,306 @@
           </Control.Template>
         </Button>
       </DataTemplate>
-      <DataTemplate x:Key="FeaturedCardTemplate">
-        <Button Width="190" Margin="0,0,10,0" Padding="0" HorizontalContentAlignment="Stretch" Background="#00FFFFFF" BorderThickness="0" Cursor="Hand" Command="{Binding DataContext.SelectFeaturedCommand, ElementName=Root}" CommandParameter="{Binding}" ToolTip="{Binding Name}">
-          <Control.Template>
-            <ControlTemplate TargetType="{x:Type Button}">
-              <Border Name="Bd" Background="#0DFFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="8">
-                <StackPanel>
-                  <Border CornerRadius="7,7,0,0">
-                    <Image Height="89" Stretch="UniformToFill" Source="{Binding Image}" />
-                  </Border>
-                  <TextBlock Height="34" Margin="8,6,8,8" FontSize="12" Foreground="#d1d5db" TextTrimming="CharacterEllipsis" TextWrapping="Wrap" Text="{Binding Name}" />
-                </StackPanel>
-              </Border>
-              <ControlTemplate.Triggers>
-                <Trigger Property="UIElement.IsMouseOver" Value="True">
-                  <Setter TargetName="Bd" Property="Border.Background" Value="#1AFFFFFF" />
-                  <Setter TargetName="Bd" Property="Border.BorderBrush" Value="#33a78bfa" />
-                </Trigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Control.Template>
-        </Button>
-      </DataTemplate>
     </ResourceDictionary>
   </FrameworkElement.Resources>
   <Grid Name="Root">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <StackPanel MaxWidth="640" Margin="8,16,8,24">
+      <StackPanel MaxWidth="1040" Margin="8,16,8,32" HorizontalAlignment="Center">
         <TextBlock FontSize="22" FontWeight="Bold" Text="{x:Static res:Strings.Add_Title}" />
-        <TextBlock Margin="0,4,0,16" FontSize="13" Foreground="#9ca3af" Text="{x:Static res:Strings.Add_Subtitle}" />
-        <ui:TextBox PlaceholderText="{x:Static res:Strings.Add_SearchPlaceholder}" Icon="{ui:SymbolIcon Search24}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
-        <Border Margin="0,6,0,0" Background="#14141c" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="10" Visibility="{Binding IsResultsOpen, Converter={StaticResource BoolToVis}}">
-          <ItemsControl ItemsSource="{Binding SearchResults}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="#00FFFFFF" BorderThickness="0" Cursor="Hand" Command="{Binding DataContext.SelectResultCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
-                  <Grid Margin="2">
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Border Width="60" Height="28" CornerRadius="4">
-                      <Border.Background>
-                        <ImageBrush Stretch="UniformToFill" ImageSource="{Binding Icon}" />
-                      </Border.Background>
-                    </Border>
-                    <TextBlock Grid.Column="1" Margin="10,0" VerticalAlignment="Center" FontSize="13" TextTrimming="CharacterEllipsis" Text="{Binding Name}" />
-                    <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="11.5" Foreground="#6b7280" Text="{Binding AppId}" />
-                  </Grid>
-                </Button>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </Border>
+        <TextBlock Margin="0,4,0,0" FontSize="13" Foreground="#9ca3af" Text="{x:Static res:Strings.Add_Subtitle}" />
+
+        <ui:TextBox Margin="0,14,0,0" Padding="12,9" PlaceholderText="{x:Static res:Strings.Add_SearchPlaceholder}" Icon="{ui:SymbolIcon Search24}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding HasDetails, Converter={StaticResource InverseBoolToVis}}" />
+
+        <!-- ═══════════════ STOREFRONT ═══════════════ -->
         <StackPanel Margin="0,18,0,0" Visibility="{Binding ShowFeatured, Converter={StaticResource BoolToVis}}">
-          <StackPanel Visibility="{Binding HasTopSellers, Converter={StaticResource BoolToVis}}">
-            <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#d1d5db" Text="{x:Static res:Strings.Add_Featured_TopSellers}" />
-            <ScrollViewer Margin="0,8,0,0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PreviewMouseWheel="FeaturedStrip_PreviewMouseWheel">
-              <ItemsControl ItemTemplate="{StaticResource FeaturedCardTemplate}" ItemsSource="{Binding TopSellers}">
-                <ItemsControl.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
-                  </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-              </ItemsControl>
-            </ScrollViewer>
-          </StackPanel>
-          <StackPanel Margin="0,16,0,0" Visibility="{Binding HasNewReleases, Converter={StaticResource BoolToVis}}">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="340" />
+            </Grid.ColumnDefinitions>
+
+            <!-- spotlight carousel -->
+            <Border Name="SpotlightFrame" Height="248" Background="#16181d" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+              <Grid>
+                <Button Background="#00FFFFFF" BorderThickness="0" Cursor="Hand" Command="{Binding DataContext.SelectFeaturedCommand, ElementName=Root}" CommandParameter="{Binding Spotlight}" ToolTip="{Binding Spotlight.Name}" Visibility="{Binding HasSpotlights, Converter={StaticResource BoolToVis}}">
+                  <Image Stretch="UniformToFill" Source="{Binding Spotlight.Image}" />
+                </Button>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding HasSpotlights, Converter={StaticResource InverseBoolToVis}}">
+                  <ui:SymbolIcon HorizontalAlignment="Center" FontSize="36" Foreground="#4b5563" Symbol="Games24" />
+                  <TextBlock Margin="0,8,0,0" FontSize="12.5" Foreground="#6b7280" Text="STORE FEED" />
+                </StackPanel>
+                <Border VerticalAlignment="Bottom" IsHitTestVisible="False" Visibility="{Binding HasSpotlights, Converter={StaticResource BoolToVis}}">
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                      <GradientStop Offset="0" Color="#00000000" />
+                      <GradientStop Offset="1" Color="#C8000000" />
+                    </LinearGradientBrush>
+                  </Border.Background>
+                  <StackPanel Margin="18,30,18,14">
+                    <TextBlock FontSize="20" FontWeight="Bold" TextTrimming="CharacterEllipsis" Text="{Binding Spotlight.Name}" />
+                  </StackPanel>
+                </Border>
+              </Grid>
+            </Border>
+
+            <!-- right rail -->
+            <Border Grid.Column="1" Padding="14,12" Background="#16181d" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="6">
+              <StackPanel>
+                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#d1d5db" Text="{x:Static res:Strings.Add_Trending}" />
+                <ListBox Margin="0,4,0,0" MaxHeight="214" ItemsSource="{Binding TopSellers}" AlternationCount="100" Background="#00FFFFFF" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingStackPanel.IsVirtualizing="True">
+                  <ListBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListBoxItem}">
+                      <Setter Property="Background" Value="#00FFFFFF" />
+                      <Setter Property="BorderThickness" Value="0" />
+                      <Setter Property="Padding" Value="0" />
+                      <Setter Property="Margin" Value="0" />
+                      <Setter Property="Focusable" Value="False" />
+                      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    </Style>
+                  </ListBox.ItemContainerStyle>
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Button Margin="0,0,0,1" Padding="4,4" HorizontalContentAlignment="Stretch" Background="#08FFFFFF" BorderThickness="0" Cursor="Hand" Command="{Binding DataContext.SelectFeaturedCommand, ElementName=Root}" CommandParameter="{Binding}" ToolTip="{Binding Name}">
+                          <Control.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                              <Border Name="Bd" Padding="{TemplateBinding Control.Padding}" Background="{TemplateBinding Control.Background}" CornerRadius="3">
+                                <Grid>
+                                  <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="22" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                  </Grid.ColumnDefinitions>
+                                  <TextBlock VerticalAlignment="Center" FontSize="11.5" FontWeight="Bold" Foreground="#6b7280" Text="{Binding (ItemsControl.AlternationIndex), RelativeSource={RelativeSource AncestorType=ListBoxItem}, Converter={StaticResource AltIndexPlusOne}}" />
+                                  <Border Grid.Column="1" Width="72" Height="34" CornerRadius="3" ClipToBounds="True">
+                                    <Image Stretch="UniformToFill" Source="{Binding Image}" />
+                                  </Border>
+                                  <TextBlock Grid.Column="2" Margin="9,0,0,0" VerticalAlignment="Center" FontSize="12" Foreground="#d1d5db" TextTrimming="CharacterEllipsis" Text="{Binding Name}" />
+                                </Grid>
+                              </Border>
+                              <ControlTemplate.Triggers>
+                                <Trigger Property="UIElement.IsMouseOver" Value="True">
+                                  <Setter TargetName="Bd" Property="Border.Background" Value="#16FFFFFF" />
+                                </Trigger>
+                              </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                          </Control.Template>
+                        </Button>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </StackPanel>
+            </Border>
+          </Grid>
+
+          <StackPanel Margin="0,18,0,0" Visibility="{Binding HasNewReleases, Converter={StaticResource BoolToVis}}">
             <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#d1d5db" Text="{x:Static res:Strings.Add_Featured_NewReleases}" />
             <ScrollViewer Margin="0,8,0,0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PreviewMouseWheel="FeaturedStrip_PreviewMouseWheel">
-              <ItemsControl ItemTemplate="{StaticResource FeaturedCardTemplate}" ItemsSource="{Binding NewReleases}">
+              <ItemsControl ItemsSource="{Binding NewReleases}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <StackPanel Orientation="Horizontal" />
                   </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Width="190" Margin="0,0,10,0" Padding="0" HorizontalContentAlignment="Stretch" Background="#00FFFFFF" BorderThickness="0" Cursor="Hand" Command="{Binding DataContext.SelectFeaturedCommand, ElementName=Root}" CommandParameter="{Binding}" ToolTip="{Binding Name}">
+                      <Control.Template>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                          <Border Name="Bd" Background="#16181d" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="4">
+                            <StackPanel>
+                              <Border CornerRadius="3,3,0,0" ClipToBounds="True">
+                                <Image Height="89" Stretch="UniformToFill" Source="{Binding Image}" />
+                              </Border>
+                              <TextBlock Height="32" Margin="8,6,8,6" FontSize="12" Foreground="#d1d5db" TextTrimming="CharacterEllipsis" TextWrapping="Wrap" Text="{Binding Name}" />
+                            </StackPanel>
+                          </Border>
+                          <ControlTemplate.Triggers>
+                            <Trigger Property="UIElement.IsMouseOver" Value="True">
+                              <Setter TargetName="Bd" Property="Border.Background" Value="#1a1d23" />
+                              <Setter TargetName="Bd" Property="Border.BorderBrush" Value="#33a78bfa" />
+                            </Trigger>
+                          </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                      </Control.Template>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
               </ItemsControl>
             </ScrollViewer>
           </StackPanel>
         </StackPanel>
-        <Border Margin="0,14,0,0" Background="#0DFFFFFF" BorderBrush="#12FFFFFF" BorderThickness="1" CornerRadius="8" Visibility="{Binding HasDetails, Converter={StaticResource BoolToVis}}">
-          <StackPanel>
-            <Border MaxHeight="180" CornerRadius="8,8,0,0">
-              <Image Stretch="UniformToFill" Source="{Binding Details.HeaderImage}" />
-            </Border>
-            <StackPanel Margin="12,8,12,10">
-              <StackPanel Orientation="Horizontal">
-                <TextBlock FontSize="14.5" FontWeight="SemiBold" Text="{Binding Details.Name}" />
-                <Border Margin="8,0,0,0" Padding="6,1.5" VerticalAlignment="Center" Background="#26a78bfa" BorderBrush="#40a78bfa" BorderThickness="1" CornerRadius="4" Visibility="{Binding Details.IsDlc, Converter={StaticResource BoolToVis}}">
-                  <TextBlock FontSize="10.5" FontWeight="SemiBold" Foreground="#a78bfa" Text="DLC" />
-                </Border>
-              </StackPanel>
-              <TextBlock Margin="0,3,0,0" FontSize="11.5" Foreground="#6b7280">
-                <Run Text="{Binding Details.AppId, Mode=OneWay}" /> <Run Text=" · " /> <Run Text="{Binding GenresText, Mode=OneWay}" /></TextBlock>
-              <TextBlock FontSize="11" Foreground="#4b5563" Text="{Binding Details.ReleaseDate, StringFormat={x:Static res:Strings.Add_Released}}" Visibility="{Binding Details.ReleaseDate, Converter={StaticResource NullToCollapsed}}" />
-            </StackPanel>
-          </StackPanel>
-        </Border>
-        <Grid Margin="0,12,0,0" Visibility="{Binding HasDetails, Converter={StaticResource BoolToVis}}">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-          </Grid.ColumnDefinitions>
-          <StackPanel VerticalAlignment="Center">
-            <TextBlock FontSize="13" FontWeight="Medium" Text="{x:Static res:Strings.Add_FastFetch}" />
-            <TextBlock FontSize="11" Foreground="#6b7280" Text="{x:Static res:Strings.Add_FastFetch_Hint}" />
-          </StackPanel>
-          <ui:ToggleSwitch Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding FastFetch, Mode=TwoWay}" />
-        </Grid>
-        <ui:Button Margin="0,14,0,0" HorizontalAlignment="Stretch" Appearance="Primary" Command="{Binding FetchCommand}" Icon="{ui:SymbolIcon ArrowDownload24}" Visibility="{Binding HasDetails, Converter={StaticResource BoolToVis}}">
-          <ContentControl.Content>
-            <Grid>
-              <TextBlock Text="{x:Static res:Strings.Add_Fetch}" Visibility="{Binding IsChecking, Converter={StaticResource InverseBoolToVis}}" />
-              <TextBlock Text="{x:Static res:Strings.Add_Checking}" Visibility="{Binding IsChecking, Converter={StaticResource BoolToVis}}" />
-            </Grid>
-          </ContentControl.Content>
-        </ui:Button>
-        <TextBlock Margin="0,12,0,0" FontSize="13" Foreground="#f87171" TextWrapping="Wrap" Text="{Binding Error}" Visibility="{Binding Error, Converter={StaticResource NullToCollapsed}}" />
-        <Border Margin="0,12,0,0" Padding="12,9" CornerRadius="8" Visibility="{Binding HasInstallResult, Converter={StaticResource BoolToVis}}">
-          <FrameworkElement.Style>
-            <Style TargetType="{x:Type Border}">
-              <Setter Property="Background" Value="#1422c55e" />
-              <Setter Property="BorderBrush" Value="#4022c55e" />
-              <Setter Property="BorderThickness" Value="1" />
-              <Style.Triggers>
-                <DataTrigger Value="True" Binding="{Binding InstallFailed}">
-                  <Setter Property="Background" Value="#14f0a868" />
-                  <Setter Property="BorderBrush" Value="#40f0a868" />
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </FrameworkElement.Style>
+
+        <!-- ═══════════════ SEARCH RESULTS ═══════════════ -->
+        <StackPanel Margin="0,14,0,0" Visibility="{Binding IsResultsOpen, Converter={StaticResource BoolToVis}}">
           <Grid>
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ui:SymbolIcon VerticalAlignment="Center">
-              <FrameworkElement.Style>
-                <Style TargetType="{x:Type ui:SymbolIcon}">
-                  <Setter Property="ui:IconElement.Foreground" Value="#22c55e" />
-                  <Setter Property="ui:SymbolIcon.Symbol" Value="CheckmarkCircle24" />
-                  <Style.Triggers>
-                    <DataTrigger Value="True" Binding="{Binding InstallFailed}">
-                      <Setter Property="ui:IconElement.Foreground" Value="#f0a868" />
-                      <Setter Property="ui:SymbolIcon.Symbol" Value="Warning24" />
-                    </DataTrigger>
-                  </Style.Triggers>
-                </Style>
-              </FrameworkElement.Style>
-            </ui:SymbolIcon>
-            <TextBlock Grid.Column="1" Margin="10,0" VerticalAlignment="Center" FontSize="13" TextWrapping="Wrap" Text="{Binding InstallStatus}" />
-            <ui:Button Grid.Column="2" Content="{x:Static res:Strings.Add_Reveal}" Command="{Binding RevealInstalledCommand}" Icon="{ui:SymbolIcon FolderOpen24}" Visibility="{Binding InstallFailed, Converter={StaticResource InverseBoolToVis}}" />
+            <TextBlock VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold" Foreground="#d1d5db" Text="{Binding ResultsCountText}" />
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
+              <TextBlock FontSize="11" Foreground="#6b7280" Text="Relevance" />
+              <TextBlock Margin="10,0" FontSize="11" Foreground="#374151" Text="·" />
+              <TextBlock FontSize="11" Foreground="#6b7280" Text="Name" />
+              <TextBlock Margin="10,0" FontSize="11" Foreground="#374151" Text="·" />
+              <TextBlock FontSize="11" Foreground="#6b7280" Text="Release" />
+            </StackPanel>
           </Grid>
-        </Border>
-        <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding Sources}" Visibility="{Binding HasSources, Converter={StaticResource BoolToVis}}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <Border Margin="0,0,0,8" Padding="12,9" Background="#08FFFFFF" BorderBrush="#12FFFFFF" BorderThickness="1" CornerRadius="8">
-                <StackPanel>
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                      <TextBlock FontSize="13.5" FontWeight="Medium" Text="{Binding DisplayName}" />
-                      <ui:SymbolIcon Margin="6,0,0,0" FontSize="15" Foreground="#eab308" Symbol="Key24" ToolTip="{x:Static res:Strings.Add_RequiresOwnKey}" Visibility="{Binding NeedsKey, Converter={StaticResource BoolToVis}}" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center" Orientation="Horizontal">
-                      <Border Padding="6,2" Background="#1422c55e" BorderBrush="#3022c55e" BorderThickness="1" CornerRadius="4" Visibility="{Binding StatsText, Converter={StaticResource NullToCollapsed}}">
-                        <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#22c55e" Text="{Binding StatsText}" />
+          <ItemsControl Margin="0,6,0,0" ItemsSource="{Binding SearchCards}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button Padding="12,11" HorizontalContentAlignment="Stretch" Background="#00FFFFFF" BorderThickness="0" Cursor="Hand" Command="{Binding DataContext.SelectResultCommand, ElementName=Root}" CommandParameter="{Binding}">
+                  <Control.Template>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                      <Border Name="Bd" Padding="{TemplateBinding Control.Padding}" Background="{TemplateBinding Control.Background}" BorderBrush="#1a1d24" BorderThickness="0,0,0,1">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                          </Grid.ColumnDefinitions>
+                          <Border Width="200" Height="92" CornerRadius="3" ClipToBounds="True">
+                            <Grid>
+                              <Border Background="#12151a" />
+                              <ui:SymbolIcon HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="#4b5563" Symbol="Games24" Visibility="{Binding HasCover, Converter={StaticResource InverseBoolToVis}}" />
+                              <Image Stretch="UniformToFill" Source="{Binding Cover}" Visibility="{Binding HasCover, Converter={StaticResource BoolToVis}}" />
+                            </Grid>
+                          </Border>
+                          <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
+                            <TextBlock FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Text="{Binding Name}" />
+                            <TextBlock Margin="0,4,0,0" FontSize="11.5" Foreground="#6b7280" Text="{Binding AppId}" />
+                          </StackPanel>
+                        </Grid>
                       </Border>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="UIElement.IsMouseOver" Value="True">
+                          <Setter TargetName="Bd" Property="Border.Background" Value="#0AFFFFFF" />
+                          <Setter TargetName="Bd" Property="Border.BorderBrush" Value="#2ea78bfa" />
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Control.Template>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
 
+        <StackPanel Margin="0,28,0,0" Visibility="{Binding ShowNoResults, Converter={StaticResource BoolToVis}}">
+          <ui:SymbolIcon HorizontalAlignment="Center" FontSize="34" Foreground="#4b5563" Symbol="Search24" />
+          <TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" FontSize="13" Foreground="#9ca3af" Text="{Binding NoResultsText}" />
+        </StackPanel>
+
+        <!-- ═══════════════ APP PAGE ═══════════════ -->
+        <StackPanel Margin="0,8,0,0" Visibility="{Binding HasDetails, Converter={StaticResource BoolToVis}}">
+          <ui:Button HorizontalAlignment="Left" Padding="10,5" Content="{x:Static res:Strings.Add_Back}" Command="{Binding BackToResultsCommand}" Icon="{ui:SymbolIcon ChevronLeft24}" />
+          <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="280" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Margin="0,0,14,0">
+              <Border Height="240" Background="#16181d" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+                <Grid>
+                  <Image Stretch="UniformToFill" Source="{Binding Details.HeaderImage}" />
+                  <Border VerticalAlignment="Bottom">
+                    <Border.Background>
+                      <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Offset="0" Color="#00000000" />
+                        <GradientStop Offset="1" Color="#E6000000" />
+                      </LinearGradientBrush>
+                    </Border.Background>
+                    <StackPanel Margin="20,40,20,16">
+                      <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="26" FontWeight="Bold" TextTrimming="CharacterEllipsis" Text="{Binding Details.Name}" />
+                        <Border Margin="10,0,0,0" Padding="7,2" VerticalAlignment="Center" Background="#26a78bfa" BorderBrush="#40a78bfa" BorderThickness="1" CornerRadius="4" Visibility="{Binding Details.IsDlc, Converter={StaticResource BoolToVis}}">
+                          <TextBlock FontSize="10.5" FontWeight="SemiBold" Foreground="#a78bfa" Text="DLC" />
+                        </Border>
+                      </StackPanel>
+                      <TextBlock Margin="0,5,0,0" FontSize="12" Foreground="#94a3b8">
+                        <Run Text="{Binding Details.AppId, Mode=OneWay}" /> <Run Text=" · " /> <Run Text="{Binding GenresText, Mode=OneWay}" />
+                      </TextBlock>
                     </StackPanel>
-                    <Border Grid.Column="2" Margin="0,0,8,0" Padding="6,2" VerticalAlignment="Center" BorderThickness="1" CornerRadius="4" Visibility="{Binding ShowStatus, Converter={StaticResource BoolToVis}}" BorderBrush="{Binding Converter={StaticResource StatusToBrush}, Path=Status}">
-                      <TextBlock FontSize="10.5" FontWeight="SemiBold" Foreground="{Binding Status, Converter={StaticResource StatusToBrush}}" Text="{Binding StatusLabel}" />
-                    </Border>
-                    <ui:Button Grid.Column="3" Margin="0,0,8,0" Padding="8,5" Content="{x:Static res:Strings.Add_Discord}" FontSize="11.5" ToolTip="{x:Static res:Strings.Add_JoinDiscord}" Command="{Binding OpenDiscordCommand}" Visibility="{Binding DiscordUrl, Converter={StaticResource NullToCollapsed}}" />
-                    <ui:Button Grid.Column="4" Appearance="Primary" Content="{x:Static res:Strings.Add_Download}" Command="{Binding DownloadCommand}" Icon="{ui:SymbolIcon ArrowDownload24}" Visibility="{Binding CanDownload, Converter={StaticResource BoolToVis}}" />
-                    <TextBlock Grid.Column="4" VerticalAlignment="Center" FontSize="11.5" Foreground="#a78bfa" Text="{x:Static res:Strings.Add_NeedsHubcapKey}" ToolTip="{x:Static res:Strings.Add_NeedsHubcapKey_Tip}" Visibility="{Binding IsLocked, Converter={StaticResource BoolToVis}}" />
-                  </Grid>
-                  <ProgressBar Margin="0,8,0,0" Maximum="100" IsIndeterminate="{Binding IsProgressIndeterminate}" Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVis}}" Value="{Binding Progress, Mode=OneWay}" />
+                  </Border>
+                </Grid>
+              </Border>
+              <Border Margin="0,12,0,0" Padding="16,13" Background="#16181d" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="6">
+                <StackPanel>
+                  <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#d1d5db" Text="{x:Static res:Strings.Add_About}" />
+                  <TextBlock Margin="0,8,0,0" FontSize="12.5" Foreground="#e5e7eb" TextWrapping="Wrap" Text="{Binding GenresText}" Visibility="{Binding GenresText, Converter={StaticResource NullToCollapsed}}" />
+                  <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#94a3b8" Text="{Binding Details.ReleaseDate, StringFormat={x:Static res:Strings.Add_Released}}" Visibility="{Binding Details.ReleaseDate, Converter={StaticResource NullToCollapsed}}" />
                 </StackPanel>
               </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+            </StackPanel>
 
+            <!-- install rail -->
+            <Border Grid.Column="1" Padding="16" Background="#16181d" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="6">
+              <StackPanel>
+                <TextBlock FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Text="{Binding Details.Name}" />
+                <TextBlock Margin="0,2,0,0" FontSize="11" Foreground="#6b7280">
+                  <Run Text="{Binding Details.AppId, Mode=OneWay}" /> <Run Text=" · " /> <Run Text="{Binding GenresText, Mode=OneWay}" />
+                </TextBlock>
+                <Border Margin="0,12,0,0" Padding="5,1.5" HorizontalAlignment="Left" Background="#22a78bfa">
+                  <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                      <Setter Property="CornerRadius" Value="3" />
+                    </Style>
+                  </Border.Style>
+                  <TextBlock FontSize="10" FontWeight="SemiBold" Foreground="#a78bfa" Text="{x:Static res:Strings.Add_FastFetch}" />
+                </Border>
+                <ui:Button Margin="0,10,0,0" HorizontalAlignment="Stretch" Appearance="Primary" Command="{Binding FetchCommand}" Icon="{ui:SymbolIcon ArrowDownload24}">
+                  <ContentControl.Content>
+                    <Grid>
+                      <TextBlock Text="{x:Static res:Strings.Add_Install}" Visibility="{Binding IsChecking, Converter={StaticResource InverseBoolToVis}}" />
+                      <TextBlock Text="{x:Static res:Strings.Add_Checking}" Visibility="{Binding IsChecking, Converter={StaticResource BoolToVis}}" />
+                    </Grid>
+                  </ContentControl.Content>
+                </ui:Button>
+                <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="#6b7280" TextWrapping="Wrap" Text="{x:Static res:Strings.Add_FastFetch_Hint}" />
+                <ProgressBar Margin="0,12,0,0" Height="4" Maximum="100" IsIndeterminate="{Binding ActiveSource.IsProgressIndeterminate}" Value="{Binding ActiveSource.Progress, Mode=OneWay}" Visibility="{Binding HasActiveSource, Converter={StaticResource BoolToVis}}" />
+                <TextBlock Margin="0,10,0,0" FontSize="12.5" Foreground="#f87171" TextWrapping="Wrap" Text="{Binding Error}" Visibility="{Binding Error, Converter={StaticResource NullToCollapsed}}" />
+                <Border Margin="0,10,0,0" Padding="10,8" CornerRadius="4" Visibility="{Binding HasInstallResult, Converter={StaticResource BoolToVis}}">
+                  <FrameworkElement.Style>
+                    <Style TargetType="{x:Type Border}">
+                      <Setter Property="Background" Value="#1422c55e" />
+                      <Setter Property="BorderBrush" Value="#4022c55e" />
+                      <Setter Property="BorderThickness" Value="1" />
+                      <Style.Triggers>
+                        <DataTrigger Value="True" Binding="{Binding InstallFailed}">
+                          <Setter Property="Background" Value="#14f0a868" />
+                          <Setter Property="BorderBrush" Value="#40f0a868" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </FrameworkElement.Style>
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:SymbolIcon VerticalAlignment="Center">
+                      <FrameworkElement.Style>
+                        <Style TargetType="{x:Type ui:SymbolIcon}">
+                          <Setter Property="ui:IconElement.Foreground" Value="#22c55e" />
+                          <Setter Property="ui:SymbolIcon.Symbol" Value="CheckmarkCircle24" />
+                          <Style.Triggers>
+                            <DataTrigger Value="True" Binding="{Binding InstallFailed}">
+                              <Setter Property="ui:IconElement.Foreground" Value="#f0a868" />
+                              <Setter Property="ui:SymbolIcon.Symbol" Value="Warning24" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </FrameworkElement.Style>
+                    </ui:SymbolIcon>
+                    <TextBlock Grid.Column="1" Margin="8,0" VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap" Text="{Binding InstallStatus}" />
+                    <ui:Button Grid.Column="2" Content="{x:Static res:Strings.Add_Reveal}" Command="{Binding RevealInstalledCommand}" Icon="{ui:SymbolIcon FolderOpen24}" Visibility="{Binding InstallFailed, Converter={StaticResource InverseBoolToVis}}" />
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+          </Grid>
+        </StackPanel>
       </StackPanel>
     </ScrollViewer>
     <Grid Background="#99000000" Visibility="{Binding IsConfirmingOverwrite, Converter={StaticResource BoolToVis}}">

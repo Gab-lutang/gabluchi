@@ -7,9 +7,13 @@
     <UseWPF>True</UseWPF>
     <UseWindowsForms>True</UseWindowsForms>
     <TargetFramework>net8.0-windows</TargetFramework>
-<Version>1.4.7</Version>
-  <AssemblyVersion>1.4.7.0</AssemblyVersion>
-  <FileVersion>1.4.7.0</FileVersion>
+    <Company>GabLuchi</Company>
+    <Product>GabLuchi</Product>
+    <Description>GabLuchi — Steam unlock and library companion.</Description>
+    <Copyright>Copyright © 2026 GabLuchi</Copyright>
+<Version>1.4.8</Version>
+  <AssemblyVersion>1.4.8.0</AssemblyVersion>
+  <FileVersion>1.4.8.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>

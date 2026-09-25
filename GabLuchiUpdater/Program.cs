@@ -32,19 +32,6 @@ public static class Program
 		return args != null && args.Any(a => a.Equals(name, StringComparison.OrdinalIgnoreCase));
 	}
 
-	private static bool IsGuiRunning()
-	{
-		try
-		{
-			int self = Environment.ProcessId;
-			return Process.GetProcessesByName("GabLuchi").Any(p => p.Id != self);
-		}
-		catch
-		{
-			return false;
-		}
-	}
-
 	private static async Task RunUpdateCheckAsync()
 	{
 		try
@@ -57,13 +44,7 @@ public static class Program
 				Log("No update staged.");
 				return;
 			}
-			if (IsGuiRunning())
-			{
-				Log("GUI is open — update staged, GUI applies on exit.");
-				return;
-			}
-			Log("GUI is closed — applying update silently.");
-			updates.ApplyAndRestart(new[] { "--ua", "/installsource", "scheduler" });
+			Log("Update staged — apply is command-only; GUI/agent applies when commanded.");
 		}
 		catch (Exception ex)
 		{

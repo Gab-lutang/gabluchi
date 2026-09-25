@@ -44,6 +44,8 @@ public class DownloadViewModel : ObservableObject
 
 	private readonly UsageService _usage;
 
+	private readonly CoverCache _covers;
+
 	private CancellationTokenSource? _searchCts;
 
 	private CancellationTokenSource? _detailsCts;
@@ -134,8 +136,123 @@ public class DownloadViewModel : ObservableObject
 
 	private const string HubcapSourceName = "Sadie (Morrenus)";
 
+	private SourceRowViewModel? _activeSource;
+
+	public SourceRowViewModel? ActiveSource
+	{
+		get
+		{
+			return _activeSource;
+		}
+		private set
+		{
+			if (_activeSource == value)
+			{
+				return;
+			}
+			_activeSource = value;
+			OnPropertyChanged(nameof(ActiveSource));
+			OnPropertyChanged(nameof(HasActiveSource));
+		}
+	}
+
+	public bool HasActiveSource => ActiveSource != null;
+
+	private int _spotlightIndex;
+
+	private IRelayCommand? spotlightNextCommand;
+
+	private IRelayCommand? spotlightPrevCommand;
+
+	private IRelayCommand? backToResultsCommand;
+
+	public ObservableCollection<FeaturedItem> Spotlights { get; } = new ObservableCollection<FeaturedItem>();
+
+	public bool HasSpotlights => Spotlights.Count > 0;
+
+	public FeaturedItem? Spotlight
+	{
+		get
+		{
+			if (Spotlights.Count == 0)
+			{
+				return null;
+			}
+			return Spotlights[Math.Max(0, Math.Min(SpotlightIndex, Spotlights.Count - 1))];
+		}
+	}
+
+	public string SpotlightLabel
+	{
+		get
+		{
+			if (Spotlights.Count == 0)
+			{
+				return "";
+			}
+			return $"{SpotlightIndex + 1} / {Spotlights.Count}";
+		}
+	}
+
+	public int SpotlightIndex
+	{
+		get
+		{
+			return _spotlightIndex;
+		}
+		private set
+		{
+			if (_spotlightIndex == value)
+			{
+				return;
+			}
+			_spotlightIndex = value;
+			OnPropertyChanged(nameof(SpotlightIndex));
+			OnPropertyChanged(nameof(Spotlight));
+			OnPropertyChanged(nameof(SpotlightLabel));
+		}
+	}
+
+	public IRelayCommand SpotlightNextCommand => spotlightNextCommand ??= new RelayCommand(SpotlightNext);
+
+	public IRelayCommand SpotlightPrevCommand => spotlightPrevCommand ??= new RelayCommand(SpotlightPrev);
+
+	public IRelayCommand BackToResultsCommand => backToResultsCommand ??= new RelayCommand(BackToResults);
+
+	private void SpotlightNext()
+	{
+		if (Spotlights.Count == 0)
+		{
+			return;
+		}
+		SpotlightIndex = (SpotlightIndex + 1) % Spotlights.Count;
+	}
+
+	private void SpotlightPrev()
+	{
+		if (Spotlights.Count == 0)
+		{
+			return;
+		}
+		SpotlightIndex = (SpotlightIndex - 1 + Spotlights.Count) % Spotlights.Count;
+	}
+
+	private void BackToResults()
+	{
+		_suppressSearch = true;
+		SearchText = string.Empty;
+		_suppressSearch = false;
+		ResetResults();
+		Details = null;
+		SearchCards.Clear();
+		IsResultsOpen = false;
+		InstallStatus = null;
+		OnPropertyChanged(nameof(ShowNoResults));
+		OnPropertyChanged(nameof(ResultsCountText));
+	}
+
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
-	private AsyncRelayCommand<SteamSearchResult>? selectResultCommand;
+	private AsyncRelayCommand<SearchResultCardViewModel>? selectResultCommand;
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	private AsyncRelayCommand<FeaturedItem>? selectFeaturedCommand;
@@ -163,7 +280,13 @@ public class DownloadViewModel : ObservableObject
 
 	public Action<long>? NavigateToGame { get; set; }
 
-	public ObservableCollection<SteamSearchResult> SearchResults { get; } = new ObservableCollection<SteamSearchResult>();
+	public ObservableCollection<SearchResultCardViewModel> SearchCards { get; } = new ObservableCollection<SearchResultCardViewModel>();
+
+	public string ResultsCountText => string.Format(Strings.Add_ResultsCount, SearchCards.Count);
+
+	public bool ShowNoResults => !string.IsNullOrWhiteSpace(SearchText) && SearchCards.Count == 0 && !IsSearching && !HasDetails && !HasInstallResult;
+
+	public string NoResultsText => string.Format(Strings.Add_NoResults, SearchText);
 
 	public ObservableCollection<SourceRowViewModel> Sources { get; } = new ObservableCollection<SourceRowViewModel>();
 
@@ -653,7 +776,7 @@ public class DownloadViewModel : ObservableObject
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
-	public IAsyncRelayCommand<SteamSearchResult> SelectResultCommand => selectResultCommand ?? (selectResultCommand = new AsyncRelayCommand<SteamSearchResult>(SelectResultAsync));
+	public IAsyncRelayCommand<SearchResultCardViewModel> SelectResultCommand => selectResultCommand ?? (selectResultCommand = new AsyncRelayCommand<SearchResultCardViewModel>(SelectResultAsync));
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
@@ -749,6 +872,7 @@ public class DownloadViewModel : ObservableObject
 		{
 			await FetchCommand.ExecuteAsync(null);
 		}
+		OnPropertyChanged(nameof(ShowNoResults));
 	}
 
 	public Task DownloadSourceByNameAsync(string name)
@@ -764,10 +888,10 @@ public class DownloadViewModel : ObservableObject
 
 	public void SyncFastFetch()
 	{
-		FastFetch = _settings.FastFetch;
+		FastFetch = true;
 	}
 
-	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop, AnalyticsService analytics, UsageService usage)
+	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop, AnalyticsService analytics, UsageService usage, CoverCache covers)
 	{
 		_api = api;
 		_hubcap = hubcap;
@@ -780,9 +904,10 @@ public class DownloadViewModel : ObservableObject
 		_depotInfo = depotInfo;
 		_hardware = hardware;
 		Drop = drop;
-		_fastFetch = settings.FastFetch;
+		_fastFetch = true;
 		_analytics = analytics;
 		_usage = usage;
+		_covers = covers;
 	}
 
 	public void SeedSearch(long appId)
@@ -806,8 +931,10 @@ public class DownloadViewModel : ObservableObject
 			await Task.Delay(350, cts.Token);
 			if (string.IsNullOrWhiteSpace(query) || query.Length > 100)
 			{
-				SearchResults.Clear();
+				SearchCards.Clear();
 				IsResultsOpen = false;
+				OnPropertyChanged(nameof(ResultsCountText));
+				OnPropertyChanged(nameof(ShowNoResults));
 				return;
 			}
 			IsSearching = true;
@@ -816,15 +943,19 @@ public class DownloadViewModel : ObservableObject
 			{
 				return;
 			}
-			SearchResults.Clear();
+			SearchCards.Clear();
 			foreach (SteamSearchResult item in list)
 			{
 				if (!_hardware.IsBlacklisted(item.AppId))
 				{
-					SearchResults.Add(item);
+					SearchResultCardViewModel searchResultCardViewModel = new SearchResultCardViewModel(item);
+					SearchCards.Add(searchResultCardViewModel);
+					_ = searchResultCardViewModel.EnsureCoverAsync(_appInfo, _covers);
 				}
 			}
-			IsResultsOpen = SearchResults.Count > 0;
+			IsResultsOpen = SearchCards.Count > 0;
+			OnPropertyChanged(nameof(ResultsCountText));
+			OnPropertyChanged(nameof(ShowNoResults));
 		}
 		catch (OperationCanceledException)
 		{
@@ -865,8 +996,9 @@ public class DownloadViewModel : ObservableObject
 	}
 
 	[RelayCommand]
-	private async Task SelectResultAsync(SteamSearchResult result)
+	private async Task SelectResultAsync(SearchResultCardViewModel card)
 	{
+		SteamSearchResult result = card.Result;
 		_suppressSearch = true;
 		SearchText = result.Name;
 		_suppressSearch = false;
@@ -886,6 +1018,7 @@ public class DownloadViewModel : ObservableObject
 		{
 			Details = null;
 		}
+		OnPropertyChanged(nameof(ShowNoResults));
 	}
 
 	[RelayCommand]
@@ -924,7 +1057,9 @@ public class DownloadViewModel : ObservableObject
 		}
 		await _hardware.EnsureFreshAsync();
 		var (list, list2) = await _api.GetFeaturedAsync();
-		foreach (SteamFeaturedItem item in list)
+		List<SteamFeaturedItem> topSellersList = await _api.GetTopSellersAsync();
+		IEnumerable<SteamFeaturedItem> railSource = (topSellersList.Count > 0) ? topSellersList : await _api.FilterPaidOnlyAsync(list);
+		foreach (SteamFeaturedItem item in railSource)
 		{
 			if (!_hardware.IsBlacklisted(item.Id))
 			{
@@ -938,9 +1073,27 @@ public class DownloadViewModel : ObservableObject
 				NewReleases.Add(new FeaturedItem(item2.Id, item2.Name, item2.LargeCapsuleImage));
 			}
 		}
+		Spotlights.Clear();
+		foreach (SteamFeaturedItem item3 in list)
+		{
+			if (!_hardware.IsBlacklisted(item3.Id))
+			{
+				Spotlights.Add(new FeaturedItem(item3.Id, item3.Name, item3.LargeCapsuleImage));
+			}
+		}
+		foreach (SteamFeaturedItem item4 in list2)
+		{
+			if (!_hardware.IsBlacklisted(item4.Id))
+			{
+				Spotlights.Add(new FeaturedItem(item4.Id, item4.Name, item4.LargeCapsuleImage));
+			}
+		}
 		OnPropertyChanged("HasTopSellers");
 		OnPropertyChanged("HasNewReleases");
 		OnPropertyChanged("ShowFeatured");
+		OnPropertyChanged(nameof(HasSpotlights));
+		OnPropertyChanged(nameof(Spotlight));
+		OnPropertyChanged(nameof(SpotlightLabel));
 	}
 
 	[RelayCommand]
@@ -994,21 +1147,14 @@ public class DownloadViewModel : ObservableObject
 				Sources.Add(new SourceRowViewModel(this, name, status));
 			}
 			await ApplyHubcapStateAsync();
-			if (FastFetch)
+			SourceRowViewModel sourceRowViewModel = Sources.FirstOrDefault((SourceRowViewModel s) => s.CanDownload);
+			if (sourceRowViewModel == null)
 			{
-				SourceRowViewModel sourceRowViewModel = Sources.FirstOrDefault((SourceRowViewModel s) => s.CanDownload);
-				if (sourceRowViewModel == null)
-				{
-					Error = Strings.Add_FastFetch_NoSource;
-					return;
-				}
-				_fastFetchSource = sourceRowViewModel.DisplayName;
-				await DownloadFromSourceAsync(sourceRowViewModel);
+				Error = Strings.Add_FastFetch_NoSource;
+				return;
 			}
-			else
-			{
-				SourcesLoaded = true;
-			}
+			_fastFetchSource = sourceRowViewModel.DisplayName;
+			await DownloadFromSourceAsync(sourceRowViewModel);
 		}
 		catch (ApiException ex)
 		{
@@ -1090,6 +1236,7 @@ public class DownloadViewModel : ObservableObject
 		long appId = Details.AppId;
 		source.IsDownloading = true;
 		source.IsProgressIndeterminate = true;
+		ActiveSource = source;
 		try
 		{
 			Progress<double?> progress = new Progress<double?>(delegate(double? p)
@@ -1133,6 +1280,7 @@ public class DownloadViewModel : ObservableObject
 			source.IsDownloading = false;
 			source.Progress = 0.0;
 			source.IsProgressIndeterminate = false;
+			ActiveSource = null;
 		}
 	}
 
@@ -1497,7 +1645,11 @@ public class DownloadViewModel : ObservableObject
 			if (string.IsNullOrWhiteSpace(value))
 			{
 				InstallStatus = null;
+				SearchCards.Clear();
+				IsResultsOpen = false;
+				OnPropertyChanged(nameof(ResultsCountText));
 			}
+			OnPropertyChanged(nameof(ShowNoResults));
 			string text = ExtractAppId(value);
 			if (text != null)
 			{

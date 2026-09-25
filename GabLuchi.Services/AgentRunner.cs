@@ -2,8 +2,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using GabLuchi;
 
 namespace GabLuchi.Services;
 
@@ -165,17 +168,39 @@ public static class AgentRunner
 			}
 			if (guiOpen)
 			{
-				Log("Update: GUI is open — update staged, GUI applies on exit.");
+				Log("Update: staged update found and GUI is open — GUI applies on command.");
+				return;
 			}
-			else
+			if (!await IsForceUpdateCommandedAsync())
 			{
-				Log("Update: staged update found and GUI is closed — applying silently.");
-				services.Updates.ApplyAndRestart(new[] { "--agent" });
+				Log("Update: staged update found but no forceUpdate command — holding.");
+				return;
 			}
+			Log("Update: forceUpdate commanded — applying staged update.");
+			services.Updates.ApplyAndRestart(new[] { "--agent" });
 		}
 		catch (Exception ex)
 		{
 			Log("Update failed: " + ex.Message);
+		}
+	}
+
+	private static async Task<bool> IsForceUpdateCommandedAsync()
+	{
+		try
+		{
+			using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+			string endpoint = GabLuchi.Config.KeyCheckerBase.TrimEnd('/') + "/api/update-check";
+			string json = await http.GetStringAsync(endpoint);
+			using JsonDocument doc = JsonDocument.Parse(json);
+			bool forceUpdate = doc.RootElement.TryGetProperty("forceUpdate", out JsonElement el) && el.GetBoolean();
+			Log("forceUpdate flag: " + forceUpdate);
+			return forceUpdate;
+		}
+		catch (Exception ex)
+		{
+			Log("forceUpdate check failed: " + ex.Message);
+			return false;
 		}
 	}
 

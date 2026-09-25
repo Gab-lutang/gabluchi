@@ -681,6 +681,18 @@ public static class Strings
 
 	public static string Add_FastFetch_Via => Get("Add_FastFetch_Via");
 
+	public static string Add_Back => Get("Add_Back");
+
+	public static string Add_Install => Get("Add_Install");
+
+	public static string Add_Trending => Get("Add_Trending");
+
+	public static string Add_ResultsCount => Get("Add_ResultsCount");
+
+	public static string Add_NoResults => Get("Add_NoResults");
+
+	public static string Add_About => Get("Add_About");
+
 	public static string Confirm_OpenSteamDb => Get("Confirm_OpenSteamDb");
 
 	public static string Confirm_Shared => Get("Confirm_Shared");

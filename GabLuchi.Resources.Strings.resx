@@ -120,6 +120,12 @@
   <data name="Plugin_Btn_Update" xml:space="preserve"><value>Update</value></data>
   <data name="Manage_RestartSteam_Failed" xml:space="preserve"><value>Couldn't find or launch Steam. Set its location in Settings.</value></data>
   <data name="Add_Download" xml:space="preserve"><value>Download</value></data>
+  <data name="Add_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Add_Install" xml:space="preserve"><value>Install</value></data>
+  <data name="Add_Trending" xml:space="preserve"><value>Trending</value></data>
+  <data name="Add_ResultsCount" xml:space="preserve"><value>{0} results</value></data>
+  <data name="Add_NoResults" xml:space="preserve"><value>No matches for "{0}"</value></data>
+  <data name="Add_About" xml:space="preserve"><value>About this game</value></data>
   <data name="Settings_Language" xml:space="preserve"><value>Language</value></data>
   <data name="Add_Unlimited" xml:space="preserve"><value>Unlimited</value></data>
   <data name="Manage_Filter_Genre" xml:space="preserve"><value>Genre</value></data>

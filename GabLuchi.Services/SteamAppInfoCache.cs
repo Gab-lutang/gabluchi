@@ -414,6 +414,18 @@ public class SteamAppInfoCache
 		return false;
 	}
 
+	public async Task EnsureFullDetailsBatchAsync(IReadOnlyCollection<long> appids, CancellationToken ct = default(CancellationToken))
+	{
+		foreach (long appid in appids)
+		{
+			if (HasFullDetails(appid))
+			{
+				continue;
+			}
+			await EnsureFullDetailsAsync(appid, ct);
+		}
+	}
+
 	public async Task BackfillFullDetailsAsync(IEnumerable<long> appids, Action? onProgress = null, CancellationToken ct = default(CancellationToken))
 	{
 		foreach (long appid in appids)

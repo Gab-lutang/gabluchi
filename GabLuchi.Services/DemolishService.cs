@@ -10,10 +10,29 @@ namespace GabLuchi.Services;
 
 public class DemolishService(SteamService steam, LuaInstaller lua, SteamLibraryService library, SteamOwnershipService ownership)
 {
+	private static readonly string LogPath = Path.Combine(
+		Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+		"GabLuchi", "demolish.log");
+
+	private static void Log(string msg)
+	{
+		try
+		{
+			string dir = Path.GetDirectoryName(LogPath)!;
+			if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+			File.AppendAllText(LogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {msg}\n");
+		}
+		catch { }
+	}
+
 	public async Task DemolishAllGamesAsync()
 	{
 		bool restartSteam = steam.IsRunning;
-		steam.StopSteam();
+		if (restartSteam)
+		{
+			Log("Stopping Steam for full wipe.");
+			steam.StopSteam();
+		}
 		try
 		{
 			await DeleteAllGamesPermanentlyAsync();
@@ -30,7 +49,11 @@ public class DemolishService(SteamService steam, LuaInstaller lua, SteamLibraryS
 	public async Task DemolishAppAsync(long appId)
 	{
 		bool restartSteam = steam.IsRunning;
-		steam.StopSteam();
+		if (restartSteam)
+		{
+			Log($"Stopping Steam for app {appId} wipe.");
+			steam.StopSteam();
+		}
 		try
 		{
 			DeleteAppPermanently(appId);
@@ -155,6 +178,7 @@ public class DemolishService(SteamService steam, LuaInstaller lua, SteamLibraryS
 
 	public void DeleteAppPermanently(long appId)
 	{
+		Log($"Demolishing app {appId}.");
 		DeleteManifestsForApp(appId);
 		lua.DeleteLua(appId);
 		DeletePluginLua(appId);
@@ -162,7 +186,14 @@ public class DemolishService(SteamService steam, LuaInstaller lua, SteamLibraryS
 		string? installDir = library.GetInstallDir(appId);
 		if (installDir != null && Directory.Exists(installDir))
 		{
-			DeleteWithRetry(installDir);
+			if (IsSteamGameInstallDir(installDir))
+			{
+				DeleteDirectory(installDir, appId);
+			}
+			else
+			{
+				Log($"App {appId}: refuse to delete non-Steam path: {installDir}");
+			}
 		}
 
 		foreach (string root in library.GetLibraryRootsList())
@@ -170,7 +201,7 @@ public class DemolishService(SteamService steam, LuaInstaller lua, SteamLibraryS
 			string acf = Path.Combine(root, "steamapps", $"appmanifest_{appId}.acf");
 			if (File.Exists(acf))
 			{
-				try { File.Delete(acf); } catch { }
+				DeleteFile(acf, appId);
 			}
 
 			foreach (string sub in new[] { "shadercache", "compatdata", "downloading", "temp" })
@@ -178,12 +209,58 @@ public class DemolishService(SteamService steam, LuaInstaller lua, SteamLibraryS
 				string path = Path.Combine(root, "steamapps", sub, appId.ToString());
 				if (Directory.Exists(path))
 				{
-					DeleteWithRetry(path);
+					DeleteDirectory(path, appId);
 				}
 			}
 		}
 
 		ScrubAppTiles(appId);
+	}
+
+	private bool IsSteamGameInstallDir(string dir)
+	{
+		try
+		{
+			string full = Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar);
+			foreach (string root in library.GetLibraryRootsList())
+			{
+				string common = Path.Combine(root, "steamapps", "common");
+				if (full.StartsWith(common + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+				{
+					return true;
+				}
+			}
+		}
+		catch
+		{
+		}
+		return false;
+	}
+
+	private void DeleteFile(string path, long appId)
+	{
+		try
+		{
+			File.Delete(path);
+			Log($"App {appId}: deleted file {path}");
+		}
+		catch (Exception ex)
+		{
+			Log($"App {appId}: failed to delete {path}: {ex.Message}");
+		}
+	}
+
+	private void DeleteDirectory(string dir, long appId)
+	{
+		try
+		{
+			Directory.Delete(dir, recursive: true);
+			Log($"App {appId}: deleted directory {dir}");
+		}
+		catch (Exception ex)
+		{
+			Log($"App {appId}: failed to delete {dir}: {ex.Message}");
+		}
 	}
 
 	private void DeletePluginLua(long appId)
@@ -391,25 +468,5 @@ public class DemolishService(SteamService steam, LuaInstaller lua, SteamLibraryS
 		}
 		catch { }
 		return null;
-	}
-
-	private static void DeleteWithRetry(string dir)
-	{
-		for (int attempt = 0; attempt < 5; attempt++)
-		{
-			try
-			{
-				Directory.Delete(dir, recursive: true);
-				return;
-			}
-			catch
-			{
-				if (attempt == 4)
-				{
-					return;
-				}
-				Thread.Sleep(500);
-			}
-		}
 	}
 }
