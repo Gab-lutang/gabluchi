@@ -657,6 +657,8 @@ public static class Strings
 
 	public static string Add_Err_Generic => Get("Add_Err_Generic");
 
+	public static string Add_Err_Demolished => Get("Add_Err_Demolished");
+
 	public static string Add_Err_Download => Get("Add_Err_Download");
 
 	public static string Add_Err_Generate => Get("Add_Err_Generate");
@@ -762,6 +764,24 @@ public static class Strings
 	public static string Plugin_Status_OfflineCheck => Get("Plugin_Status_OfflineCheck");
 
 	public static string Plugin_Status_Port8080Busy => Get("Plugin_Status_Port8080Busy");
+
+	public static string Plugin_Components_Header => Get("Plugin_Components_Header");
+
+	public static string Plugin_Tag_Loader => Get("Plugin_Tag_Loader");
+
+	public static string Plugin_Row_Steam => Get("Plugin_Row_Steam");
+
+	public static string Plugin_Row_Bridge => Get("Plugin_Row_Bridge");
+
+	public static string Plugin_Status_Detected => Get("Plugin_Status_Detected");
+
+	public static string Plugin_Status_NotDetected => Get("Plugin_Status_NotDetected");
+
+	public static string Plugin_Status_Free => Get("Plugin_Status_Free");
+
+	public static string Plugin_Status_Busy => Get("Plugin_Status_Busy");
+
+	public static string Plugin_Rail_Hint => Get("Plugin_Rail_Hint");
 
 	public static string Plugin_Confirm_RestartBody => Get("Plugin_Confirm_RestartBody");
 

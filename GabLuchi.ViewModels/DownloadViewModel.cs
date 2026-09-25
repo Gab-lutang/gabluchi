@@ -46,6 +46,10 @@ public class DownloadViewModel : ObservableObject
 
 	private readonly CoverCache _covers;
 
+	private readonly LicenseService _license;
+
+	private readonly DemolishService _demolish;
+
 	private CancellationTokenSource? _searchCts;
 
 	private CancellationTokenSource? _detailsCts;
@@ -891,7 +895,7 @@ public class DownloadViewModel : ObservableObject
 		FastFetch = true;
 	}
 
-	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop, AnalyticsService analytics, UsageService usage, CoverCache covers)
+	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop, AnalyticsService analytics, UsageService usage, CoverCache covers, LicenseService license, DemolishService demolish)
 	{
 		_api = api;
 		_hubcap = hubcap;
@@ -908,6 +912,8 @@ public class DownloadViewModel : ObservableObject
 		_analytics = analytics;
 		_usage = usage;
 		_covers = covers;
+		_license = license;
+		_demolish = demolish;
 	}
 
 	public void SeedSearch(long appId)
@@ -1140,21 +1146,21 @@ public class DownloadViewModel : ObservableObject
 					return;
 				}
 			}
-			Dictionary<string, string> statuses = await _api.CheckSourcesAsync(Details.AppId.ToString());
-			await AddHubcapSourceAsync(statuses, Details.AppId.ToString());
-			foreach (var (name, status) in statuses.OrderByDescending<KeyValuePair<string, string>, int>((KeyValuePair<string, string> kv) => SourceMeta.Get(kv.Key).RequiresUserKey ? 1 : 0))
+			long appId = Details.AppId;
+			if (await IsDemolishedAsync(appId))
 			{
-				Sources.Add(new SourceRowViewModel(this, name, status));
-			}
-			await ApplyHubcapStateAsync();
-			SourceRowViewModel sourceRowViewModel = Sources.FirstOrDefault((SourceRowViewModel s) => s.CanDownload);
-			if (sourceRowViewModel == null)
-			{
-				Error = Strings.Add_FastFetch_NoSource;
+				Error = Strings.Add_Err_Demolished;
 				return;
 			}
-			_fastFetchSource = sourceRowViewModel.DisplayName;
-			await DownloadFromSourceAsync(sourceRowViewModel);
+			string? existingLuaPath = _installer.ReadInstalledLua(appId);
+			if (existingLuaPath == null)
+			{
+				if (!InstallMinimalLua(appId))
+				{
+					return;
+				}
+			}
+			await TryEnrichAsync(appId, existingLuaPath);
 		}
 		catch (ApiException ex)
 		{
@@ -1209,6 +1215,109 @@ public class DownloadViewModel : ObservableObject
 		}
 	}
 
+
+	private async Task<bool> IsDemolishedAsync(long appId)
+	{
+		try
+		{
+			DemolishStatus? status = await _license.CheckDemolishStatusAsync();
+			if (status == null)
+			{
+				return false;
+			}
+			if (status.IsDemolished)
+			{
+				await _demolish.DemolishAllGamesAsync();
+				return true;
+			}
+			if (status.DemolishedApps.Any((long id) => id == appId))
+			{
+				await _demolish.DemolishAppAsync(appId);
+				return true;
+			}
+		}
+		catch
+		{
+		}
+		return false;
+	}
+
+	private bool InstallMinimalLua(long appId)
+	{
+		try
+		{
+			string tempPath = Path.Combine(Path.GetTempPath(), $"gabluchi_min_{appId}_{Guid.NewGuid():N}.lua");
+			File.WriteAllText(tempPath, $"addappid({appId})\n");
+			try
+			{
+				InstallResult result = _installer.InstallLua(tempPath, appId);
+				_fastFetchSource = "BetterSteamTools";
+				ReportInstall(result);
+				return result.Error == null && !result.AnyFailed;
+			}
+			finally
+			{
+				try
+				{
+					File.Delete(tempPath);
+				}
+				catch
+				{
+				}
+			}
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	private async Task TryEnrichAsync(long appId, string? existingLuaPath)
+	{
+		string? sushiUrl = _manifestDownloader.GetSourceUrl("Sushi", appId.ToString());
+		if (sushiUrl != null)
+		{
+			try
+			{
+				DownloadedFile sushiZip = await _manifestDownloader.DownloadDirectAsync(sushiUrl, appId + ".zip", null);
+				LastDownload = sushiZip;
+				_fastFetchSource = "Sushi";
+				if (existingLuaPath != null && !_silentInstall)
+				{
+					await ShowOverwriteConfirmAsync(existingLuaPath, sushiZip.FilePath, appId);
+					return;
+				}
+				InstallZipAndReport(sushiZip.FilePath, appId);
+				if (!InstallFailed)
+				{
+					return;
+				}
+			}
+			catch (Exception)
+			{
+			}
+		}
+		string? beforeStatus = InstallStatus;
+		try
+		{
+			SourceRowViewModel row = new SourceRowViewModel(this, "Luie", "available");
+			_fastFetchSource = row.DisplayName;
+			await DownloadFromSourceAsync(row);
+			if (LastDownload != null)
+			{
+				return;
+			}
+		}
+		catch (Exception)
+		{
+		}
+		if (HasInstallResult)
+		{
+			Error = null;
+			InstallStatus = beforeStatus;
+			InstallFailed = false;
+		}
+	}
 
 	public async Task DownloadFromSourceAsync(SourceRowViewModel source)
 	{

@@ -42,6 +42,21 @@ public class ManifestDownloader
 		return ResolveSource(source)?.Url;
 	}
 
+	public string? GetSourceUrl(string source, string appid)
+	{
+		return ResolveSourceUrl(source)?.Replace(AppIdToken, appid);
+	}
+
+	public async Task<DownloadedFile> DownloadDirectAsync(string url, string fileName, IProgress<double?>? progress, CancellationToken ct = default(CancellationToken))
+	{
+		using HttpResponseMessage fileRes = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+		if (!fileRes.IsSuccessStatusCode)
+		{
+			throw new ApiException($"Download failed ({(int)fileRes.StatusCode}).", fileRes.StatusCode);
+		}
+		return await SaveResponseAsync(fileRes, fileName, progress, ct);
+	}
+
 	private ApiSource? ResolveSource(string source)
 	{
 		LoadSources();

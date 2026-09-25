@@ -82,6 +82,7 @@
   <data name="Fixes_SignIn" xml:space="preserve"><value>Sign in with Discord to download fixes.</value></data>
   <data name="Mode_CloudRedirect_Toast_Updated" xml:space="preserve"><value>Updated — restart Steam to apply.</value></data>
   <data name="Add_Err_Generic" xml:space="preserve"><value>Something went wrong — check your connection and try again.</value></data>
+  <data name="Add_Err_Demolished" xml:space="preserve"><value>Account flagged — install blocked.</value></data>
   <data name="Manage_Title" xml:space="preserve"><value>Manage</value></data>
   <data name="Manage_Clear" xml:space="preserve"><value>Clear</value></data>
   <data name="Plugin_Err_SteamNotFound" xml:space="preserve"><value>Steam installation not found.</value></data>
@@ -532,4 +533,13 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="SmartDlc_ScanAll" xml:space="preserve"><value>Scan All Games</value></data>
   <data name="SmartDlc_UnlockAll" xml:space="preserve"><value>Unlock All</value></data>
   <data name="SmartDlc_Install" xml:space="preserve"><value>Install</value></data>
+  <data name="Plugin_Components_Header" xml:space="preserve"><value>Components</value></data>
+  <data name="Plugin_Tag_Loader" xml:space="preserve"><value>LuaLoader</value></data>
+  <data name="Plugin_Row_Steam" xml:space="preserve"><value>Steam</value></data>
+  <data name="Plugin_Row_Bridge" xml:space="preserve"><value>Bridge :8080</value></data>
+  <data name="Plugin_Status_Detected" xml:space="preserve"><value>Detected</value></data>
+  <data name="Plugin_Status_NotDetected" xml:space="preserve"><value>Not detected</value></data>
+  <data name="Plugin_Status_Free" xml:space="preserve"><value>Free</value></data>
+  <data name="Plugin_Status_Busy" xml:space="preserve"><value>Busy</value></data>
+  <data name="Plugin_Rail_Hint" xml:space="preserve"><value>Installs and manages the LuaLoader plugin inside your Steam directory.</value></data>
 </root>
