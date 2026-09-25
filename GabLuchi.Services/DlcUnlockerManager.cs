@@ -150,8 +150,7 @@ public partial class DlcUnlockerManager(SteamService steam, SteamLibraryService 
 			res.EnsureSuccessStatusCode();
 			string json = await res.Content.ReadAsStringAsync(ct);
 			using JsonDocument doc = JsonDocument.Parse(json);
-			string key = appId.ToString();
-			if (doc.RootElement.TryGetProperty(key, out JsonElement appElement)
+			if (SteamAppDetailsParser.TryGetAppElement(doc.RootElement, appId, out JsonElement appElement)
 				&& appElement.TryGetProperty("data", out JsonElement dataElement)
 				&& dataElement.TryGetProperty("dlc", out JsonElement dlcElement)
 				&& dlcElement.ValueKind == JsonValueKind.Array)

@@ -131,7 +131,10 @@ public class SteamAppInfoCache
 					return null;
 				}
 				using JsonDocument jsonDocument = JsonDocument.Parse(await res.Content.ReadAsStringAsync(ct));
-				JsonElement property = jsonDocument.RootElement.GetProperty(appid.ToString());
+				if (!SteamAppDetailsParser.TryGetAppElement(jsonDocument.RootElement, appid, out JsonElement property))
+				{
+					return null;
+				}
 				if (!property.GetProperty("success").GetBoolean())
 				{
 					SaveFullDetailsAsync(appid, "{}");
@@ -376,7 +379,10 @@ public class SteamAppInfoCache
 					return false;
 				}
 				using JsonDocument doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync(ct));
-				JsonElement property = doc.RootElement.GetProperty(appid.ToString());
+				if (!SteamAppDetailsParser.TryGetAppElement(doc.RootElement, appid, out JsonElement property))
+				{
+					return false;
+				}
 				if (!property.GetProperty("success").GetBoolean())
 				{
 					await SaveFullDetailsAsync(appid, "{}");
