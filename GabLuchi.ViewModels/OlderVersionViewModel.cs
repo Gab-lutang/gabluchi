@@ -131,6 +131,12 @@ public class OlderVersionViewModel : ObservableObject
 	}
 
 	[RelayCommand]
+	private void DownloadDotNet9()
+	{
+		SteamService.OpenUrl("https://dotnet.microsoft.com/download/dotnet/9.0");
+	}
+
+	[RelayCommand]
 	private void BrowseDest()
 	{
 		OpenFolderDialog dlg = new OpenFolderDialog

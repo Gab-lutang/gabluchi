@@ -813,6 +813,8 @@ public static class Strings
 
 	public static string OlderVersion_DotNetMissing => Get("OlderVersion_DotNetMissing");
 
+	public static string OlderVersion_DownloadNet9 => Get("OlderVersion_DownloadNet9");
+
 	public static string OlderVersion_Downloading => Get("OlderVersion_Downloading");
 
 	public static string OlderVersion_Done => Get("OlderVersion_Done");

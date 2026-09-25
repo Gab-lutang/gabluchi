@@ -13,6 +13,7 @@
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <ui:SymbolIcon Grid.Column="0" Margin="0,0,10,0" VerticalAlignment="Center" Symbol="Info24" />
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -31,6 +32,7 @@
               </TextBlock>
             </StackPanel>
             <ui:Button Grid.Column="2" VerticalAlignment="Center" Content="{x:Static res:Strings.OlderVersion_CheckDotNet}" Command="{Binding CheckDotNetCommand}" Icon="{ui:SymbolIcon ShieldTask24}" />
+            <ui:Button Grid.Column="3" Margin="8,0,0,0" VerticalAlignment="Center" Content="{x:Static res:Strings.OlderVersion_DownloadNet9}" Command="{Binding DownloadDotNet9Command}" Icon="{ui:SymbolIcon Globe24}" Visibility="{Binding IsDotNet9Available, Converter={StaticResource InverseBoolToVis}}" />
           </Grid>
         </Border>
 

@@ -90,7 +90,8 @@ public partial class App : Application
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<BackgroundHealthScanner>());
 		services.AddSingleton<SmartDlcService>();
 		services.AddSingleton<QuickFixService>();
-		services.AddSingleton<ForceUpdateService>();
+		services.AddSingleton<RuntimeCheckerService>();
+			services.AddSingleton<ForceUpdateService>();
 		services.AddHostedService((IServiceProvider sp) => sp.GetRequiredService<ForceUpdateService>());
 		services.AddSingleton<UsageService>();
 		services.AddSingleton<AnnouncementService>();

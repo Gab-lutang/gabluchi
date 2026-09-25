@@ -20,6 +20,8 @@ public class UplayR2Unlocker : DlcUnlockerBase
 
 	public override DlcUnlockerType[] ConflictsWith => Array.Empty<DlcUnlockerType>();
 
+	public override bool IsAvailable() => Directory.Exists(BundledDir);
+
 	public override bool IsInstalled(string gameDir)
 	{
 		return File.Exists(Path.Combine(gameDir, "upc_r2_loader.dll"))

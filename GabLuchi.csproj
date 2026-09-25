@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <AssemblyName>GabLuchi</AssemblyName>
     <StartupObject>GabLuchi.Program</StartupObject>
@@ -9,11 +9,11 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <Company>GabLuchi</Company>
     <Product>GabLuchi</Product>
-    <Description>GabLuchi — Steam unlock and library companion.</Description>
+    <Description>GabLuchi © Steam unlock and library companion.</Description>
     <Copyright>Copyright © 2026 GabLuchi</Copyright>
-<Version>1.4.8</Version>
-  <AssemblyVersion>1.4.8.0</AssemblyVersion>
-  <FileVersion>1.4.8.0</FileVersion>
+<Version>1.4.9</Version>
+  <AssemblyVersion>1.4.9.0</AssemblyVersion>
+  <FileVersion>1.4.9.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
@@ -83,27 +83,27 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="third_party\goldberg\regular\x64\steam_api64.dll">
+    <Content Include="third_party\goldberg\regular\x64\steam_api64.dll" Condition="'$(IncludePayloads)' != 'false'">
       <Link>goldberg\regular\x64\steam_api64.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\goldberg\regular\x86\steam_api.dll">
+    <Content Include="third_party\goldberg\regular\x86\steam_api.dll" Condition="'$(IncludePayloads)' != 'false'">
       <Link>goldberg\regular\x86\steam_api.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\goldberg\tools\generate_interfaces_x64.exe">
+    <Content Include="third_party\goldberg\tools\generate_interfaces_x64.exe" Condition="'$(IncludePayloads)' != 'false'">
       <Link>goldberg\tools\generate_interfaces_x64.exe</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\goldberg\tools\generate_interfaces_x86.exe">
+    <Content Include="third_party\goldberg\tools\generate_interfaces_x86.exe" Condition="'$(IncludePayloads)' != 'false'">
       <Link>goldberg\tools\generate_interfaces_x86.exe</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\steam_api_bypass\SteamAPICheckBypass.dll">
+    <Content Include="third_party\steam_api_bypass\SteamAPICheckBypass.dll" Condition="'$(IncludePayloads)' != 'false'">
       <Link>steam_api_bypass\SteamAPICheckBypass.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\steam_api_bypass\SteamAPICheckBypass_x32.dll">
+    <Content Include="third_party\steam_api_bypass\SteamAPICheckBypass_x32.dll" Condition="'$(IncludePayloads)' != 'false'">
       <Link>steam_api_bypass\SteamAPICheckBypass_x32.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -119,35 +119,35 @@
       <Link>7z.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\dlc_unlockers\smokeapi\smoke_api32.dll" Condition="Exists('third_party\dlc_unlockers\smokeapi\smoke_api32.dll')">
+    <Content Include="third_party\dlc_unlockers\smokeapi\smoke_api32.dll" Condition="Exists('third_party\dlc_unlockers\smokeapi\smoke_api32.dll') And '$(IncludePayloads)' != 'false'">
       <Link>dlc_unlockers\smokeapi\smoke_api32.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\dlc_unlockers\smokeapi\smoke_api64.dll" Condition="Exists('third_party\dlc_unlockers\smokeapi\smoke_api64.dll')">
+    <Content Include="third_party\dlc_unlockers\smokeapi\smoke_api64.dll" Condition="Exists('third_party\dlc_unlockers\smokeapi\smoke_api64.dll') And '$(IncludePayloads)' != 'false'">
       <Link>dlc_unlockers\smokeapi\smoke_api64.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\dlc_unlockers\creamapi\steam_api.dll" Condition="Exists('third_party\dlc_unlockers\creamapi\steam_api.dll')">
+    <Content Include="third_party\dlc_unlockers\creamapi\steam_api.dll" Condition="Exists('third_party\dlc_unlockers\creamapi\steam_api.dll') And '$(IncludePayloads)' != 'false'">
       <Link>dlc_unlockers\creamapi\steam_api.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\dlc_unlockers\creamapi\steam_api64.dll" Condition="Exists('third_party\dlc_unlockers\creamapi\steam_api64.dll')">
+    <Content Include="third_party\dlc_unlockers\creamapi\steam_api64.dll" Condition="Exists('third_party\dlc_unlockers\creamapi\steam_api64.dll') And '$(IncludePayloads)' != 'false'">
       <Link>dlc_unlockers\creamapi\steam_api64.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\dlc_unlockers\uplayr1\uplay_r1_loader.dll" Condition="Exists('third_party\dlc_unlockers\uplayr1\uplay_r1_loader.dll')">
+    <Content Include="third_party\dlc_unlockers\uplayr1\uplay_r1_loader.dll" Condition="Exists('third_party\dlc_unlockers\uplayr1\uplay_r1_loader.dll') And '$(IncludePayloads)' != 'false'">
       <Link>dlc_unlockers\uplayr1\uplay_r1_loader.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\dlc_unlockers\uplayr1\uplay_r1_loader64.dll" Condition="Exists('third_party\dlc_unlockers\uplayr1\uplay_r1_loader64.dll')">
+    <Content Include="third_party\dlc_unlockers\uplayr1\uplay_r1_loader64.dll" Condition="Exists('third_party\dlc_unlockers\uplayr1\uplay_r1_loader64.dll') And '$(IncludePayloads)' != 'false'">
       <Link>dlc_unlockers\uplayr1\uplay_r1_loader64.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\dlc_unlockers\uplayr2\upc_r2_loader.dll" Condition="Exists('third_party\dlc_unlockers\uplayr2\upc_r2_loader.dll')">
+    <Content Include="third_party\dlc_unlockers\uplayr2\upc_r2_loader.dll" Condition="Exists('third_party\dlc_unlockers\uplayr2\upc_r2_loader.dll') And '$(IncludePayloads)' != 'false'">
       <Link>dlc_unlockers\uplayr2\upc_r2_loader.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="third_party\dlc_unlockers\uplayr2\upc_r2_loader64.dll" Condition="Exists('third_party\dlc_unlockers\uplayr2\upc_r2_loader64.dll')">
+    <Content Include="third_party\dlc_unlockers\uplayr2\upc_r2_loader64.dll" Condition="Exists('third_party\dlc_unlockers\uplayr2\upc_r2_loader64.dll') And '$(IncludePayloads)' != 'false'">
       <Link>dlc_unlockers\uplayr2\upc_r2_loader64.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

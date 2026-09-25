@@ -9,6 +9,8 @@ public abstract class DlcUnlockerBase
 
 	public abstract string DisplayName { get; }
 
+	public virtual bool IsAvailable() => true;
+
 	public abstract bool IsInstalled(string gameDir);
 
 	public abstract DlcUnlockerInstallResult Install(string gameDir, List<long> dlcIds, long appId);

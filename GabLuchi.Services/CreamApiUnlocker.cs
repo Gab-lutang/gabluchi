@@ -18,6 +18,8 @@ public class CreamApiUnlocker : DlcUnlockerBase
 
 	public override DlcUnlockerType[] ConflictsWith => new[] { DlcUnlockerType.SmokeApi };
 
+	public override bool IsAvailable() => Directory.Exists(BundledDir);
+
 	public override bool IsInstalled(string gameDir)
 	{
 		if (File.Exists(Path.Combine(gameDir, "cream_api.ini")))

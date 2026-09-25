@@ -14,11 +14,18 @@ public partial class DepotDownloaderModService
 
 	private static string DllPath => Path.Combine(ToolDir, "DepotDownloaderMod.dll");
 
+	private readonly RuntimeCheckerService _runtimeChecker;
+
 	private readonly SemaphoreSlim _dotnetCheckGate = new SemaphoreSlim(1, 1);
 
 	private bool? _isDotNet9Available;
 
-	public bool IsDotNet9Available => _isDotNet9Available ?? false;
+	public DepotDownloaderModService(RuntimeCheckerService runtimeChecker)
+	{
+		_runtimeChecker = runtimeChecker;
+	}
+
+	public bool IsDotNet9Available => _isDotNet9Available ?? _runtimeChecker.IsDotNet9Available;
 
 	public bool IsToolPresent => File.Exists(DllPath);
 
@@ -35,37 +42,13 @@ public partial class DepotDownloaderModService
 			{
 				return _isDotNet9Available.Value;
 			}
-			_isDotNet9Available = await DetectDotNet9Async(ct);
+			await _runtimeChecker.RefreshAsync(ct);
+			_isDotNet9Available = _runtimeChecker.IsDotNet9Available;
 			return _isDotNet9Available.Value;
 		}
 		finally
 		{
 			_dotnetCheckGate.Release();
-		}
-	}
-
-	private static async Task<bool> DetectDotNet9Async(CancellationToken ct)
-	{
-		try
-		{
-			ProcessStartInfo startInfo = new ProcessStartInfo("dotnet", "--list-runtimes")
-			{
-				UseShellExecute = false,
-				CreateNoWindow = true,
-				RedirectStandardOutput = true
-			};
-			using Process proc = Process.Start(startInfo);
-			if (proc == null)
-			{
-				return false;
-			}
-			string output = await proc.StandardOutput.ReadToEndAsync(ct);
-			await proc.WaitForExitAsync(ct);
-			return output.Contains("Microsoft.NETCore.App 9.", StringComparison.OrdinalIgnoreCase);
-		}
-		catch
-		{
-			return false;
 		}
 	}
 

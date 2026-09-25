@@ -1,11 +1,18 @@
 # ============================================================
-# GabLuchi Production Release Script (v1.3.9+)
+# GabLuchi Production Release Script (v1.4.9+)
 #
 # One-shot: version check -> clean -> build -> pack -> BOM strip
 #   -> verify -> commit/push/tag -> gh release create -> VISIBILITY GATE
 #
 # Usage:
-#   .\release.ps1 -Version 1.3.9 -Notes "Release notes here"
+#   .\release.ps1 -Version 1.4.9 -Notes "Release notes here"
+#
+# Builds TWO flavours:
+#   - Clean  (IncludePayloads=false) -> main feed release (no AV-flagged emulators)
+#   - Full   (IncludePayloads=true)  -> extra opt-in assets (GabLuchi-win-Full-*)
+# The Clean build is the only one on the Velopack feed (RELEASES).
+#
+# Optional: -CleanOnly  build only the Clean flavour (no Full assets/emulators)
 #
 # The version must ALREADY match in BOTH GabLuchi.csproj and
 # Properties/AssemblyInfo.cs. The script verifies this and fails fast.
@@ -25,13 +32,15 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$CommitMessage,
 
-    [switch]$NoPush
+    [switch]$NoPush,
+
+    [switch]$CleanOnly
 )
 
 $ErrorActionPreference = "Stop"
 $repo = "Gab-lutang/gabluchi"
 $repoUrl = "https://github.com/Gab-lutang/gabluchi"
-$expectedAssets = 6
+$expectedAssets = if ($CleanOnly) { 6 } else { 8 }
 
 function Step-Host([string]$msg) { Write-Host ""
     Write-Host "=== $msg ===" -ForegroundColor Cyan }
@@ -102,31 +111,77 @@ Get-ChildItem -Recurse -Directory -Filter "obj" -EA SilentlyContinue | ForEach-O
 Remove-Item "Release" -Recurse -Force -EA SilentlyContinue
 Remove-Item "Releases" -Recurse -Force -EA SilentlyContinue
 
-# --- Build ------------------------------------------------------
-Step-Host "dotnet publish -c Release"
-dotnet publish -c Release -o Release/publish
-if ($LASTEXITCODE -ne 0) { Fail-Script "dotnet publish failed (exit $LASTEXITCODE)" }
+# --- Build (clean) ----------------------------------------------
+Step-Host "dotnet publish -c Release -r win-x64 --self-contained (clean, no emulators)"
+dotnet publish -c Release -r win-x64 --self-contained true --property:IncludePayloads=false -o Release/publish
+if ($LASTEXITCODE -ne 0) { Fail-Script "dotnet publish (clean) failed (exit $LASTEXITCODE)" }
 
 if (-not (Test-Path "Release\publish\GabLuchi.exe")) {
     Fail-Script "GabLuchi.exe missing after publish"
 }
 
+# --- Build (full) ------------------------------------------------
+if (-not $CleanOnly) {
+    Step-Host "dotnet publish -c Release -r win-x64 --self-contained (full, with emulators)"
+    dotnet publish -c Release -r win-x64 --self-contained true -o Release/publish-full
+    if ($LASTEXITCODE -ne 0) { Fail-Script "dotnet publish (full) failed (exit $LASTEXITCODE)" }
+
+    if (-not (Test-Path "Release\publish-full\GabLuchi.exe")) {
+        Fail-Script "GabLuchi.exe missing after full publish"
+    }
+}
+
 # --- Updater -----------------------------------------------------
 Step-Host "dotnet publish GabLuchiUpdater + bundle into app"
-dotnet publish -c Release -o Release/updater GabLuchiUpdater/GabLuchiUpdater.csproj
+dotnet publish -c Release -r win-x64 --self-contained true -o Release/updater GabLuchiUpdater/GabLuchiUpdater.csproj
 if ($LASTEXITCODE -ne 0) { Fail-Script "GabLuchiUpdater publish failed (exit $LASTEXITCODE)" }
 if (-not (Test-Path "Release\updater\GabLuchiUpdater.exe")) {
     Fail-Script "GabLuchiUpdater.exe missing after publish"
 }
 Copy-Item "Release\updater\*" "Release\publish\" -Recurse -Force
+if (-not $CleanOnly) {
+    Copy-Item "Release\updater\*" "Release\publish-full\" -Recurse -Force
+}
 $v = Get-Item "Release\publish\GabLuchiUpdater.exe"
 $vam = $v.VersionInfo.FileVersion
 Write-Host "GabLuchiUpdater.exe bundled ($vam) at $($v.Length) bytes" -ForegroundColor Green
 
-# --- Pack -------------------------------------------------------
-Step-Host "vpk pack"
-vpk pack --packId GabLuchi --packVersion $Version --packDir "Release\publish" --mainExe GabLuchi.exe
-if ($LASTEXITCODE -ne 0) { Fail-Script "vpk pack failed (exit $LASTEXITCODE)" }
+# --- Coherent runtime assembly overlay ----------------------------
+# The project references Microsoft.Extensions.* 10.0.0.0 from $(GabLuchiRuntimeDir)
+# (the *installed* app dir). The .NET 8 framework/updater publish can overwrite the
+# HintPath-copied support assemblies (DiagnosticSource/Text.Json/Encodings.Web/
+# EventLog/IO.Pipelines) with v8.0.0.0 versions, producing a v10-Hosting + v8-support
+# mix that crashes at HostBuilder.Build() with "Could not load file or assembly
+# System.Diagnostics.DiagnosticSource, Version=10.0.0.0". Overlay the pinned coherent
+# set from third_party\coherent_runtime so both variants ship a homogenous build.
+Step-Host "Overlay coherent runtime assemblies (v10 support set) into publish dirs"
+foreach ($pdir in @("Release\publish")) {
+    if (-not (Test-Path "third_party\coherent_runtime")) {
+        Fail-Script "third_party\coherent_runtime missing (coherent v10 assembly set)"
+    }
+    Copy-Item "third_party\coherent_runtime\*.dll" "$pdir\" -Force
+}
+if (-not $CleanOnly) {
+    if (-not (Test-Path "third_party\coherent_runtime")) {
+        Fail-Script "third_party\coherent_runtime missing (coherent v10 assembly set)"
+    }
+    Copy-Item "third_party\coherent_runtime\*.dll" "Release\publish-full\" -Force
+}
+
+# --- Pack (clean -> feed) ---------------------------------------
+Step-Host "vpk pack (clean, feeds Releases\RELEASES)"
+vpk pack --packId GabLuchi --packVersion $Version --packDir "Release\publish" --mainExe GabLuchi.exe --runtime win-x64
+if ($LASTEXITCODE -ne 0) { Fail-Script "vpk pack (clean) failed (exit $LASTEXITCODE)" }
+
+# --- Pack (full -> opt-in assets) -------------------------------
+if (-not $CleanOnly) {
+    Step-Host "vpk pack (full, into Release\full)"
+    New-Item -ItemType Directory -Force -Path "Release\full" | Out-Null
+    vpk pack --packId GabLuchi --packVersion $Version --packDir "Release\publish-full" --mainExe GabLuchi.exe --runtime win-x64 --outputDir "Release\full"
+    if ($LASTEXITCODE -ne 0) { Fail-Script "vpk pack (full) failed (exit $LASTEXITCODE)" }
+    Copy-Item "Release\full\GabLuchi-win-Setup.exe" "Releases\GabLuchi-win-Full-Setup.exe" -Force
+    Copy-Item "Release\full\GabLuchi-win-Portable.zip" "Releases\GabLuchi-win-Full-Portable.zip" -Force
+}
 
 # --- Strip BOM from RELEASES ------------------------------------
 Step-Host "Strip UTF-8 BOM from Releases\RELEASES"
@@ -187,7 +242,15 @@ Step-Host "gh release create v$Version"
 $files = @(
     "Releases\GabLuchi-$Version-full.nupkg",
     "Releases\GabLuchi-win-Setup.exe",
-    "Releases\GabLuchi-win-Portable.zip",
+    "Releases\GabLuchi-win-Portable.zip"
+)
+if (-not $CleanOnly) {
+    $files += @(
+        "Releases\GabLuchi-win-Full-Setup.exe",
+        "Releases\GabLuchi-win-Full-Portable.zip"
+    )
+}
+$files += @(
     "Releases\RELEASES",
     "Releases\releases.win.json",
     "Releases\assets.win.json"

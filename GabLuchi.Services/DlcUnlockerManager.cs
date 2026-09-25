@@ -69,6 +69,10 @@ public partial class DlcUnlockerManager(SteamService steam, SteamLibraryService 
 		List<DlcUnlockerBase> result = new List<DlcUnlockerBase>();
 		foreach (DlcUnlockerBase u in _unlockers.Values)
 		{
+			if (!u.IsAvailable())
+			{
+				continue;
+			}
 			if (platform == "steam" && (u.Type == DlcUnlockerType.SmokeApi || u.Type == DlcUnlockerType.CreamApi))
 			{
 				result.Add(u);

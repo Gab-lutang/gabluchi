@@ -20,6 +20,8 @@ public class SmokeApiUnlocker : DlcUnlockerBase
 
 	public override DlcUnlockerType[] ConflictsWith => new[] { DlcUnlockerType.CreamApi };
 
+	public override bool IsAvailable() => Directory.Exists(BundledDir);
+
 	public override bool IsInstalled(string gameDir)
 	{
 		if (File.Exists(Path.Combine(gameDir, "SmokeAPI.config.json")))

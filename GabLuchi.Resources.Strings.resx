@@ -436,6 +436,7 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="OlderVersion_CheckDotNet" xml:space="preserve"><value>Check .NET 9</value></data>
   <data name="OlderVersion_DotNetAvailable" xml:space="preserve"><value>.NET 9 runtime found</value></data>
   <data name="OlderVersion_DotNetMissing" xml:space="preserve"><value>.NET 9 runtime not found</value></data>
+  <data name="OlderVersion_DownloadNet9" xml:space="preserve"><value>Download .NET 9</value></data>
   <data name="OlderVersion_Downloading" xml:space="preserve"><value>Downloading...</value></data>
   <data name="OlderVersion_Done" xml:space="preserve"><value>Download complete</value></data>
   <data name="OlderVersion_Error" xml:space="preserve"><value>Download failed</value></data>
