@@ -31,23 +31,9 @@
           </Grid.ColumnDefinitions>
 
           <StackPanel Margin="0,0,14,0">
-            <Border Height="196" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
-              <Border.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                  <GradientStop Offset="0" Color="#1d212a" />
-                  <GradientStop Offset="1" Color="#12141a" />
-                </LinearGradientBrush>
-              </Border.Background>
+            <Border Height="196" Background="#0DFFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
               <Grid>
-                <Border VerticalAlignment="Bottom">
-                  <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                      <GradientStop Offset="0" Color="#00000000" />
-                      <GradientStop Offset="0.4" Color="#66000000" />
-                      <GradientStop Offset="1" Color="#E6000000" />
-                    </LinearGradientBrush>
-                  </Border.Background>
-                  <StackPanel Margin="22,26,22,18">
+                <StackPanel Margin="22,26,22,18" VerticalAlignment="Bottom">
                     <StackPanel Orientation="Horizontal">
                       <Border Width="44" Height="44" VerticalAlignment="Center" Background="#1aa78bfa" CornerRadius="10">
                         <ui:SymbolIcon FontSize="20" Foreground="#a78bfa" Symbol="PuzzlePiece24" />
@@ -71,11 +57,10 @@
                       </StackPanel>
                     </StackPanel>
                   </StackPanel>
-                </Border>
-              </Grid>
+                </Grid>
             </Border>
 
-            <Border Margin="0,12,0,0" Padding="16,13" Background="#16181d" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="6">
+            <Border Margin="0,12,0,0" Padding="16,13" Background="#0DFFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="10">
               <StackPanel>
                 <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#d1d5db" Text="{x:Static res:Strings.Plugin_Components_Header}" />
 
@@ -171,7 +156,7 @@
             </Border>
           </StackPanel>
 
-          <Border Grid.Column="1" Padding="16" Background="#16181d" BorderBrush="#1f2329" BorderThickness="1" CornerRadius="6">
+          <Border Grid.Column="1" Padding="16" Background="#0DFFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="10">
             <StackPanel>
               <TextBlock FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Text="{x:Static res:Strings.Plugin_CardTitle}" />
               <TextBlock Margin="0,2,0,0" FontSize="11" Foreground="#6b7280">
