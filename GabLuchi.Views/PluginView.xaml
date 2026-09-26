@@ -33,6 +33,7 @@
           <StackPanel Margin="0,0,14,0">
             <Border Height="196" Background="#0DFFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1" CornerRadius="10" ClipToBounds="True">
               <Grid>
+                <Image HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="0.14" Stretch="UniformToFill" IsHitTestVisible="False" Source="{Binding MemeUri, Converter={StaticResource ImagePathToSource}}" />
                 <StackPanel Margin="22,26,22,18" VerticalAlignment="Bottom">
                     <StackPanel Orientation="Horizontal">
                       <Border Width="44" Height="44" VerticalAlignment="Center" Background="#1aa78bfa" CornerRadius="10">

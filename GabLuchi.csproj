@@ -29,8 +29,8 @@
   <ItemGroup>
     <None Remove="icon.ico" />
     <Resource Include="icon.ico" />
-    <None Remove="Assets\gabluchi_logo.png" />
-    <Resource Include="Assets\gabluchi_logo.png" />
+    <None Remove="Assets\*.png" />
+    <Resource Include="Assets\*.png" />
     <None Update="GabLuchi.config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

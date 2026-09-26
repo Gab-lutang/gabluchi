@@ -360,15 +360,21 @@ public class PluginViewModel : ObservableObject
 				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.InstallIsPrimary);
 				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.ShowUpToDate);
 				OnPropertyChanging(__KnownINotifyPropertyChangingArgs.CanUninstall);
+				OnPropertyChanging(nameof(MemeUri));
 				_isInstalled = value;
 				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.IsInstalled);
 				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.InstallButtonText);
 				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.InstallIsPrimary);
 				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.ShowUpToDate);
 				OnPropertyChanged(__KnownINotifyPropertyChangedArgs.CanUninstall);
+				OnPropertyChanged(nameof(MemeUri));
 			}
 		}
 	}
+
+	public string MemeUri => IsInstalled
+		? "pack://application:,,,/Assets/plugin_meme_installed.png"
+		: "pack://application:,,,/Assets/plugin_meme_missing.png";
 
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
 	[ExcludeFromCodeCoverage]
