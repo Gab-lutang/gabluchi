@@ -113,6 +113,8 @@ public class PluginInstallerService(SteamService steam, GithubProxy gh, CefInjec
 
 	internal string? SteamDir => steam.EffectivePath;
 
+	public bool SteamFound => SteamDir != null;
+
 	private IEnumerable<string> LegacyDllPaths
 	{
 		get

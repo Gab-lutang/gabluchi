@@ -72,6 +72,58 @@ public class PluginViewModel : ObservableObject
 	[ObservableProperty]
 	private string? _statusLine;
 
+	[ObservableProperty]
+	private bool _steamFound;
+
+	[ObservableProperty]
+	private bool _portBusy;
+
+	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
+	[ExcludeFromCodeCoverage]
+	public bool SteamFound
+	{
+		get
+		{
+			return _steamFound;
+		}
+		set
+		{
+			if (!EqualityComparer<bool>.Default.Equals(_steamFound, value))
+			{
+				OnPropertyChanging(nameof(SteamFound));
+				OnPropertyChanging(nameof(SteamStatus));
+				_steamFound = value;
+				OnPropertyChanged(nameof(SteamFound));
+				OnPropertyChanged(nameof(SteamStatus));
+			}
+		}
+	}
+
+	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "8.4.0.0")]
+	[ExcludeFromCodeCoverage]
+	public bool PortBusy
+	{
+		get
+		{
+			return _portBusy;
+		}
+		set
+		{
+			if (!EqualityComparer<bool>.Default.Equals(_portBusy, value))
+			{
+				OnPropertyChanging(nameof(PortBusy));
+				OnPropertyChanging(nameof(PortStatus));
+				_portBusy = value;
+				OnPropertyChanged(nameof(PortBusy));
+				OnPropertyChanged(nameof(PortStatus));
+			}
+		}
+	}
+
+	public string SteamStatus => (SteamFound ? Strings.Plugin_Status_Detected : Strings.Plugin_Status_NotDetected);
+
+	public string PortStatus => (PortBusy ? Strings.Plugin_Status_Busy : Strings.Plugin_Status_Free);
+
 	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
 	private AsyncRelayCommand? installCommand;
 
@@ -479,6 +531,8 @@ public class PluginViewModel : ObservableObject
 		DllStatus = ((!pluginStatus.DllInstalled) ? Strings.Plugin_Status_NotInstalled : (pluginStatus.DllMatches ? Strings.Plugin_Status_UpToDate : Strings.Plugin_Status_OutOfDate));
 		UpdateAvailable = pluginStatus.UpdateAvailable;
 		MillenniumCoexisting = pluginStatus.MillenniumPresent;
+		SteamFound = _installer.SteamFound;
+		PortBusy = pluginStatus.Port8080Busy;
 		StatusLine = (pluginStatus.Offline ? Strings.Plugin_Status_OfflineCheck : (pluginStatus.Port8080Busy ? Strings.Plugin_Status_Port8080Busy : null));
 	}
 
