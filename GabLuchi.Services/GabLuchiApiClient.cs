@@ -17,11 +17,18 @@ public class GabLuchiApiClient(SteamAppInfoCache appInfo, CoverCache covers)
 {
 	private static readonly string InterimDownloadsFolder = Path.Combine(Path.GetTempPath(), "GabLuchi", "downloads");
 
-	private readonly HttpClient _http = new HttpClient
+	private readonly HttpClient _http = CreateApiClient();
+
+	/// <summary>
+	/// DoH-backed so a DNS-blocking ISP cannot take out every API call in the app. BaseAddress is
+	/// set here because the handler-based factory cannot take it in an object initializer.
+	/// </summary>
+	private static HttpClient CreateApiClient()
 	{
-		BaseAddress = new Uri(Config.ApiBaseUrl),
-		Timeout = TimeSpan.FromMinutes(5.0)
-	};
+		HttpClient client = DohHttp.CreateClient(TimeSpan.FromMinutes(5.0));
+		client.BaseAddress = new Uri(Config.ApiBaseUrl);
+		return client;
+	}
 
 	private static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions
 	{
@@ -227,18 +234,6 @@ public class GabLuchiApiClient(SteamAppInfoCache appInfo, CoverCache covers)
 			}
 		}
 		return gameDetails;
-	}
-
-	public async Task<Dictionary<string, string>> CheckSourcesAsync(string appid, CancellationToken ct = default(CancellationToken))
-	{
-		HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, Config.ManifestBackendBase + "/check_apis?appid=" + appid);
-		httpRequestMessage.Headers.TryAddWithoutValidation("User-Agent", Config.ManifestBackendUserAgent);
-		HttpResponseMessage httpResponseMessage = await _http.SendAsync(httpRequestMessage, ct);
-		if (!httpResponseMessage.IsSuccessStatusCode)
-		{
-			return new Dictionary<string, string>();
-		}
-		return (await ReadJsonAsync<Dictionary<string, string>>(httpResponseMessage, ct)) ?? new Dictionary<string, string>();
 	}
 
 	public async Task<DlcInfo?> GetDlcInfoAsync(string appid, string baseAppId, CancellationToken ct = default(CancellationToken))

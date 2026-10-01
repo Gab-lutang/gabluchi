@@ -105,11 +105,15 @@ public class HttpServerService : IHostedService
 			}
 		}
 		_log.LogWarning("api.json not found — using fallback sources");
+		// Two of these used to point at the same dead host (167.235.229.108), which made the status
+		// page claim coverage it did not have. The list now names the real endpoints only, and drops
+		// 167 entirely: its /<appid> file route stopped serving every appid in Sep 2026, so advertising
+		// it here would report "up" for a source that cannot produce a file.
 		_apiSources = new List<ApiSource>
 		{
-			new ApiSource("Ryuu", "http://167.235.229.108/<appid>", 200),
-			new ApiSource("Sushi", "https://raw.githubusercontent.com/sushi-dev55-alt/sushitools-games-repo-alt/refs/heads/main/<appid>.zip", 200),
-			new ApiSource("Luie", "http://167.235.229.108/<appid>", 200)
+			new ApiSource(ManifestDownloader.MirrorSourceName, AppConfig.ManifestsMirrorBaseUrl + "/<appid>.zip", 200),
+			new ApiSource(ManifestDownloader.KeylessSourceName, "https://api.luagen.revobd.club/<appid>.zip", 200),
+			new ApiSource("Sushi", "https://raw.githubusercontent.com/sushi-dev55-alt/sushitools-games-repo-alt/refs/heads/main/<appid>.zip", 200)
 		};
 	}
 
@@ -228,7 +232,7 @@ public class HttpServerService : IHostedService
 			}
 			else if (MatchPost(text2, "/check-sources/{appid}", out id5))
 			{
-				tuple = await HandleCheckSources(long.Parse(id5));
+				tuple = HandleCheckSources(long.Parse(id5));
 			}
 			else if (MatchPost(text2, "/download/{appid}", out id6))
 			{
@@ -578,11 +582,11 @@ public class HttpServerService : IHostedService
 		}));
 	}
 
-	private async Task<(int, string)> HandleCheckSources(long appId)
+	private (int, string) HandleCheckSources(long appId)
 	{
 		try
 		{
-			List<object> results = ((IEnumerable<KeyValuePair<string, string>>)(await _services.GetRequiredService<GabLuchiApiClient>().CheckSourcesAsync(appId.ToString()))).Select((Func<KeyValuePair<string, string>, object>)((KeyValuePair<string, string> kv) => new
+			List<object> results = _services.GetRequiredService<ManifestDownloader>().GetSourceStatus().Select((Func<KeyValuePair<string, string>, object>)((KeyValuePair<string, string> kv) => new
 			{
 				name = kv.Key,
 				available = (kv.Value == "available"),

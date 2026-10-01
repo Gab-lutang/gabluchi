@@ -542,4 +542,10 @@ This deletes the .lua files from Steam\config\stplug-in. Restart Steam afterward
   <data name="Plugin_Status_Free" xml:space="preserve"><value>Free</value></data>
   <data name="Plugin_Status_Busy" xml:space="preserve"><value>Busy</value></data>
   <data name="Plugin_Rail_Hint" xml:space="preserve"><value>Installs and manages the LuaLoader plugin inside your Steam directory.</value></data>
+  <data name="Add_Status_PendingUpgrade" xml:space="preserve"><value>Setting up {0}, finishing game access. This takes a moment.</value></data>
+  <data name="Add_Status_UpgradeFailed" xml:space="preserve"><value>Could not finish setting up {0}. Nothing was changed, so it is safe to try again.</value></data>
+  <data name="Add_Err_QuotaExhausted" xml:space="preserve"><value>Could not reach the game data server right now. Please try again later.</value></data>
+  <data name="Add_Err_SourceBlocked" xml:space="preserve"><value>This network is currently blocked by the game data server.</value></data>
+  <data name="Add_Err_SourceMissing" xml:space="preserve"><value>This source does not carry that game.</value></data>
+  <data name="Add_Status_Cached" xml:space="preserve"><value>{0} is already set up. No download was needed.</value></data>
 </root>

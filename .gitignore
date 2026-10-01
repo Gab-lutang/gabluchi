@@ -16,3 +16,10 @@ BetterSteamTools/
 Surses/
 fixes_multi/
 opencode.json
+
+# Competitor binaries + installers dropped for reference/analysis only.
+# NEVER commit these: competing clients/launchers would ship in our repo.
+copy/
+
+# Scratch notes with upstream hashes/tokens — local only, never ship.
+uypiay.txt

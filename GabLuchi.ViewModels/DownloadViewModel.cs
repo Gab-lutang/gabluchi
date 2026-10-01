@@ -135,6 +135,19 @@ public class DownloadViewModel : ObservableObject
 
 	private string? _fastFetchSource;
 
+	/// <summary>
+	/// The appid whose placeholder lua WE wrote earlier in this same operation. Without this the
+	/// enrichment step re-reads the folder, finds our own stub, decides the user already owns a lua,
+	/// and asks them to confirm overwriting a file the app created a second earlier.
+	/// </summary>
+	private long? _stubWrittenAppId;
+
+	/// <summary>
+	/// True once we have installed a placeholder that still needs a real keyed manifest. Drives the
+	/// pending-upgrade status so a half-finished install is never reported as a plain success.
+	/// </summary>
+	private bool _upgradePending;
+
 	[ObservableProperty]
 	private bool _fastFetch;
 
@@ -1152,6 +1165,9 @@ public class DownloadViewModel : ObservableObject
 				Error = Strings.Add_Err_Demolished;
 				return;
 			}
+			// Fresh operation: nothing we wrote earlier counts as something the user owns.
+			_stubWrittenAppId = null;
+			_upgradePending = false;
 			string? existingLuaPath = _installer.ReadInstalledLua(appId);
 			if (existingLuaPath == null)
 			{
@@ -1251,7 +1267,14 @@ public class DownloadViewModel : ObservableObject
 			try
 			{
 				InstallResult result = _installer.InstallLua(tempPath, appId);
-				_fastFetchSource = "BetterSteamTools";
+				// No provenance claim here: this is our own keyless placeholder, not a manifest from
+				// any source. Crediting a mirror for it is what made the UI look like it had succeeded.
+				_fastFetchSource = null;
+				if (result.Error == null && !result.AnyFailed)
+				{
+					_stubWrittenAppId = appId;
+					_upgradePending = true;
+				}
 				ReportInstall(result);
 				return result.Error == null && !result.AnyFailed;
 			}
@@ -1274,48 +1297,55 @@ public class DownloadViewModel : ObservableObject
 
 	private async Task TryEnrichAsync(long appId, string? existingLuaPath)
 	{
-		string? sushiUrl = _manifestDownloader.GetSourceUrl("Sushi", appId.ToString());
-		if (sushiUrl != null)
+		string id = appId.ToString();
+			// Already unlocked: a keyed lua for this game is sitting in the Steam folder. Rebuilding it
+			// would spend a network fetch to produce a file we already have, and on a machine with a
+			// real library that is the normal case rather than an edge case.
+		if (_manifestDownloader.InstalledLuaIsUsable(id))
 		{
-			try
-			{
-				DownloadedFile sushiZip = await _manifestDownloader.DownloadDirectAsync(sushiUrl, appId + ".zip", null);
-				LastDownload = sushiZip;
-				_fastFetchSource = "Sushi";
-				if (existingLuaPath != null && !_silentInstall)
-				{
-					await ShowOverwriteConfirmAsync(existingLuaPath, sushiZip.FilePath, appId);
-					return;
-				}
-				InstallZipAndReport(sushiZip.FilePath, appId);
-				if (!InstallFailed)
-				{
-					return;
-				}
-			}
-			catch (Exception)
-			{
-			}
+			_upgradePending = false;
+			_fastFetchSource = null;
+			InstallFailed = false;
+			InstallStatus = string.Format(Strings.Add_Status_Cached, Details?.Name ?? id);
+			return;
 		}
-		string? beforeStatus = InstallStatus;
+		bool wasCached = _manifestDownloader.IsCached(id);
 		try
 		{
-			SourceRowViewModel row = new SourceRowViewModel(this, "Luie", "available");
-			_fastFetchSource = row.DisplayName;
-			await DownloadFromSourceAsync(row);
-			if (LastDownload != null)
+			// Chain order is our own mirror, the keyless luagen, ManifestHub, EQhub, then Sushi,
+			// with the installed lua and the local cache consulted before any of them. A source that
+			// answers 200 with no depot key is a miss, not a success: the game would not unlock.
+			DownloadedFile zip = await _manifestDownloader.DownloadManifestChainAsync(id, Details?.Name, null);
+			LastDownload = zip;
+			_upgradePending = false;
+			// Deliberately no source name here. Where a manifest came from is a diagnostic, not
+			// something a customer needs in order to use the product.
+			_fastFetchSource = null;
+			// Only prompt when the user really did have a lua before this operation began. A file we
+			// wrote ourselves in step one is not theirs, and asking is both noise and a trap.
+			if (existingLuaPath != null && !_silentInstall)
 			{
+				await ShowOverwriteConfirmAsync(existingLuaPath, zip.FilePath, appId);
 				return;
 			}
+			InstallZipAndReport(zip.FilePath, appId);
+			if (!InstallFailed && wasCached)
+			{
+				InstallStatus = string.Format(Strings.Add_Status_Cached, Details?.Name ?? id);
+			}
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
-		}
-		if (HasInstallResult)
-		{
-			Error = null;
-			InstallStatus = beforeStatus;
-			InstallFailed = false;
+			// A failed upgrade stays a failure. The old code restored the previous status and forced
+			// InstallFailed = false, which is how a keyless placeholder ended up reported as a
+			// successful install and the user was left with a game that would not unlock.
+			_upgradePending = false;
+			InstallFailed = true;
+			string message = (ex is ApiException api && !string.IsNullOrWhiteSpace(api.Message))
+				? api.Message
+				: string.Format(Strings.Add_Status_UpgradeFailed, Details?.Name ?? id);
+			Error = message;
+			InstallStatus = message;
 		}
 	}
 
@@ -1366,13 +1396,28 @@ public class DownloadViewModel : ObservableObject
 				await ApplyHubcapStateAsync();
 			}
 			string text = _installer.ReadInstalledLua(appId);
-			bool flag = !_silentInstall && text != null;
+			// A lua we wrote ourselves earlier in this same operation is not something the user owns.
+			// Confirming its replacement is noise, and a user who clicks Cancel through it is left
+			// with the keyless placeholder still in place.
+			bool isOwnStub = _stubWrittenAppId == appId;
+			bool flag = !_silentInstall && text != null && !isOwnStub;
 			if (flag)
 			{
 				flag = await ShowOverwriteConfirmAsync(text, download.FilePath, appId);
 			}
 			if (!flag)
 			{
+				// Never install a manifest that carries no depot key and call it done. This is the
+				// difference between "installed" and "installed but will not unlock".
+				if (!ManifestDownloader.HasKeyedEntry(download.FilePath, appId.ToString()))
+				{
+					ManifestDownloader.DeleteStaged(download.FilePath);
+					InstallFailed = true;
+					string failed = string.Format(Strings.Add_Status_UpgradeFailed, Details?.Name ?? appId.ToString());
+					Error = failed;
+					InstallStatus = failed;
+					return;
+				}
 				InstallZipAndReport(download.FilePath, appId);
 			}
 		}
@@ -1552,6 +1597,16 @@ public class DownloadViewModel : ObservableObject
 		{
 			InstallFailed = true;
 			InstallStatus = string.Format(Strings.Add_Status_InstallFailed, result.Failed.Count);
+			return;
+		}
+		if (_upgradePending)
+		{
+			// The placeholder is installed but carries no depot key yet, so the game is not actually
+			// unlocked. Reporting the normal "added" message here is what made a broken install look
+			// complete; say what is actually happening instead.
+			InstallFailed = false;
+			InstallStatus = string.Format(Strings.Add_Status_PendingUpgrade, Details?.Name ?? "lua");
+			_fastFetchSource = null;
 			return;
 		}
 		InstallFailed = false;

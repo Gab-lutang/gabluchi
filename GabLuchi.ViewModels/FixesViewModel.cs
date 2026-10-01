@@ -532,10 +532,19 @@ public class FixesViewModel : PagedListViewModel<FixGameCardVm>
 			{
 				file = new DownloadedFile(localFix, Path.GetFileName(localFix));
 			}
+			else if (slot == "manifest")
+			{
+				// The old fixed source ("Ryuu" on 167.235.229.108) is gone; manifests come from
+				// the same free ladder every other install walks.
+				file = await manifestDownloader.DownloadManifestChainAsync(game.AppId, game.Name, progress);
+				if (long.TryParse(game.AppId, out long fixesAppId)) _ = _analytics.TrackGameFetchAsync(fixesAppId, game.Name ?? "", "chain");
+			}
 			else
 			{
-				file = await manifestDownloader.DownloadManifestAsync(game.AppId, "Ryuu", game.Name, progress);
-				if (long.TryParse(game.AppId, out long fixesAppId)) _ = _analytics.TrackGameFetchAsync(fixesAppId, game.Name ?? "", "Ryuu");
+				// Fix files were only ever served by the dead upstream: ApplyFix extracts a zip of
+				// patched files straight into the game folder, which no manifest source provides.
+				// The local repository checked above remains the way fixes reach this machine.
+				throw new ApiException("No remote source serves fix files anymore — only fixes in the local repository can be applied.");
 			}
 			if (slot == "manifest")
 			{

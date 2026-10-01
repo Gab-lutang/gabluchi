@@ -1025,6 +1025,18 @@ public static class Strings
 
 	public static string SmartDlc_Install => Get("SmartDlc_Install");
 
+	public static string Add_Status_PendingUpgrade => Get("Add_Status_PendingUpgrade");
+
+	public static string Add_Status_UpgradeFailed => Get("Add_Status_UpgradeFailed");
+
+	public static string Add_Err_QuotaExhausted => Get("Add_Err_QuotaExhausted");
+
+	public static string Add_Err_SourceBlocked => Get("Add_Err_SourceBlocked");
+
+	public static string Add_Err_SourceMissing => Get("Add_Err_SourceMissing");
+
+	public static string Add_Status_Cached => Get("Add_Status_Cached");
+
 	public static string Get(string key)
 	{
 		return Rm.GetString(key, CultureInfo.CurrentUICulture) ?? key;

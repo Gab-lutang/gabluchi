@@ -63,5 +63,12 @@ public static class AppConfig
 
 	public const string GitHubMirrorBaseUrl = "https://raw.githubusercontent.com/qwe213312/k25FCdfEOoEJ42S6/main";
 
+	/// <summary>
+	/// Our own public manifest mirror. Free, unmetered, and under our control, so it is tried before
+	/// the upstream server that spends a per-IP daily allowance. Files are laid out as
+	/// <c>{appid}.zip</c> at the repo root.
+	/// </summary>
+	public const string ManifestsMirrorBaseUrl = "https://raw.githubusercontent.com/Gab-lutang/gabluchi-manifests/main";
+
 	public const string SteamCmdInfoUrl = "https://api.steamcmd.net/v1/info";
 }

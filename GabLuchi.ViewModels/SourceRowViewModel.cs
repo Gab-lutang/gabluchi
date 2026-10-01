@@ -45,8 +45,6 @@ public class SourceRowViewModel : ObservableObject
 
 	public string Status { get; }
 
-	public string? DiscordUrl { get; }
-
 	public bool NeedsKey { get; }
 
 	public bool IsAvailable => Status == "available";
@@ -187,10 +185,6 @@ public class SourceRowViewModel : ObservableObject
 	[ExcludeFromCodeCoverage]
 	public IAsyncRelayCommand DownloadCommand => downloadCommand ?? (downloadCommand = new AsyncRelayCommand(DownloadAsync));
 
-	[GeneratedCode("CommunityToolkit.Mvvm.SourceGenerators.RelayCommandGenerator", "8.4.0.0")]
-	[ExcludeFromCodeCoverage]
-	public IRelayCommand OpenDiscordCommand => openDiscordCommand ?? (openDiscordCommand = new RelayCommand(OpenDiscord));
-
 	public SourceRowViewModel(DownloadViewModel parent, string name, string status)
 	{
 		_parent = parent;
@@ -198,7 +192,6 @@ public class SourceRowViewModel : ObservableObject
 		Status = status;
 		SourceMeta.Meta meta = SourceMeta.Get(name);
 		DisplayName = meta.DisplayName ?? name;
-		DiscordUrl = meta.DiscordUrl;
 		NeedsKey = meta.RequiresUserKey;
 	}
 
@@ -206,17 +199,5 @@ public class SourceRowViewModel : ObservableObject
 	private Task DownloadAsync()
 	{
 		return _parent.DownloadFromSourceAsync(this);
-	}
-
-	[RelayCommand]
-	private void OpenDiscord()
-	{
-		if (DiscordUrl != null)
-		{
-			Process.Start(new ProcessStartInfo(DiscordUrl)
-			{
-				UseShellExecute = true
-			});
-		}
 	}
 }

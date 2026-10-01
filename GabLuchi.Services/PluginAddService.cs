@@ -67,6 +67,16 @@ public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifest
 		public string? Error;
 
 		public bool Busy;
+
+		/// <summary>
+		/// Set once a real, keyed manifest has been installed for this appid. The plugin calls
+		/// Check and then Pick for the same add, and without this the file was fetched from the
+		/// upstream server twice, spending two of a small per-IP daily allowance on one game.
+		/// </summary>
+		public bool Completed;
+
+		/// <summary>Which source the completed install came from, for diagnostics only.</summary>
+		public string? CompletedFromSource;
 	}
 
 	private const string HubcapSourceName = "Sadie (Morrenus)";
@@ -115,6 +125,11 @@ public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifest
 		if (!_states.TryGetValue(appId, out AddState state))
 		{
 			PluginLog.Log($"PluginAdd.Pick appid={appId} source='{sourceName}' -> NO STATE (Start not called?)");
+			return;
+		}
+		if (state.Completed)
+		{
+			PluginLog.Log($"PluginAdd.Pick appid={appId} source='{sourceName}' -> already installed from '{state.CompletedFromSource}', skipping duplicate fetch");
 			return;
 		}
 		if (state.Busy)
@@ -168,7 +183,7 @@ public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifest
 					return;
 				}
 			}
-			Dictionary<string, string> dictionary = await api.CheckSourcesAsync(appId.ToString());
+			Dictionary<string, string> dictionary = manifestDownloader.GetSourceStatus();
 			dictionary["Sadie (Morrenus)"] = (string.IsNullOrEmpty(key) ? "unknown" : (hubcapAvailable ? "available" : "unavailable"));
 			List<SourceRow> rows = dictionary.OrderByDescending((KeyValuePair<string, string> kv) => SourceMeta.Get(kv.Key).RequiresUserKey ? 1 : 0).Select(delegate(KeyValuePair<string, string> kv)
 			{
@@ -279,17 +294,6 @@ public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifest
 		{
 			return;
 		}
-		var usageResult = await usage.CheckUsageAsync("download", appId);
-		if (usageResult != null && !usageResult.Allowed)
-		{
-			if (usageResult.Expired)
-				state.Error = "Your free key has expired. Run /freekey on Discord for a new one.";
-			else
-				state.Error = $"Weekly download limit reached ({usageResult.DownloadsUsed}/{usageResult.DownloadsLimit}). Upgrade to paid for unlimited.";
-			state.Checking = false;
-			state.Busy = false;
-			return;
-		}
 		state.Busy = true;
 		state.Error = null;
 		state.InstallStatus = null;
@@ -307,8 +311,38 @@ public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifest
 					row.Progress = p.Value * 100.0;
 				}
 			});
-			DownloadedFile downloadedFile = ((!row.NeedsKey) ? (await manifestDownloader.DownloadManifestAsync(appId.ToString(), row.Name, state.GameName, progress)) : (await hubcap.DownloadManifestAsync(appId.ToString(), settings.HubcapApiKey ?? "", progress)));
-			_ = analytics.TrackGameFetchAsync(appId, state.GameName ?? "", row.Name);
+			// A manifest we already hold is resolved before the usage check and before any network
+			// call: a cache hit is free, costs the user no allowance, and is the difference between
+			// one upstream fetch per game and one per install attempt.
+			DownloadedFile? cached = row.NeedsKey ? null : manifestDownloader.TryGetCached(appId.ToString());
+			if (cached == null)
+			{
+				var usageResult = await usage.CheckUsageAsync("download", appId);
+				if (usageResult != null && !usageResult.Allowed)
+				{
+					if (usageResult.Expired)
+						state.Error = "Your free key has expired. Run /freekey on Discord for a new one.";
+					else
+						state.Error = $"Weekly download limit reached ({usageResult.DownloadsUsed}/{usageResult.DownloadsLimit}). Upgrade to paid for unlimited.";
+					state.Checking = false;
+					return;
+				}
+			}
+			DownloadedFile downloadedFile = cached ?? ((!row.NeedsKey) ? (await manifestDownloader.DownloadManifestAsync(appId.ToString(), row.Name, state.GameName, progress)) : (await hubcap.DownloadManifestAsync(appId.ToString(), settings.HubcapApiKey ?? "", progress)));
+			if (cached == null)
+			{
+				_ = analytics.TrackGameFetchAsync(appId, state.GameName ?? "", row.Name);
+			}
+			// A 200 that carries no depot key installs successfully and unlocks nothing. Refuse it
+			// here so the caller is told the truth instead of being handed a broken lua.
+			if (!row.NeedsKey && !ManifestDownloader.HasKeyedEntry(downloadedFile.FilePath, appId.ToString()))
+			{
+				ManifestDownloader.DeleteStaged(downloadedFile.FilePath);
+				state.InstallFailed = true;
+				state.Error = string.Format(Strings.Add_Status_UpgradeFailed, state.GameName ?? appId.ToString());
+				PluginLog.Log($"PluginAdd.Download appid={appId} source='{row.Name}' REJECTED: no depot key in manifest");
+				return;
+			}
 			DownloadedFile downloadedFile2 = downloadedFile;
 			InstallResult installResult = (IsZip(downloadedFile2.FilePath) ? installer.InstallZip(downloadedFile2.FilePath, appId) : installer.InstallLua(downloadedFile2.FilePath, appId));
 			try
@@ -329,10 +363,13 @@ public class PluginAddService(GabLuchiApiClient api, ManifestDownloader manifest
 			}
 			else
 			{
+				state.Completed = true;
+				state.CompletedFromSource = row.Name;
 				string arg = (string.IsNullOrEmpty(state.GameName) ? "lua" : state.GameName);
 				state.InstallStatus = ((installResult.ManifestCount > 0) ? string.Format(Strings.Add_Status_AddedManifests, arg, installResult.ManifestCount) : string.Format(Strings.Add_Status_AddedFetch, arg));
-				state.InstallStatus = state.InstallStatus + " " + string.Format(Strings.Add_FastFetch_Via, row.Name);
-				PluginLog.Log($"PluginAdd.Download appid={appId} source='{row.Name}' OK: {state.InstallStatus}");
+				// No "via <mirror>" suffix: which upstream served a manifest is not something a
+				// customer needs in order to use the product.
+				PluginLog.Log($"PluginAdd.Download appid={appId} source='{row.Name}' OK ({(cached != null ? "cache" : "network")}): {state.InstallStatus}");
 			}
 		}
 		catch (Exception ex)

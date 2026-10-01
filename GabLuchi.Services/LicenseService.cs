@@ -17,10 +17,10 @@ public class LicenseService
 {
 	private readonly SettingsService _settings;
 
-	private readonly HttpClient _http = new HttpClient
-	{
-		Timeout = TimeSpan.FromSeconds(90.0)
-	};
+	// DoH-backed: this client owns the license gate and the demolish check, so a DNS-blocking ISP
+	// taking out the key-checker hostname would otherwise leave every user unable to validate a key
+	// or download anything at all.
+	private readonly HttpClient _http = DohHttp.CreateClient(TimeSpan.FromSeconds(90.0));
 
 	private static readonly JsonSerializerOptions JsonOpts = new JsonSerializerOptions
 	{

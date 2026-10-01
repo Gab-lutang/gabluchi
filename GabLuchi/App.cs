@@ -48,6 +48,7 @@ public partial class App : Application
 			services.AddSingleton<CoverCache>();
 			services.AddSingleton<ToastService>();
 			services.AddSingleton<SteamDepotInfo>();
+			services.AddSingleton<LuaDlcEnricher>();
 			services.AddSingleton<LuaInstaller>();
 			services.AddSingleton<SteamLibraryService>();
 			services.AddSingleton<SteamOwnershipService>();
