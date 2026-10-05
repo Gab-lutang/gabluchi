@@ -298,8 +298,12 @@ public class ManifestDownloader
 			{
 				return false;
 			}
-			LuaContents? contents = LuaFileParser.Parse(path, id);
-			return contents != null && contents.DepotCount > 0;
+		LuaContents? contents = LuaFileParser.Parse(path, id);
+		if (contents == null || contents.DepotCount == 0)
+		{
+			return false;
+		}
+		return AcfHealth.GetState(_steam?.EffectivePath, id) != AcfState.Failed;
 		}
 		catch
 		{

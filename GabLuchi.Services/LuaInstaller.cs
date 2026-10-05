@@ -51,9 +51,9 @@ public class LuaInstaller(SteamService steam, SettingsService settings, CacheSer
 		return string.Join('\n', array);
 	}
 
-	private void WriteLua(string sourceLuaPath, string dest, bool forceLocked = false)
+	private void WriteLua(string sourceLuaPath, string dest, long appId, bool forceLocked = false)
 	{
-		if (AutoUpdate && !forceLocked)
+		if (AutoUpdate && !forceLocked && AcfHealth.GetState(steam.EffectivePath, appId) == AcfState.Healthy)
 		{
 			string lua = File.ReadAllText(sourceLuaPath);
 			File.WriteAllText(dest, CommentOutManifestPins(lua));
@@ -91,7 +91,7 @@ public class LuaInstaller(SteamService steam, SettingsService settings, CacheSer
 		{
 			Directory.CreateDirectory(stPlugInDir);
 			string dest = Path.Combine(stPlugInDir, $"{appId}.lua");
-			WriteLua(luaPath, dest, forceLocked);
+			WriteLua(luaPath, dest, appId, forceLocked);
 			RecordLoaded(appId);
 			return new InstallResult(LuaInstalled: true, 0, Array.Empty<string>(), null);
 		}
@@ -250,7 +250,7 @@ public class LuaInstaller(SteamService steam, SettingsService settings, CacheSer
 						try
 						{
 							entry.ExtractToFile(text2, overwrite: true);
-							WriteLua(text2, text, forceLocked);
+							WriteLua(text2, text, appId, forceLocked);
 							luaInstalled = true;
 							RecordLoaded(appId);
 						}

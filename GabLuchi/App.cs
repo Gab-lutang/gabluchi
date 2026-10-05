@@ -44,6 +44,7 @@ public partial class App : Application
 			services.AddSingleton<AuthService>();
 			services.AddSingleton<SteamService>();
 			services.AddSingleton<SteamAppListCache>();
+			services.AddSingleton<SearchIndexService>();
 			services.AddSingleton<SteamAppInfoCache>();
 			services.AddSingleton<CoverCache>();
 			services.AddSingleton<ToastService>();

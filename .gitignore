@@ -23,3 +23,7 @@ copy/
 
 # Scratch notes with upstream hashes/tokens — local only, never ship.
 uypiay.txt
+crack.md
+
+# WPF markup-compile temp projects (regenerated every build)
+*_wpftmp.csproj

@@ -56,7 +56,7 @@ public class SteamLibraryService(SteamService steam)
 		return null;
 	}
 
-	private static IEnumerable<string> GetLibraryRoots(string steamRoot)
+	public static IEnumerable<string> GetLibraryRoots(string steamRoot)
 	{
 		yield return steamRoot;
 		string path = Path.Combine(steamRoot, "steamapps", "libraryfolders.vdf");

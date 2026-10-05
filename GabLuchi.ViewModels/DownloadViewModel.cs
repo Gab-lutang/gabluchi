@@ -40,6 +40,8 @@ public class DownloadViewModel : ObservableObject
 
 	private readonly HardwareAppIdService _hardware;
 
+	private readonly SearchIndexService _searchIndex;
+
 	private readonly AnalyticsService _analytics;
 
 	private readonly UsageService _usage;
@@ -908,7 +910,7 @@ public class DownloadViewModel : ObservableObject
 		FastFetch = true;
 	}
 
-	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, DropInstallViewModel drop, AnalyticsService analytics, UsageService usage, CoverCache covers, LicenseService license, DemolishService demolish)
+	public DownloadViewModel(GabLuchiApiClient api, HubcapService hubcap, SettingsService settings, ManifestDownloader manifestDownloader, ToastService toast, LuaInstaller installer, SteamAppListCache appList, SteamAppInfoCache appInfo, SteamDepotInfo depotInfo, HardwareAppIdService hardware, SearchIndexService searchIndex, DropInstallViewModel drop, AnalyticsService analytics, UsageService usage, CoverCache covers, LicenseService license, DemolishService demolish)
 	{
 		_api = api;
 		_hubcap = hubcap;
@@ -920,6 +922,7 @@ public class DownloadViewModel : ObservableObject
 		_appInfo = appInfo;
 		_depotInfo = depotInfo;
 		_hardware = hardware;
+		_searchIndex = searchIndex;
 		Drop = drop;
 		_fastFetch = true;
 		_analytics = analytics;
@@ -970,6 +973,37 @@ public class DownloadViewModel : ObservableObject
 					SearchResultCardViewModel searchResultCardViewModel = new SearchResultCardViewModel(item);
 					SearchCards.Add(searchResultCardViewModel);
 					_ = searchResultCardViewModel.EnsureCoverAsync(_appInfo, _covers);
+				}
+			}
+			// Delisted titles (GTA San Andreas, GTA V Legacy, ...) never come back from
+			// storesearch, so they are merged in from the local unlisted-game index.
+			await _searchIndex.EnsureLoadedAsync();
+			if (!cts.Token.IsCancellationRequested)
+			{
+				int supplement = 0;
+				foreach (SearchIndexService.Entry entry in _searchIndex.Match(query))
+				{
+					if (supplement >= 8)
+					{
+						break;
+					}
+					if (SearchCards.Any((SearchResultCardViewModel c) => c.AppId == entry.AppId))
+					{
+						continue;
+					}
+					if (_hardware.IsBlacklisted(entry.AppId))
+					{
+						continue;
+					}
+					SearchResultCardViewModel supplementCard = new SearchResultCardViewModel(new SteamSearchResult
+					{
+						AppId = entry.AppId,
+						Name = entry.Name,
+						Icon = $"https://cdn.cloudflare.steamstatic.com/steam/apps/{entry.AppId}/capsule_sm_120.jpg"
+					});
+					SearchCards.Add(supplementCard);
+					_ = supplementCard.EnsureCoverAsync(_appInfo, _covers);
+					supplement++;
 				}
 			}
 			IsResultsOpen = SearchCards.Count > 0;

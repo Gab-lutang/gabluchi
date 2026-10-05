@@ -11,9 +11,9 @@
     <Product>GabLuchi</Product>
     <Description>GabLuchi © Steam unlock and library companion.</Description>
     <Copyright>Copyright © 2026 GabLuchi</Copyright>
-<Version>1.4.11</Version>
-  <AssemblyVersion>1.4.11.0</AssemblyVersion>
-  <FileVersion>1.4.11.0</FileVersion>
+<Version>1.4.12</Version>
+  <AssemblyVersion>1.4.12.0</AssemblyVersion>
+  <FileVersion>1.4.12.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
