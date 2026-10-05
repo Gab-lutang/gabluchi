@@ -27,3 +27,6 @@ crack.md
 
 # WPF markup-compile temp projects (regenerated every build)
 *_wpftmp.csproj
+
+# Python tooling caches
+__pycache__/
